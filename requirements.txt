@@ -8,6 +8,7 @@ numpy>=1.24.0
 
 # HTTP Networking & Live Sensor Feeds (METAR & UN GDACS)
 requests>=2.31.0
+beautifulsoup4>=4.12.0
 
 # Google Gemini GenAI SDK (Optional - for Autonomous AI Situation Room)
 google-genai>=0.1.0
