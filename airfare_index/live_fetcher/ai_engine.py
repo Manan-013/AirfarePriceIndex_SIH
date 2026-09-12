@@ -596,19 +596,26 @@ Return ONLY a valid JSON object matching this exact schema (no markdown fences, 
         # If Gemini client is active, construct grounded prompt
         if self.gemini_client:
             try:
+                lang_req = "Hindi (शुद्ध हिन्दी)" if is_hindi else "English"
+                cheapest_list = [f"{b['route']} (from ₹{b['min_fare']:,})" for b in facts['top_budget'][:3]]
+                cheapest_str = ", ".join(cheapest_list)
+                surging_list = [f"{s['route']} (avg ₹{s['avg_fare']:,}, +{s['pct_change']}%)" for s in facts['top_surges'][:3]]
+                surging_str = ", ".join(surging_list)
+                route_match_str = json.dumps(route_data) if route_data else "None"
+
                 system_context = f"""
 You are the AI Chief Econometrician for India's Real-time Airfare Price Index (SIH 2026 PS SIH26056).
 Answer the user's question using ONLY these verified live database facts. 
 Keep your answer to 2 or 3 sentences maximum. Be direct, helpful, and natural.
-LANGUAGE REQUIREMENT: Answer in {'Hindi (शुद्ध हिन्दी)' if is_hindi else 'English'}.
+LANGUAGE REQUIREMENT: Answer in {lang_req}.
 
 LIVE GROUND TRUTH FACTS:
 - National Airfare Index: {facts['national_index']:.1f} (+{facts['pct_vs_base']:.1f}% vs 2024 base)
 - Contribution to Headline CPI: +{facts['cpi_impact_bps']:.2f} basis points
 - Advance Booking T+1 avg: ₹{facts['lead_time']['t1_avg']:,} vs T+15 avg: ₹{facts['lead_time']['t15_avg']:,} (T+1 premium is +{facts['lead_time']['premium_pct']:.0f}%)
-- Cheapest Routes: {', '.join([f'{b['route']} (from ₹{b['min_fare']:,})' for b in facts['top_budget'][:3]])}
-- Highest Surging Routes: {', '.join([f'{s['route']} (avg ₹{s['avg_fare']:,}, +{s['pct_change']}%)' for s in facts['top_surges'][:3]])}
-- Specific Route Match (if any): {json.dumps(route_data) if route_data else 'None'}
+- Cheapest Routes: {cheapest_str}
+- Highest Surging Routes: {surging_str}
+- Specific Route Match (if any): {route_match_str}
 """
                 models_to_try = [GEMINI_MODEL_PRIMARY, GEMINI_MODEL_FALLBACK]
                 for model_name in models_to_try:
