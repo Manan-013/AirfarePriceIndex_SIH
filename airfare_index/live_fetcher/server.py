@@ -68,7 +68,8 @@ MONITORED_ROUTES = [
 class AutoUpdateManager:
     def __init__(self):
         self.is_running = True
-        self.interval_seconds = 12  # Continuous 12-second live refresh cycle
+        self.interval_seconds = 45  # 45-second live refresh cycle to avoid throttling
+        self.pause_until = 0
         self.current_route_idx = 0
         self.latest_fares = {
             "DEL-BOM": 6314.0, "BLR-DEL": 6860.0, "BLR-BOM": 5210.0,
@@ -117,8 +118,8 @@ class AutoUpdateManager:
     def _run_loop(self):
         time.sleep(2)
         while True:
-            if not self.is_running:
-                time.sleep(2)
+            if not self.is_running or time.time() < self.pause_until:
+                time.sleep(1)
                 continue
 
             try:
@@ -211,6 +212,9 @@ class AutoUpdateManager:
                 "latest_fares": self.latest_fares,
                 "sector_matrix": sector_matrix
             }
+
+    def pause_briefly(self, seconds=25):
+        self.pause_until = time.time() + seconds
 
 auto_manager = AutoUpdateManager()
 
@@ -431,6 +435,7 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
             route_code = f"{origin}-{destination}"
 
             print(f"[LIVE SEARCH] {origin} -> {destination} on {travel_date}")
+            auto_manager.pause_briefly(25)
             results = scraper.search_live(origin, destination, travel_date)
 
             if results["flights"]:
