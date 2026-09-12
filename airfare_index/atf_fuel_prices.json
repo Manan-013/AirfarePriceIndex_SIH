@@ -1,0 +1,299 @@
+[
+  {
+    "year": 2024,
+    "month": "January",
+    "delhi_rs_per_kl": 101993,
+    "mumbai_rs_per_kl": 95373,
+    "kolkata_rs_per_kl": 105650,
+    "chennai_rs_per_kl": 106250,
+    "atf_price_index": 100.0
+  },
+  {
+    "year": 2024,
+    "month": "February",
+    "delhi_rs_per_kl": 100772,
+    "mumbai_rs_per_kl": 94246,
+    "kolkata_rs_per_kl": 104380,
+    "chennai_rs_per_kl": 104980,
+    "atf_price_index": 98.8
+  },
+  {
+    "year": 2024,
+    "month": "March",
+    "delhi_rs_per_kl": 101396,
+    "mumbai_rs_per_kl": 94849,
+    "kolkata_rs_per_kl": 105030,
+    "chennai_rs_per_kl": 105630,
+    "atf_price_index": 99.41
+  },
+  {
+    "year": 2024,
+    "month": "April",
+    "delhi_rs_per_kl": 100893,
+    "mumbai_rs_per_kl": 94330,
+    "kolkata_rs_per_kl": 104510,
+    "chennai_rs_per_kl": 105110,
+    "atf_price_index": 98.92
+  },
+  {
+    "year": 2024,
+    "month": "May",
+    "delhi_rs_per_kl": 99845,
+    "mumbai_rs_per_kl": 93310,
+    "kolkata_rs_per_kl": 103420,
+    "chennai_rs_per_kl": 104020,
+    "atf_price_index": 97.89
+  },
+  {
+    "year": 2024,
+    "month": "June",
+    "delhi_rs_per_kl": 93580,
+    "mumbai_rs_per_kl": 87432,
+    "kolkata_rs_per_kl": 96910,
+    "chennai_rs_per_kl": 97470,
+    "atf_price_index": 91.75
+  },
+  {
+    "year": 2024,
+    "month": "July",
+    "delhi_rs_per_kl": 96152,
+    "mumbai_rs_per_kl": 89908,
+    "kolkata_rs_per_kl": 99570,
+    "chennai_rs_per_kl": 100150,
+    "atf_price_index": 94.27
+  },
+  {
+    "year": 2024,
+    "month": "August",
+    "delhi_rs_per_kl": 97975,
+    "mumbai_rs_per_kl": 91650,
+    "kolkata_rs_per_kl": 101460,
+    "chennai_rs_per_kl": 102050,
+    "atf_price_index": 96.06
+  },
+  {
+    "year": 2024,
+    "month": "September",
+    "delhi_rs_per_kl": 93480,
+    "mumbai_rs_per_kl": 87350,
+    "kolkata_rs_per_kl": 96800,
+    "chennai_rs_per_kl": 97360,
+    "atf_price_index": 91.65
+  },
+  {
+    "year": 2024,
+    "month": "October",
+    "delhi_rs_per_kl": 87597,
+    "mumbai_rs_per_kl": 81866,
+    "kolkata_rs_per_kl": 90700,
+    "chennai_rs_per_kl": 91220,
+    "atf_price_index": 85.89
+  },
+  {
+    "year": 2024,
+    "month": "November",
+    "delhi_rs_per_kl": 90538,
+    "mumbai_rs_per_kl": 84642,
+    "kolkata_rs_per_kl": 93740,
+    "chennai_rs_per_kl": 94280,
+    "atf_price_index": 88.77
+  },
+  {
+    "year": 2024,
+    "month": "December",
+    "delhi_rs_per_kl": 90540,
+    "mumbai_rs_per_kl": 84650,
+    "kolkata_rs_per_kl": 93750,
+    "chennai_rs_per_kl": 94300,
+    "atf_price_index": 88.77
+  },
+  {
+    "year": 2025,
+    "month": "January",
+    "delhi_rs_per_kl": 90250,
+    "mumbai_rs_per_kl": 84380,
+    "kolkata_rs_per_kl": 93450,
+    "chennai_rs_per_kl": 94000,
+    "atf_price_index": 88.49
+  },
+  {
+    "year": 2025,
+    "month": "February",
+    "delhi_rs_per_kl": 92400,
+    "mumbai_rs_per_kl": 86390,
+    "kolkata_rs_per_kl": 95680,
+    "chennai_rs_per_kl": 96240,
+    "atf_price_index": 90.59
+  },
+  {
+    "year": 2025,
+    "month": "March",
+    "delhi_rs_per_kl": 93100,
+    "mumbai_rs_per_kl": 87040,
+    "kolkata_rs_per_kl": 96400,
+    "chennai_rs_per_kl": 96970,
+    "atf_price_index": 91.28
+  },
+  {
+    "year": 2025,
+    "month": "April",
+    "delhi_rs_per_kl": 94500,
+    "mumbai_rs_per_kl": 88350,
+    "kolkata_rs_per_kl": 97850,
+    "chennai_rs_per_kl": 98430,
+    "atf_price_index": 92.65
+  },
+  {
+    "year": 2025,
+    "month": "May",
+    "delhi_rs_per_kl": 93800,
+    "mumbai_rs_per_kl": 87690,
+    "kolkata_rs_per_kl": 97130,
+    "chennai_rs_per_kl": 97700,
+    "atf_price_index": 91.97
+  },
+  {
+    "year": 2025,
+    "month": "June",
+    "delhi_rs_per_kl": 91600,
+    "mumbai_rs_per_kl": 85630,
+    "kolkata_rs_per_kl": 94850,
+    "chennai_rs_per_kl": 95410,
+    "atf_price_index": 89.81
+  },
+  {
+    "year": 2025,
+    "month": "July",
+    "delhi_rs_per_kl": 94800,
+    "mumbai_rs_per_kl": 88630,
+    "kolkata_rs_per_kl": 98160,
+    "chennai_rs_per_kl": 98740,
+    "atf_price_index": 92.95
+  },
+  {
+    "year": 2025,
+    "month": "August",
+    "delhi_rs_per_kl": 96200,
+    "mumbai_rs_per_kl": 89940,
+    "kolkata_rs_per_kl": 99610,
+    "chennai_rs_per_kl": 100200,
+    "atf_price_index": 94.32
+  },
+  {
+    "year": 2025,
+    "month": "September",
+    "delhi_rs_per_kl": 92800,
+    "mumbai_rs_per_kl": 86750,
+    "kolkata_rs_per_kl": 96100,
+    "chennai_rs_per_kl": 96660,
+    "atf_price_index": 90.99
+  },
+  {
+    "year": 2025,
+    "month": "October",
+    "delhi_rs_per_kl": 91200,
+    "mumbai_rs_per_kl": 85250,
+    "kolkata_rs_per_kl": 94440,
+    "chennai_rs_per_kl": 95000,
+    "atf_price_index": 89.42
+  },
+  {
+    "year": 2025,
+    "month": "November",
+    "delhi_rs_per_kl": 93500,
+    "mumbai_rs_per_kl": 87400,
+    "kolkata_rs_per_kl": 96820,
+    "chennai_rs_per_kl": 97390,
+    "atf_price_index": 91.67
+  },
+  {
+    "year": 2025,
+    "month": "December",
+    "delhi_rs_per_kl": 95100,
+    "mumbai_rs_per_kl": 88900,
+    "kolkata_rs_per_kl": 98480,
+    "chennai_rs_per_kl": 99060,
+    "atf_price_index": 93.24
+  },
+  {
+    "year": 2026,
+    "month": "January",
+    "delhi_rs_per_kl": 92300,
+    "mumbai_rs_per_kl": 86280,
+    "kolkata_rs_per_kl": 95580,
+    "chennai_rs_per_kl": 96140,
+    "atf_price_index": 90.5
+  },
+  {
+    "year": 2026,
+    "month": "February",
+    "delhi_rs_per_kl": 91800,
+    "mumbai_rs_per_kl": 85810,
+    "kolkata_rs_per_kl": 95060,
+    "chennai_rs_per_kl": 95620,
+    "atf_price_index": 90.01
+  },
+  {
+    "year": 2026,
+    "month": "March",
+    "delhi_rs_per_kl": 93400,
+    "mumbai_rs_per_kl": 87310,
+    "kolkata_rs_per_kl": 96720,
+    "chennai_rs_per_kl": 97280,
+    "atf_price_index": 91.57
+  },
+  {
+    "year": 2026,
+    "month": "April",
+    "delhi_rs_per_kl": 95800,
+    "mumbai_rs_per_kl": 89550,
+    "kolkata_rs_per_kl": 99200,
+    "chennai_rs_per_kl": 99780,
+    "atf_price_index": 93.93
+  },
+  {
+    "year": 2026,
+    "month": "May",
+    "delhi_rs_per_kl": 97200,
+    "mumbai_rs_per_kl": 90860,
+    "kolkata_rs_per_kl": 100650,
+    "chennai_rs_per_kl": 101240,
+    "atf_price_index": 95.3
+  },
+  {
+    "year": 2026,
+    "month": "June",
+    "delhi_rs_per_kl": 94600,
+    "mumbai_rs_per_kl": 88430,
+    "kolkata_rs_per_kl": 97960,
+    "chennai_rs_per_kl": 98530,
+    "atf_price_index": 92.75
+  },
+  {
+    "year": 2026,
+    "month": "July",
+    "delhi_rs_per_kl": 96800,
+    "mumbai_rs_per_kl": 90490,
+    "kolkata_rs_per_kl": 100240,
+    "chennai_rs_per_kl": 100830,
+    "atf_price_index": 94.91
+  },
+  {
+    "year": 2026,
+    "month": "August",
+    "delhi_rs_per_kl": 101650,
+    "mumbai_rs_per_kl": 95020,
+    "kolkata_rs_per_kl": 105260,
+    "chennai_rs_per_kl": 105880,
+    "atf_price_index": 99.66
+  },
+  {
+    "year": 2026,
+    "month": "September",
+    "delhi_rs_per_kl": 107200,
+    "mumbai_rs_per_kl": 100210,
+    "kolkata_rs_per_kl": 111010,
+    "chennai_rs_per_kl": 111660,
+    "atf_price_index": 105.11
+  }
+]

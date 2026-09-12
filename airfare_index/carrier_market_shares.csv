@@ -1,0 +1,6 @@
+rank,carrier_code,carrier_name,market_share_percent,market_weight,monthly_passengers_lakhs,fleet_size,category
+1,6E,IndiGo,61.8,0.618,84.1,360,Scheduled Low-Cost Carrier
+2,AI,Air India Group (AI & AIX),27.2,0.272,37.0,220,Scheduled Full-Service & Low-Cost
+3,QP,Akasa Air,4.7,0.047,6.4,24,Scheduled Low-Cost Carrier
+4,SG,SpiceJet,4.0,0.04,5.4,35,Scheduled Low-Cost Carrier
+5,OTH,"Regional & Others (Alliance Air, Star Air, Fly91)",2.3,0.023,3.1,30,RCS-UDAN Regional Operators

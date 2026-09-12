@@ -1,0 +1,52 @@
+[
+  {
+    "rank": 1,
+    "carrier_code": "6E",
+    "carrier_name": "IndiGo",
+    "market_share_percent": 61.8,
+    "market_weight": 0.618,
+    "monthly_passengers_lakhs": 84.1,
+    "fleet_size": 360,
+    "category": "Scheduled Low-Cost Carrier"
+  },
+  {
+    "rank": 2,
+    "carrier_code": "AI",
+    "carrier_name": "Air India Group (AI & AIX)",
+    "market_share_percent": 27.2,
+    "market_weight": 0.272,
+    "monthly_passengers_lakhs": 37.0,
+    "fleet_size": 220,
+    "category": "Scheduled Full-Service & Low-Cost"
+  },
+  {
+    "rank": 3,
+    "carrier_code": "QP",
+    "carrier_name": "Akasa Air",
+    "market_share_percent": 4.7,
+    "market_weight": 0.047,
+    "monthly_passengers_lakhs": 6.4,
+    "fleet_size": 24,
+    "category": "Scheduled Low-Cost Carrier"
+  },
+  {
+    "rank": 4,
+    "carrier_code": "SG",
+    "carrier_name": "SpiceJet",
+    "market_share_percent": 4.0,
+    "market_weight": 0.04,
+    "monthly_passengers_lakhs": 5.4,
+    "fleet_size": 35,
+    "category": "Scheduled Low-Cost Carrier"
+  },
+  {
+    "rank": 5,
+    "carrier_code": "OTH",
+    "carrier_name": "Regional & Others (Alliance Air, Star Air, Fly91)",
+    "market_share_percent": 2.3,
+    "market_weight": 0.023,
+    "monthly_passengers_lakhs": 3.1,
+    "fleet_size": 30,
+    "category": "RCS-UDAN Regional Operators"
+  }
+]

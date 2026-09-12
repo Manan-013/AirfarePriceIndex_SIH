@@ -1,0 +1,94 @@
+# =========================================================================
+# Security & Secret Protection (.env files)
+# =========================================================================
+.env
+.env.*
+*.env
+**/.env
+**/.env.*
+
+# =========================================================================
+# SQLite Databases & Dynamic State Stores
+# =========================================================================
+*.db
+*.sqlite
+*.sqlite3
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+airfare_index.db
+airfare_cpi.db
+
+# =========================================================================
+# Python Compiled & Cache Files
+# =========================================================================
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+**/.pytest_cache/
+
+# =========================================================================
+# System Logs & OS Metadata
+# =========================================================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================================================================
+# IDEs & Editor Configuration
+# =========================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================================================================
+# Test & Playwright Execution Artefacts
+# =========================================================================
+test-results/
+playwright-report/
+.tempmediaStorage/
+**/.tempmediaStorage/
+
+# SIH Hackathon Problem Statements Reference Files
+sih2026_problem_statements.pdf
+sih2026.html
+sih2026_print.html
+sih2026_problem_statements.csv
+sih2026_problem_statements.json
+sih2026_problem_statements.md
+matched_problem_statements.json
+top_sih_picks.json
+innovative_top_picks.md
+more_innovative_picks.md
+parse_all.py
+scrape.py
+generate_pdf_html.py
+data/
+scratch/

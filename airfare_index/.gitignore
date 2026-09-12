@@ -1,0 +1,58 @@
+# =========================================================================
+# Git Ignore Rules - MoSPI Airfare Price Index (APIx)
+# =========================================================================
+
+# Secrets & Environment variables (CRITICAL: NEVER COMMIT SECRETS)
+.env
+*.env
+.env.*
+!.env.example
+
+# SQLite Databases & Dynamic State Data
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+airfare_index.db
+airfare_cpi.db
+
+# Python Caches & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Logs & Runtime Diagnostics
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Playwright Browsers & Cache
+.cache/
+test-results/
+playwright-report/
+
+# OS & Editor Artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Antigravity & AI Brain Internal Artifacts
+.gemini/
+.system_generated/
+scratch/
