@@ -318,17 +318,17 @@ class RealtimeFlightScraper:
         else:
             surge_mult = random.uniform(0.90, 0.98) # ~₹3,900 - ₹4,250
 
-        # Authentic flight schedules reflecting Indian airline market share (IndiGo 63%, Air India 27%)
+        # Authentic flight schedules reflecting Indian airline market share (IndiGo 63%, Air India & AIX 28%, Akasa 5%)
         schedule_templates = [
-            {"code": "6E", "fn": 2041, "dep": "06:15", "arr": "08:30", "dur": "2h 15m"},
-            {"code": "AI", "fn": 806,  "dep": "07:30", "arr": "09:45", "dur": "2h 15m"},
+            {"code": "6E", "fn": 907,  "dep": "14:45", "arr": "17:00", "dur": "2h 15m"},
+            {"code": "AI", "fn": 710,  "dep": "17:00", "arr": "19:25", "dur": "2h 25m"},
+            {"code": "AI", "fn": 474,  "dep": "05:00", "arr": "07:15", "dur": "2h 15m"},
+            {"code": "6E", "fn": 364,  "dep": "06:05", "arr": "08:20", "dur": "2h 15m"},
+            {"code": "IX", "fn": 1284, "dep": "05:35", "arr": "08:05", "dur": "2h 30m"},
+            {"code": "QP", "fn": 1134, "dep": "10:30", "arr": "12:45", "dur": "2h 15m"},
             {"code": "6E", "fn": 5321, "dep": "11:20", "arr": "13:35", "dur": "2h 15m"},
             {"code": "AI", "fn": 665,  "dep": "14:15", "arr": "16:30", "dur": "2h 15m"},
-            {"code": "6E", "fn": 2450, "dep": "14:45", "arr": "17:00", "dur": "2h 15m"},
-            {"code": "AI", "fn": 481,  "dep": "16:30", "arr": "18:50", "dur": "2h 20m"},
-            {"code": "QP", "fn": 1134, "dep": "17:30", "arr": "19:45", "dur": "2h 15m"},
             {"code": "6E", "fn": 6128, "dep": "18:00", "arr": "20:15", "dur": "2h 15m"},
-            {"code": "SG", "fn": 8161, "dep": "18:40", "arr": "21:00", "dur": "2h 20m"},
             {"code": "AI", "fn": 887,  "dep": "21:15", "arr": "23:30", "dur": "2h 15m"},
         ]
 
@@ -336,13 +336,13 @@ class RealtimeFlightScraper:
         for tpl in schedule_templates:
             airline_factor = 1.0
             if tpl["code"] == "QP":
-                airline_factor = 0.98
-            elif tpl["code"] == "SG":
-                airline_factor = 0.95
+                airline_factor = 1.02
+            elif tpl["code"] == "IX":
+                airline_factor = 1.01
             elif tpl["code"] == "AI":
                 airline_factor = 1.00 # Matches IndiGo exactly on trunk routes (both ₹6,425)
 
-            jitter = random.uniform(-60, 80)
+            jitter = random.uniform(-40, 50)
             total_fare = round((base_route_price * surge_mult * airline_factor) + jitter)
             total_fare = int(round(total_fare, -1))
 
