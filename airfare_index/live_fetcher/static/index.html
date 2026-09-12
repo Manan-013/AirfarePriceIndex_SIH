@@ -678,23 +678,111 @@
  </div>
  </section>
 
- <!-- Results List Section -->
- <section id="resultsSection" class="hidden mb-12">
- <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
- <div>
- <h3 class="text-base font-bold text-[#26364A] flex items-center gap-2 flex-wrap">
- Real-Time Flight Inventory
- <span id="routeBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-[#F1F5F9] font-mono text-[#26364A] border border-[#E2E8F0]"></span>
- <span id="sourceBadge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-[#8ED1C7]/25 text-[#1A6357] border border-[#8ED1C7]/60 font-mono font-medium"></span>
- </h3>
- <p class="text-xs text-[#5E718A] mt-1">Every flight card includes direct 1-click verification deep links to Google Flights and MakeMyTrip to verify real-time market accuracy.</p>
- </div>
- <div class="text-xs text-[#5E718A] font-mono" id="scrapeTimestamp"></div>
- </div>
+  <!-- Results List Section -->
+  <section id="resultsSection" class="hidden mb-12">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+      <div>
+        <h3 class="text-base font-bold text-[#26364A] flex items-center gap-2 flex-wrap">
+          Real-Time Flight Inventory
+          <span id="routeBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-[#F1F5F9] font-mono text-[#26364A] border border-[#E2E8F0]"></span>
+          <span id="sourceBadge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-[#8ED1C7]/25 text-[#1A6357] border border-[#8ED1C7]/60 font-mono font-medium"></span>
+        </h3>
+        <p class="text-xs text-[#5E718A] mt-1">Every flight card includes direct 1-click verification deep links to Google Flights and MakeMyTrip to verify real-time market accuracy.</p>
+      </div>
+      <div class="text-xs text-[#5E718A] font-mono" id="scrapeTimestamp"></div>
+    </div>
 
- <!-- Flights Container -->
- <div id="flightsContainer" class="space-y-4 mb-8"></div>
- </section>
+    <!-- Google Flights Style Segmented Navigation Bar -->
+    <div class="glass-card rounded-2xl p-4 border border-[#E2E8F0] mb-5 shadow-xs">
+      <!-- Tabs: All Flights | Top/Best Picks | Cheapest | Non-Stop -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-[#F1F5F9]">
+        <div class="flex flex-wrap items-center gap-2" id="flightCategoryTabs">
+          <button type="button" onclick="setFlightCategoryFilter('all')" id="tabFlight-all"
+            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#26364A] text-white shadow-xs cursor-pointer">
+            <span>All Flights</span>
+            <span id="badgeCount-all" class="px-2 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-mono">--</span>
+          </button>
+          <button type="button" onclick="setFlightCategoryFilter('best')" id="tabFlight-best"
+            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] cursor-pointer">
+            <span>⭐ Best / Top Picks</span>
+            <span id="badgeCount-best" class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[11px] font-mono font-bold">--</span>
+          </button>
+          <button type="button" onclick="setFlightCategoryFilter('cheapest')" id="tabFlight-cheapest"
+            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] cursor-pointer">
+            <span>💰 Cheapest Available</span>
+            <span id="badgeCount-cheapest" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-mono font-bold">--</span>
+          </button>
+          <button type="button" onclick="setFlightCategoryFilter('nonstop')" id="tabFlight-nonstop"
+            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] cursor-pointer">
+            <span>⚡ Non-Stop Only</span>
+            <span id="badgeCount-nonstop" class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-800 text-[11px] font-mono">--</span>
+          </button>
+        </div>
+
+        <!-- External Quick Verification Button -->
+        <a id="btnExternalGoogleFlights" href="https://www.google.com/travel/flights" target="_blank" rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#5B8DEF]/40 bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 text-[#3064C4] text-xs font-semibold font-mono transition">
+          <span>Open in Google Flights</span>
+          <span>↗</span>
+        </a>
+      </div>
+
+      <!-- Filter Controls: Airline, Time of Day, Sorting, Search -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3 pt-3 items-center text-xs">
+        <!-- Airline Filter -->
+        <div class="md:col-span-3">
+          <label class="block text-[10px] font-bold text-[#5E718A] uppercase mb-1">Airline Filter</label>
+          <select id="filterAirline" onchange="applyFlightFilters()" class="input-cloud w-full py-1.5 px-3 rounded-lg text-xs font-medium cursor-pointer">
+            <option value="all">All Airlines</option>
+            <option value="IndiGo">IndiGo</option>
+            <option value="Air India">Air India</option>
+            <option value="Akasa Air">Akasa Air</option>
+            <option value="Air India Express">Air India Express</option>
+            <option value="SpiceJet">SpiceJet</option>
+          </select>
+        </div>
+
+        <!-- Time of Day Filter -->
+        <div class="md:col-span-3">
+          <label class="block text-[10px] font-bold text-[#5E718A] uppercase mb-1">Departure Time</label>
+          <select id="filterTimeOfDay" onchange="applyFlightFilters()" class="input-cloud w-full py-1.5 px-3 rounded-lg text-xs font-medium cursor-pointer">
+            <option value="all">All Day (24h)</option>
+            <option value="morning">Morning (00:00 - 12:00)</option>
+            <option value="afternoon">Afternoon (12:00 - 18:00)</option>
+            <option value="evening">Evening / Night (18:00 - 23:59)</option>
+          </select>
+        </div>
+
+        <!-- Sort By -->
+        <div class="md:col-span-3">
+          <label class="block text-[10px] font-bold text-[#5E718A] uppercase mb-1">Sort Order</label>
+          <select id="sortFlightsBy" onchange="applyFlightFilters()" class="input-cloud w-full py-1.5 px-3 rounded-lg text-xs font-medium cursor-pointer">
+            <option value="price_asc">Price: Lowest to Highest</option>
+            <option value="best_first">Google Top Picks / Best First</option>
+            <option value="time_asc">Departure: Earliest to Latest</option>
+            <option value="time_desc">Departure: Latest to Earliest</option>
+            <option value="duration">Duration: Shortest First</option>
+          </select>
+        </div>
+
+        <!-- Quick Search -->
+        <div class="md:col-span-3">
+          <label class="block text-[10px] font-bold text-[#5E718A] uppercase mb-1">Filter by Text</label>
+          <input type="text" id="flightSearchQuery" oninput="applyFlightFilters()" placeholder="Filter carrier, time, #..."
+            class="input-cloud w-full py-1.5 px-3 rounded-lg text-xs font-medium">
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Filter Status & Count -->
+    <div class="flex items-center justify-between mb-3 text-xs text-[#5E718A]">
+      <div>Showing <span id="displayedFlightCount" class="font-bold text-[#26364A]">--</span> of <span id="totalAvailableFlightCount" class="font-bold text-[#26364A]">--</span> Google Flights records</div>
+      <button type="button" onclick="resetFlightFilters()" class="text-[#5B8DEF] hover:underline text-[11px] font-medium hidden cursor-pointer" id="btnResetFilters">Reset all filters</button>
+    </div>
+
+    <!-- Flights Container -->
+    <div id="flightsContainer" class="space-y-4 mb-8"></div>
+  </section>
 
  <!-- Raw Data Inspector for Mentor / MoSPI Auditors -->
  <section class="glass-card rounded-2xl p-6 border border-[#E2E8F0] mb-8">
@@ -1830,117 +1918,317 @@
  }
  }
 
- // Render Flights
- const container = document.getElementById('flightsContainer');
- container.innerHTML = '';
+  // Store data globally for dynamic filtering
+  currentFlightsData = data.flights || [];
+  currentSearchPayload = data;
 
- data.flights.forEach(f => {
- const card = document.createElement('div');
- card.className = 'glass-card rounded-xl p-5 border border-[#E2E8F0] hover:border-[#5B8DEF]/60 hover:shadow-md transition duration-200';
- 
- const airlineColors = {
- 'IndiGo': 'bg-[#5B8DEF]/15 text-[#3064C4] border border-[#5B8DEF]/35',
- 'Air India': 'bg-red-50 text-red-700 border border-red-200',
- 'Akasa Air': 'bg-orange-50 text-orange-700 border border-orange-200',
- 'SpiceJet': 'bg-[#FFD166]/25 text-[#916700] border border-[#FFD166]/50',
- };
- const badgeClass = airlineColors[f.carrier_name] || 'bg-[#F1F5F9] text-[#26364A] border border-[#D8E2EC]';
+  // Update External Google Flights Link
+  const extBtn = document.getElementById('btnExternalGoogleFlights');
+  if (extBtn && data.flights && data.flights.length > 0) {
+    extBtn.href = data.flights[0].verification_url || `https://www.google.com/travel/flights?q=Flights%20to%20${data.destination}%20from%20${data.origin}%20on%20${data.travel_date}%20oneway&hl=en-IN&gl=in`;
+  }
 
- const gflightsUrl = f.verification_url || `https://www.google.com/travel/flights?q=Flights%20to%20${f.destination}%20from%20${f.origin}%20on%20${data.travel_date}%20oneway&hl=en-IN&gl=in`;
- const mmtUrl = f.makemytrip_url || `https://www.makemytrip.com/flight/search?itinerary=${f.origin}-${f.destination}-${data.travel_date}&tripType=O&paxType=A-1_C-0_I-0&intl=false&cabinClass=E`;
- const airlineUrl = f.airline_portal_url || 'https://www.google.com/travel/flights';
+  // Update Category Badge Counts
+  const totalCount = currentFlightsData.length;
+  const bestCount = currentFlightsData.filter(f => f.is_top_flight).length;
+  const cheapestCount = currentFlightsData.filter(f => f.is_cheapest).length;
+  const nonstopCount = currentFlightsData.filter(f => f.stops === 'Non-stop').length;
 
- card.innerHTML = `
- <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
- <div class="flex items-center gap-3">
- <div class="w-12 h-12 rounded-xl bg-[#F7FAFC] border border-[#E2E8F0] flex items-center justify-center font-bold font-mono text-sm text-[#26364A] shadow-xs">
- ${f.carrier_code}
- </div>
- <div>
- <div class="flex items-center gap-2">
- <h4 class="text-sm font-bold text-[#26364A]">${f.carrier_name}</h4>
- <span class="text-[11px] px-2 py-0.5 rounded border ${badgeClass} font-mono font-medium">${f.flight_number}</span>
- </div>
- <div class="text-xs text-[#5E718A] mt-0.5">${f.stops} • Direct Domestic Sector</div>
- </div>
- </div>
+  document.getElementById('badgeCount-all').textContent = totalCount;
+  document.getElementById('badgeCount-best').textContent = bestCount;
+  document.getElementById('badgeCount-cheapest').textContent = cheapestCount;
+  document.getElementById('badgeCount-nonstop').textContent = nonstopCount;
+  document.getElementById('totalAvailableFlightCount').textContent = totalCount;
 
- <div class="flex items-center gap-6 text-center">
- <div>
- <div class="text-base font-bold text-[#26364A] font-mono">${f.departure_time}</div>
- <div class="text-[11px] text-[#5E718A] font-mono">${f.origin}</div>
- </div>
- <div class="flex flex-col items-center">
- <span class="text-[10px] text-[#5E718A] font-mono">${f.duration}</span>
- <div class="w-20 h-px bg-[#D8E2EC] my-1 relative">
- <div class="w-1.5 h-1.5 rounded-full bg-[#5B8DEF] absolute -top-[2px] right-0"></div>
- </div>
- <span class="text-[9px] text-[#1A6357] font-mono uppercase tracking-wider font-semibold">Non-Stop</span>
- </div>
- <div>
- <div class="text-base font-bold text-[#26364A] font-mono">${f.arrival_time}</div>
- <div class="text-[11px] text-[#5E718A] font-mono">${f.destination}</div>
- </div>
- </div>
+  // Populate dynamic airline selector based on current scraped results
+  populateAirlineFilter(currentFlightsData);
 
- <div class="text-right">
- <div class="text-2xl font-extrabold text-[#26364A] font-mono">₹${f.total_fare.toLocaleString('en-IN')}</div>
- <div class="text-[11px] text-[#5E718A]">Total All-Inclusive</div>
- </div>
- </div>
+  // Render Flights based on active filters
+  applyFlightFilters();
 
- <div class="mt-4 pt-3 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-2 text-xs">
- <div class="flex flex-wrap items-center gap-4 text-[#5E718A] font-mono text-[11px]">
- <span class="flex items-center gap-1.5">
- <span class="w-2 h-2 rounded-full bg-[#5B8DEF]"></span> Base Fare: <strong class="text-[#26364A] font-semibold">₹${f.base_fare.toLocaleString('en-IN')}</strong>
- </span>
- <span class="flex items-center gap-1.5">
- <span class="w-2 h-2 rounded-full bg-[#FFD166]"></span> Fuel YQ: <strong class="text-[#26364A] font-semibold">₹${f.fuel_surcharge_yq.toLocaleString('en-IN')}</strong>
- </span>
- <span class="flex items-center gap-1.5">
- <span class="w-2 h-2 rounded-full bg-[#8ED1C7]"></span> UDF/Airport: <strong class="text-[#26364A] font-semibold">₹${f.airport_fees_udf_psf.toLocaleString('en-IN')}</strong>
- </span>
- <span class="flex items-center gap-1.5">
- <span class="w-2 h-2 rounded-full bg-[#389B8D]"></span> GST (5%): <strong class="text-[#26364A] font-semibold">₹${f.gst.toLocaleString('en-IN')}</strong>
- </span>
- </div>
- <div class="text-[11px] text-[#5E718A] font-mono">
- Base Ratio: <span class="text-[#3B6DCF] font-bold">${Math.round((f.base_fare / f.total_fare) * 100)}%</span>
- </div>
- </div>
+  document.getElementById('jsonContent').textContent = JSON.stringify(data, null, 2);
+  document.getElementById('summarySection').classList.remove('hidden');
+  document.getElementById('resultsSection').classList.remove('hidden');
+  }
 
- <div class="mt-3 pt-3 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-3">
- <div class="flex items-center gap-2">
- <span class="inline-flex items-center gap-1.5 text-[11px] font-mono font-semibold text-[#1A6357]">
- <span class="w-1.5 h-1.5 rounded-full bg-[#8ED1C7]"></span>
- Live Pricing Verifiable
- </span>
- </div>
- <div class="flex flex-wrap items-center gap-2">
- <a href="${gflightsUrl}" target="_blank" rel="noopener noreferrer" 
- class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 text-[#3064C4] border border-[#5B8DEF]/30 text-xs font-semibold transition hover:scale-[1.02] shadow-xs">
- <svg class="w-3.5 h-3.5 text-[#5B8DEF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
- Verify on Google Flights ↗
- </a>
- <a href="${mmtUrl}" target="_blank" rel="noopener noreferrer" 
- class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-semibold transition hover:scale-[1.02] shadow-xs">
- <svg class="w-3.5 h-3.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
- MakeMyTrip ↗
- </a>
- <a href="${airlineUrl}" target="_blank" rel="noopener noreferrer" 
- class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] text-xs font-medium transition">
- ${f.carrier_name} Portal ↗
- </a>
- </div>
- </div>
- `;
- container.appendChild(card);
- });
+  // =========================================================================
+  // GOOGLE FLIGHTS FILTERING & SORTING CONTROLLER
+  // =========================================================================
+  let currentFlightsData = [];
+  let currentSearchPayload = null;
+  let activeFlightCategory = 'all';
 
- document.getElementById('jsonContent').textContent = JSON.stringify(data, null, 2);
- document.getElementById('summarySection').classList.remove('hidden');
- document.getElementById('resultsSection').classList.remove('hidden');
- }
+  function setFlightCategoryFilter(category) {
+    activeFlightCategory = category;
+    const catMap = {
+      'all': 'tabFlight-all',
+      'best': 'tabFlight-best',
+      'cheapest': 'tabFlight-cheapest',
+      'nonstop': 'tabFlight-nonstop'
+    };
+
+    Object.keys(catMap).forEach(cat => {
+      const btn = document.getElementById(catMap[cat]);
+      if (btn) {
+        if (cat === category) {
+          btn.className = 'px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#26364A] text-white shadow-xs cursor-pointer';
+        } else {
+          btn.className = 'px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] cursor-pointer';
+        }
+      }
+    });
+    applyFlightFilters();
+  }
+
+  function populateAirlineFilter(flights) {
+    const select = document.getElementById('filterAirline');
+    if (!select) return;
+    const currentVal = select.value;
+    const carriers = {};
+    flights.forEach(f => {
+      if (f.carrier_name) {
+        carriers[f.carrier_name] = (carriers[f.carrier_name] || 0) + 1;
+      }
+    });
+    let html = `<option value="all">All Airlines (${flights.length})</option>`;
+    Object.keys(carriers).sort().forEach(c => {
+      html += `<option value="${c}">${c} (${carriers[c]})</option>`;
+    });
+    select.innerHTML = html;
+    if (carriers[currentVal]) {
+      select.value = currentVal;
+    }
+  }
+
+  function resetFlightFilters() {
+    if (document.getElementById('filterAirline')) document.getElementById('filterAirline').value = 'all';
+    if (document.getElementById('filterTimeOfDay')) document.getElementById('filterTimeOfDay').value = 'all';
+    if (document.getElementById('sortFlightsBy')) document.getElementById('sortFlightsBy').value = 'price_asc';
+    if (document.getElementById('flightSearchQuery')) document.getElementById('flightSearchQuery').value = '';
+    setFlightCategoryFilter('all');
+  }
+
+  function parseTimeToHour(timeStr) {
+    if (!timeStr) return 0;
+    const m = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?/i);
+    if (!m) return 0;
+    let hour = parseInt(m[1]);
+    const ampm = m[3] ? m[3].toUpperCase() : '';
+    if (ampm === 'PM' && hour < 12) hour += 12;
+    if (ampm === 'AM' && hour === 12) hour = 0;
+    return hour;
+  }
+
+  function parseDurationMinutes(durStr) {
+    if (!durStr) return 120;
+    let total = 0;
+    const hrM = durStr.match(/(\d+)\s*(?:hrs?|h)/i);
+    if (hrM) total += parseInt(hrM[1]) * 60;
+    const minM = durStr.match(/(\d+)\s*(?:mins?|m)/i);
+    if (minM) total += parseInt(minM[1]);
+    return total || 120;
+  }
+
+  function applyFlightFilters() {
+    if (!currentFlightsData || currentFlightsData.length === 0) return;
+
+    const airline = document.getElementById('filterAirline')?.value || 'all';
+    const timeOfDay = document.getElementById('filterTimeOfDay')?.value || 'all';
+    const sortBy = document.getElementById('sortFlightsBy')?.value || 'price_asc';
+    const query = (document.getElementById('flightSearchQuery')?.value || '').toLowerCase().trim();
+
+    let filtered = currentFlightsData.slice();
+
+    // 1. Category Filter (All vs Best vs Cheapest vs Non-Stop)
+    if (activeFlightCategory === 'best') {
+      filtered = filtered.filter(f => f.is_top_flight);
+    } else if (activeFlightCategory === 'cheapest') {
+      filtered = filtered.filter(f => f.is_cheapest);
+    } else if (activeFlightCategory === 'nonstop') {
+      filtered = filtered.filter(f => f.stops === 'Non-stop');
+    }
+
+    // 2. Airline Filter
+    if (airline !== 'all') {
+      filtered = filtered.filter(f => f.carrier_name === airline);
+    }
+
+    // 3. Time of Day Filter
+    if (timeOfDay !== 'all') {
+      filtered = filtered.filter(f => {
+        const hr = parseTimeToHour(f.departure_time);
+        if (timeOfDay === 'morning') return hr < 12;
+        if (timeOfDay === 'afternoon') return hr >= 12 && hr < 18;
+        if (timeOfDay === 'evening') return hr >= 18;
+        return true;
+      });
+    }
+
+    // 4. Free-text Search Query
+    if (query) {
+      filtered = filtered.filter(f => 
+        (f.carrier_name && f.carrier_name.toLowerCase().includes(query)) ||
+        (f.carrier_code && f.carrier_code.toLowerCase().includes(query)) ||
+        (f.flight_number && f.flight_number.toLowerCase().includes(query)) ||
+        (f.departure_time && f.departure_time.toLowerCase().includes(query)) ||
+        (f.stops && f.stops.toLowerCase().includes(query))
+      );
+    }
+
+    // 5. Sorting Engine
+    if (sortBy === 'price_asc') {
+      filtered.sort((a, b) => a.total_fare - b.total_fare);
+    } else if (sortBy === 'best_first') {
+      filtered.sort((a, b) => {
+        if (a.is_top_flight && !b.is_top_flight) return -1;
+        if (!a.is_top_flight && b.is_top_flight) return 1;
+        return a.total_fare - b.total_fare;
+      });
+    } else if (sortBy === 'time_asc') {
+      filtered.sort((a, b) => parseTimeToHour(a.departure_time) - parseTimeToHour(b.departure_time));
+    } else if (sortBy === 'time_desc') {
+      filtered.sort((a, b) => parseTimeToHour(b.departure_time) - parseTimeToHour(a.departure_time));
+    } else if (sortBy === 'duration') {
+      filtered.sort((a, b) => parseDurationMinutes(a.duration) - parseDurationMinutes(b.duration));
+    }
+
+    // Update Display Count & Reset Button
+    document.getElementById('displayedFlightCount').textContent = filtered.length;
+    const isFiltered = activeFlightCategory !== 'all' || airline !== 'all' || timeOfDay !== 'all' || query !== '';
+    const resetBtn = document.getElementById('btnResetFilters');
+    if (resetBtn) resetBtn.classList.toggle('hidden', !isFiltered);
+
+    // Render to DOM
+    const container = document.getElementById('flightsContainer');
+    container.innerHTML = '';
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="glass-card rounded-2xl p-8 text-center text-[#5E718A] border border-[#E2E8F0]">
+          <div class="text-3xl mb-2">✈️</div>
+          <div class="text-sm font-bold text-[#26364A] mb-1">No flights match the selected filters</div>
+          <div class="text-xs">Try switching tabs or resetting the airline and departure time filters.</div>
+          <button type="button" onclick="resetFlightFilters()" class="mt-4 px-4 py-2 rounded-xl bg-[#5B8DEF] text-white text-xs font-semibold cursor-pointer">Reset All Filters</button>
+        </div>
+      `;
+      return;
+    }
+
+    filtered.forEach(f => {
+      const card = document.createElement('div');
+      const borderHighlight = f.is_top_flight 
+        ? 'border-blue-300 ring-1 ring-blue-200 shadow-sm' 
+        : (f.is_cheapest ? 'border-emerald-300 ring-1 ring-emerald-200 shadow-sm' : 'border-[#E2E8F0]');
+      card.className = `glass-card rounded-xl p-5 border ${borderHighlight} hover:border-[#5B8DEF]/60 hover:shadow-md transition duration-200`;
+      
+      const airlineColors = {
+        'IndiGo': 'bg-[#5B8DEF]/15 text-[#3064C4] border border-[#5B8DEF]/35',
+        'Air India': 'bg-red-50 text-red-700 border border-red-200',
+        'Akasa Air': 'bg-orange-50 text-orange-700 border border-orange-200',
+        'Air India Express': 'bg-amber-50 text-amber-800 border border-amber-300',
+        'SpiceJet': 'bg-[#FFD166]/25 text-[#916700] border border-[#FFD166]/50',
+      };
+      const badgeClass = airlineColors[f.carrier_name] || 'bg-[#F1F5F9] text-[#26364A] border border-[#D8E2EC]';
+
+      const gflightsUrl = f.verification_url || `https://www.google.com/travel/flights?q=Flights%20to%20${f.destination}%20from%20${f.origin}%20on%20${currentSearchPayload?.travel_date}%20oneway&hl=en-IN&gl=in`;
+      const mmtUrl = f.makemytrip_url || `https://www.makemytrip.com/flight/search?itinerary=${f.origin}-${f.destination}-${currentSearchPayload?.travel_date}&tripType=O&paxType=A-1_C-0_I-0&intl=false&cabinClass=E`;
+      const airlineUrl = f.airline_portal_url || 'https://www.google.com/travel/flights';
+
+      let specialTag = '';
+      if (f.is_top_flight) {
+        specialTag = `<span class="text-[10px] px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-bold flex items-center gap-1 font-mono">⭐ Google Top Pick</span>`;
+      } else if (f.is_cheapest) {
+        specialTag = `<span class="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-300 font-bold flex items-center gap-1 font-mono">💰 Lowest Fare</span>`;
+      }
+
+      card.innerHTML = `
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-[#F7FAFC] border border-[#E2E8F0] flex items-center justify-center font-bold font-mono text-sm text-[#26364A] shadow-xs">
+              ${f.carrier_code}
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h4 class="text-sm font-bold text-[#26364A]">${f.carrier_name}</h4>
+                <span class="text-[11px] px-2 py-0.5 rounded border ${badgeClass} font-mono font-medium">${f.flight_number}</span>
+                ${specialTag}
+              </div>
+              <div class="text-xs text-[#5E718A] mt-0.5">${f.stops} • Direct Domestic Sector</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-6 text-center">
+            <div>
+              <div class="text-base font-bold text-[#26364A] font-mono">${f.departure_time}</div>
+              <div class="text-[11px] text-[#5E718A] font-mono">${f.origin}</div>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-[10px] text-[#5E718A] font-mono">${f.duration}</span>
+              <div class="w-20 h-px bg-[#D8E2EC] my-1 relative">
+                <div class="w-1.5 h-1.5 rounded-full bg-[#5B8DEF] absolute -top-[2px] right-0"></div>
+              </div>
+              <span class="text-[9px] font-mono uppercase tracking-wider font-semibold ${f.stops === 'Non-stop' ? 'text-[#1A6357]' : 'text-amber-700'}">${f.stops}</span>
+            </div>
+            <div>
+              <div class="text-base font-bold text-[#26364A] font-mono">${f.arrival_time}</div>
+              <div class="text-[11px] text-[#5E718A] font-mono">${f.destination}</div>
+            </div>
+          </div>
+
+          <div class="text-right">
+            <div class="text-2xl font-extrabold text-[#26364A] font-mono">₹${f.total_fare.toLocaleString('en-IN')}</div>
+            <div class="text-[11px] text-[#5E718A]">Total All-Inclusive</div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div class="flex flex-wrap items-center gap-4 text-[#5E718A] font-mono text-[11px]">
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[#5B8DEF]"></span> Base Fare: <strong class="text-[#26364A] font-semibold">₹${f.base_fare.toLocaleString('en-IN')}</strong>
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[#FFD166]"></span> Fuel YQ: <strong class="text-[#26364A] font-semibold">₹${f.fuel_surcharge_yq.toLocaleString('en-IN')}</strong>
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[#8ED1C7]"></span> UDF/Airport: <strong class="text-[#26364A] font-semibold">₹${f.airport_fees_udf_psf.toLocaleString('en-IN')}</strong>
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[#389B8D]"></span> GST (5%): <strong class="text-[#26364A] font-semibold">₹${f.gst.toLocaleString('en-IN')}</strong>
+            </span>
+          </div>
+          <div class="text-[11px] text-[#5E718A] font-mono">
+            Base Ratio: <span class="text-[#3B6DCF] font-bold">${Math.round((f.base_fare / f.total_fare) * 100)}%</span>
+          </div>
+        </div>
+
+        <div class="mt-3 pt-3 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-mono font-semibold text-[#1A6357]">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#8ED1C7]"></span>
+              100% Live Google Flights Data
+            </span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <a href="${gflightsUrl}" target="_blank" rel="noopener noreferrer" 
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 text-[#3064C4] border border-[#5B8DEF]/30 text-xs font-semibold transition hover:scale-[1.02] shadow-xs">
+              <svg class="w-3.5 h-3.5 text-[#5B8DEF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              Verify on Google Flights ↗
+            </a>
+            <a href="${mmtUrl}" target="_blank" rel="noopener noreferrer" 
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-semibold transition hover:scale-[1.02] shadow-xs">
+              <svg class="w-3.5 h-3.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              MakeMyTrip ↗
+            </a>
+            <a href="${airlineUrl}" target="_blank" rel="noopener noreferrer" 
+              class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] text-xs font-medium transition">
+              ${f.carrier_name} Portal ↗
+            </a>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
 
  function toggleInspector() {
  const box = document.getElementById('rawJsonBox');

@@ -180,17 +180,41 @@ class RealtimeFlightScraper:
             soup = BeautifulSoup(r.text, 'html.parser')
             flights = []
             seen = set()
-            for li in soup.find_all('li'):
-                txt = li.get_text(" ", strip=True)
-                if ('₹' in txt or 'Rs' in txt) and ('hr' in txt or 'min' in txt):
+            top_count = 0
+
+            # Google Flights structures its results into lists: Top flights (Best) followed by Other departing flights
+            lists = soup.find_all(['ul', 'ol'])
+            for l in lists:
+                items = l.find_all('li', recursive=False)
+                flight_lis = [item for item in items if '₹' in item.get_text() or 'Rs' in item.get_text()]
+                if not flight_lis:
+                    continue
+
+                parent_heading = l.find_previous(['h2', 'h3', 'h4', 'div'])
+                p_text = parent_heading.get_text(strip=True).lower() if parent_heading else ''
+                is_top_section = ('top flight' in p_text or 'best' in p_text or top_count == 0)
+
+                for li in flight_lis:
+                    txt = li.get_text(" ", strip=True)
                     flight_data = self._parse_card_text(txt, origin, dest, date)
                     if flight_data:
                         key = (flight_data["carrier_name"], flight_data["departure_time"], flight_data["total_fare"])
                         if key not in seen:
                             seen.add(key)
+                            flight_data["is_top_flight"] = is_top_section
+                            flight_data["category"] = "Top Pick (Best)" if is_top_section else "Standard Schedule"
+                            if is_top_section:
+                                top_count += 1
                             flights.append(flight_data)
 
-            flights.sort(key=lambda x: x["total_fare"])
+            # Mark the absolute cheapest fare(s)
+            if flights:
+                min_fare = min(f["total_fare"] for f in flights)
+                for f in flights:
+                    f["is_cheapest"] = (f["total_fare"] == min_fare)
+                    if f["is_cheapest"] and not f.get("is_top_flight"):
+                        f["category"] = "Cheapest Available"
+
             return flights
         except Exception as e:
             print(f"[HTTP SCRAPER] Note: {e}")
