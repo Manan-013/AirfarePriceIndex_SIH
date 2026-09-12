@@ -159,16 +159,25 @@ class RealtimeFlightScraper:
 
     async def _scrape_google_flights_async(self, origin: str, dest: str, date: str):
         async with async_playwright() as p:
-            browser = await p.chromium.launch(
-                headless=True,
-                args=[
-                    "--no-sandbox",
-                    "--disable-setuid-sandbox",
-                    "--disable-dev-shm-usage",
-                    "--disable-blink-features=AutomationControlled",
-                    "--disable-gpu"
-                ]
-            )
+            launch_args = [
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-blink-features=AutomationControlled",
+                "--disable-gpu"
+            ]
+            try:
+                browser = await p.chromium.launch(headless=True, args=launch_args)
+            except Exception as launch_err:
+                err_msg = str(launch_err).lower()
+                if "executable doesn't exist" in err_msg or "playwright install" in err_msg or "not found" in err_msg:
+                    print(f"[PLAYWRIGHT SCRAPER] Chromium missing on host. Automatically downloading binary...")
+                    import subprocess, sys
+                    subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=True)
+                    browser = await p.chromium.launch(headless=True, args=launch_args)
+                else:
+                    raise launch_err
+
             context = await browser.new_context(
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
                 locale="en-IN",
