@@ -412,6 +412,33 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(data, ensure_ascii=False).encode("utf-8"))
             return
 
+        # Debug endpoint to diagnose scraper on Render
+        if parsed.path == "/api/v1/debug/scraper":
+            import traceback, sys
+            debug_info = {
+                "playwright_available": scraper.PLAYWRIGHT_AVAILABLE,
+                "python_version": sys.version,
+                "platform": sys.platform,
+            }
+            try:
+                import asyncio
+                flights = asyncio.run(scraper._scrape_google_flights_async("DEL", "BOM", "2026-09-14"))
+                debug_info["status"] = "success"
+                debug_info["flights_found"] = len(flights)
+                debug_info["sample"] = flights[:2] if flights else []
+            except Exception as e:
+                debug_info["status"] = "error"
+                debug_info["error_type"] = type(e).__name__
+                debug_info["error_msg"] = str(e)
+                debug_info["traceback"] = traceback.format_exc()
+
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(json.dumps(debug_info, indent=2).encode("utf-8"))
+            return
+
         # Default: Serve static files (index.html, styles, scripts)
         return super().do_GET()
 
