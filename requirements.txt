@@ -1,0 +1,13 @@
+# Core Web Automation & Scraping
+playwright>=1.40.0
+
+# Machine Learning & Vectorized Inference
+scikit-learn>=1.3.0
+joblib>=1.3.0
+numpy>=1.24.0
+
+# HTTP Networking & Live Sensor Feeds (METAR & UN GDACS)
+requests>=2.31.0
+
+# Google Gemini GenAI SDK (Optional - for Autonomous AI Situation Room)
+google-genai>=0.1.0

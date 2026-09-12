@@ -15,6 +15,11 @@ import time
 import random
 from datetime import datetime, timedelta
 
+# Ensure current module directory is in sys.path for cloud runners (Render/Railway/Docker)
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+if CURRENT_DIR not in sys.path:
+    sys.path.insert(0, CURRENT_DIR)
+
 # Import our live scraper, statistical index engine, SQLite database, and AI Situation Engine
 from scraper import RealtimeFlightScraper, AIRPORT_NAMES
 from index_engine import AirfareIndexEngine
@@ -23,8 +28,8 @@ from ai_engine import AirfareAIEngine
 from forecasting_engine import forecast_engine
 from live_calamity_tracker import live_calamity_tracker
 
-PORT = 8000
-STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+PORT = int(os.environ.get("PORT", 8000))
+STATIC_DIR = os.path.join(CURRENT_DIR, "static")
 scraper = RealtimeFlightScraper()
 index_engine = AirfareIndexEngine()
 ai_engine = AirfareAIEngine(db, index_engine)
@@ -590,11 +595,11 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 def run_server():
     os.makedirs(STATIC_DIR, exist_ok=True)
-    with ThreadedTCPServer(("", PORT), FlightAPIHandler) as httpd:
+    with ThreadedTCPServer(("0.0.0.0", PORT), FlightAPIHandler) as httpd:
         print(f"\n============================================================")
         print(f"  [+] AUTO-UPDATING REAL-TIME FLIGHT FETCHER RUNNING")
-        print(f"  [>] URL: http://localhost:{PORT}")
-        print(f"  [>] Live Pulse Stream: http://localhost:{PORT}/api/v1/live/pulse")
+        print(f"  [>] URL: http://0.0.0.0:{PORT}")
+        print(f"  [>] Live Pulse Stream: http://0.0.0.0:{PORT}/api/v1/live/pulse")
         print(f"============================================================\n")
         try:
             httpd.serve_forever()

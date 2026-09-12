@@ -18,7 +18,6 @@ import json
 import sqlite3
 import math
 import numpy as np
-import pandas as pd
 from datetime import datetime, date, timedelta
 from sklearn.ensemble import RandomForestRegressor
 import joblib

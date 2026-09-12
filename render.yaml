@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: mospi-airfare-index
+    runtime: python
+    region: sin
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python airfare_index/live_fetcher/server.py
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
