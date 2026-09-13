@@ -13,9 +13,13 @@
 *.db
 *.sqlite
 *.sqlite3
+*.db-shm
+*.db-wal
 **/*.db
 **/*.sqlite
 **/*.sqlite3
+**/*.db-shm
+**/*.db-wal
 airfare_index.db
 airfare_cpi.db
 
