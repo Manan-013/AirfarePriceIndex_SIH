@@ -1,0 +1,93 @@
+{
+  "id": "/?source=pwa",
+  "name": "MoSPI Real-Time Airfare Price Index (APIx)",
+  "short_name": "APIx Index",
+  "description": "High-Frequency DGCA Airfare Price Index, Real-Time CPI Augmentation & RBI Inflation Feed - SIH 2026 PS 26056",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "window-controls-overlay",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#F7FAFC",
+  "theme_color": "#26364A",
+  "categories": [
+    "finance",
+    "productivity",
+    "government",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "563x563",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Telemetry",
+      "short_name": "Telemetry",
+      "description": "View live high-frequency flight tariff ticker and indices",
+      "url": "/#liveTickerBar",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Flight Fare Search",
+      "short_name": "Search",
+      "description": "Search real-time fares across pan-India airline carriers",
+      "url": "/#searchFlightCard",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Econometric Matrix",
+      "short_name": "Matrix",
+      "description": "DGCA 20-route fare monitoring matrix and surge radar",
+      "url": "/#matrixCard",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

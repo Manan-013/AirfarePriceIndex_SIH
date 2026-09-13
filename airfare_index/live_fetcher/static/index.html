@@ -5,6 +5,14 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>MoSPI Real-Time Airfare Price Index (APIx) | SIH 26056</title>
  <link rel="icon" type="image/png" href="/logo.png">
+	<!-- Progressive Web App Meta & Manifest -->
+	<link rel="manifest" href="/manifest.json">
+	<meta name="theme-color" content="#26364A">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="default">
+	<meta name="apple-mobile-web-app-title" content="APIx Index">
+	<link rel="apple-touch-icon" href="/apple-touch-icon.png">
  <script src="https://cdn.tailwindcss.com"></script>
  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
  <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -144,6 +152,16 @@
 				<button onclick="openExportModal()" class="px-3.5 py-1.5 rounded-xl border border-[#5B8DEF]/40 bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 active:bg-[#5B8DEF]/30 text-[#3064C4] text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
 					<span>Export CSV / NSO Feed</span>
+				</button>
+				<!-- Offline Cache Indicator (shown when connection is offline) -->
+				<div id="offlineIndicator" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-300 text-amber-800 text-xs font-mono font-semibold shadow-2xs">
+					<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+					<span>Offline Cache</span>
+				</div>
+				<!-- PWA Install App Button (revealed when installable) -->
+				<button id="pwaInstallBtn" onclick="installPWAApp()" class="hidden px-3.5 py-1.5 rounded-xl border border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 active:bg-emerald-500/30 text-emerald-700 text-xs font-semibold transition items-center gap-1.5 shadow-xs cursor-pointer">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+					<span>Install App</span>
 				</button>
 			</div>
 		</div>
@@ -4037,11 +4055,83 @@
  return;
  }
 
- const filtered = latestForecastData.all_routes.filter(r => r.route.includes(query));
- renderForecastTable(filtered);
- }
+ 		const filtered = latestForecastData.all_routes.filter(r => r.route.includes(query));
+		renderForecastTable(filtered);
+	}
 
- </script>
+	// ==========================================
+	// PROGRESSIVE WEB APP (PWA) LIFECYCLE & CACHE
+	// ==========================================
+	let deferredInstallPrompt = null;
+
+	if ('serviceWorker' in navigator) {
+		window.addEventListener('load', () => {
+			navigator.serviceWorker.register('/sw.js', { scope: '/' })
+				.then((reg) => {
+					console.log('[APIx PWA] Service Worker registered, scope:', reg.scope);
+				})
+				.catch((err) => {
+					console.warn('[APIx PWA] Service Worker registration failed:', err);
+				});
+		});
+	}
+
+	// Capture install prompt event to trigger from our custom button
+	window.addEventListener('beforeinstallprompt', (e) => {
+		e.preventDefault();
+		deferredInstallPrompt = e;
+		const installBtn = document.getElementById('pwaInstallBtn');
+		if (installBtn) {
+			installBtn.classList.remove('hidden');
+			installBtn.classList.add('flex');
+		}
+	});
+
+	window.addEventListener('appinstalled', () => {
+		console.log('[APIx PWA] App installed successfully');
+		deferredInstallPrompt = null;
+		const installBtn = document.getElementById('pwaInstallBtn');
+		if (installBtn) {
+			installBtn.classList.add('hidden');
+			installBtn.classList.remove('flex');
+		}
+	});
+
+	async function installPWAApp() {
+		if (!deferredInstallPrompt) return;
+		deferredInstallPrompt.prompt();
+		try {
+			const choiceResult = await deferredInstallPrompt.userChoice;
+			console.log('[APIx PWA] User install choice:', choiceResult.outcome);
+		} catch (err) {
+			console.warn('[APIx PWA] Error during prompt:', err);
+		}
+		deferredInstallPrompt = null;
+		const installBtn = document.getElementById('pwaInstallBtn');
+		if (installBtn) {
+			installBtn.classList.add('hidden');
+			installBtn.classList.remove('flex');
+		}
+	}
+
+	// Dynamic Online / Offline status notification
+	function updateNetworkStatus() {
+		const offlineBadge = document.getElementById('offlineIndicator');
+		if (offlineBadge) {
+			if (navigator.onLine) {
+				offlineBadge.classList.add('hidden');
+				offlineBadge.classList.remove('flex');
+			} else {
+				offlineBadge.classList.remove('hidden');
+				offlineBadge.classList.add('flex');
+			}
+		}
+	}
+	window.addEventListener('online', updateNetworkStatus);
+	window.addEventListener('offline', updateNetworkStatus);
+	updateNetworkStatus();
+
+	</script>
 
  <!-- Export NSO / RBI Statistical Datasets Modal -->
  <div id="exportModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">

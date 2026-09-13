@@ -227,9 +227,42 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
 
         # Favicon handler
         if parsed.path == "/favicon.ico":
+            fav_path = os.path.join(STATIC_DIR, "favicon.ico")
+            if os.path.exists(fav_path):
+                self.send_response(200)
+                self.send_header("Content-Type", "image/x-icon")
+                self.end_headers()
+                with open(fav_path, "rb") as f:
+                    self.wfile.write(f.read())
+                return
             self.send_response(204)
             self.end_headers()
             return
+
+        # PWA Web App Manifest
+        if parsed.path == "/manifest.json":
+            manifest_path = os.path.join(STATIC_DIR, "manifest.json")
+            if os.path.exists(manifest_path):
+                self.send_response(200)
+                self.send_header("Content-Type", "application/manifest+json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                with open(manifest_path, "rb") as f:
+                    self.wfile.write(f.read())
+                return
+
+        # PWA Service Worker script
+        if parsed.path == "/sw.js":
+            sw_path = os.path.join(STATIC_DIR, "sw.js")
+            if os.path.exists(sw_path):
+                self.send_response(200)
+                self.send_header("Content-Type", "application/javascript; charset=utf-8")
+                self.send_header("Service-Worker-Allowed", "/")
+                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                self.end_headers()
+                with open(sw_path, "rb") as f:
+                    self.wfile.write(f.read())
+                return
 
         # API: Real-Time Live Stream Pulse (High-Frequency Feed)
         if parsed.path == "/api/v1/live/pulse":
