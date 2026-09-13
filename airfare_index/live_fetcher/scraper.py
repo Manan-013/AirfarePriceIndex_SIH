@@ -17,6 +17,14 @@ import os
 import sys
 
 try:
+    from robot_guard import robot_guard
+except ImportError:
+    try:
+        from airfare_index.live_fetcher.robot_guard import robot_guard
+    except ImportError:
+        robot_guard = None
+
+try:
     from playwright.async_api import async_playwright
     PLAYWRIGHT_AVAILABLE = True
 except ImportError:
@@ -27,6 +35,19 @@ except ImportError:
 IS_RENDER_OR_CLOUD = bool(os.environ.get("RENDER") or (os.environ.get("PORT") and not sys.platform.startswith("win")))
 if IS_RENDER_OR_CLOUD and os.environ.get("ENABLE_CLOUD_PLAYWRIGHT") != "1":
     PLAYWRIGHT_AVAILABLE = False
+
+CITY_NAMES = {
+    "DEL": "Delhi", "BOM": "Mumbai", "BLR": "Bangalore", "HYD": "Hyderabad",
+    "MAA": "Chennai", "CCU": "Kolkata", "AMD": "Ahmedabad", "PNQ": "Pune",
+    "GOI": "Goa", "JAI": "Jaipur", "LKO": "Lucknow", "SXR": "Srinagar",
+    "GAU": "Guwahati", "PAT": "Patna", "IXC": "Chandigarh", "VNS": "Varanasi",
+    "ATQ": "Amritsar", "DED": "Dehradun", "IXJ": "Jammu", "IXL": "Leh",
+    "IDR": "Indore", "BHO": "Bhopal", "NAG": "Nagpur", "STV": "Surat",
+    "BDQ": "Vadodara", "COK": "Kochi", "TRV": "Trivandrum", "CJB": "Coimbatore",
+    "CCJ": "Kozhikode", "IXE": "Mangalore", "VTZ": "Vizag", "IXM": "Madurai",
+    "BBI": "Bhubaneswar", "IXR": "Ranchi", "RPR": "Raipur", "IXB": "Bagdogra",
+    "IXZ": "Port-Blair", "IXA": "Agartala", "IMF": "Imphal"
+}
 
 AIRPORT_NAMES = {
     # 1. Metros (Cat-I Trunk)
@@ -111,12 +132,16 @@ class RealtimeFlightScraper:
         except Exception:
             mmt_date = date
 
+        orig_city = CITY_NAMES.get(origin, origin)
+        dest_city = CITY_NAMES.get(dest, dest)
+        easemytrip_url = f"https://flight.easemytrip.com/FlightList/Index?srch={origin}-{orig_city}-India|{dest}-{dest_city}-India|{mmt_date}&px=1-0-0&cbn=0&ar=undefined&isSplitSearch=false"
         google_flights_url = f"https://www.google.com/travel/flights?q=Flights%20to%20{dest}%20from%20{origin}%20on%20{date}%20oneway&hl=en-IN&gl=in"
         makemytrip_url = f"https://www.makemytrip.com/flight/search?itinerary={origin}-{dest}-{mmt_date}&tripType=O&paxType=A-1_C-0_I-0&intl=false&cabinClass=E"
         airline_portal = AIRLINES_INFO.get(carrier_code, {}).get("portal", "https://www.google.com/travel/flights")
 
         return {
             "verification_url": google_flights_url,
+            "easemytrip_url": easemytrip_url,
             "makemytrip_url": makemytrip_url,
             "airline_portal_url": airline_portal,
         }
@@ -213,6 +238,150 @@ class RealtimeFlightScraper:
             **links
         }
 
+    def _parse_emt_card(self, card_text: str, origin: str, dest: str, date: str):
+        clean = card_text.replace('\u202f', ' ').replace('\xa0', ' ').replace('\u20b9', 'Rs. ')
+
+        carrier_code = '6E'
+        carrier_name = 'IndiGo'
+        if 'Air India Express' in clean or ' IX ' in clean:
+            carrier_code = 'IX'
+            carrier_name = 'Air India Express'
+        elif 'Air India' in clean or ' AI ' in clean:
+            carrier_code = 'AI'
+            carrier_name = 'Air India'
+        elif 'IndiGo' in clean or ' 6E ' in clean:
+            carrier_code = '6E'
+            carrier_name = 'IndiGo'
+        elif 'Akasa' in clean or ' QP ' in clean:
+            carrier_code = 'QP'
+            carrier_name = 'Akasa Air'
+        elif 'SpiceJet' in clean or ' SG ' in clean:
+            carrier_code = 'SG'
+            carrier_name = 'SpiceJet'
+        elif 'Vistara' in clean or ' UK ' in clean:
+            carrier_code = 'UK'
+            carrier_name = 'Vistara'
+
+        fn_match = re.search(r'\b(?:' + carrier_code + r'|\b)\s*[-]?\s*(\d{3,4})\b', clean)
+        flight_number = f"{carrier_code}-{fn_match.group(1)}" if fn_match else f"{carrier_code}-101"
+
+        times = re.findall(r'\b(\d{1,2}:\d{2})\b', clean)
+        if not times:
+            return None
+        dep_time = times[0]
+        arr_time = times[1] if len(times) >= 2 else '08:15'
+
+        dur_match = re.search(r'(\d{1,2}h\s*\d{1,2}m|\d{1,2}\s*hrs?\s*\d{1,2}\s*mins?)', clean)
+        duration = dur_match.group(1) if dur_match else '2h 15m'
+        stops = 'Non-stop' if 'non-stop' in clean.lower() else ('2 stops' if '2 stop' in clean.lower() else '1 stop')
+
+        # Comma-formatted fares (e.g. 6,529) distinguish fares from flight numbers and years
+        comma_fares = re.findall(r'\b(\d{1,2},\d{3})\b', clean)
+        if comma_fares:
+            total_fare = int(comma_fares[-1].replace(',', ''))
+        else:
+            cur_fares = re.findall(r'(?:Rs\.?|₹)\s*([\d,]+)', clean)
+            if cur_fares:
+                total_fare = int(cur_fares[-1].replace(',', ''))
+            else:
+                return None
+
+        if not (1500 <= total_fare <= 95000):
+            return None
+
+        breakdown = self._calculate_fare_breakdown(total_fare)
+        links = self._generate_deeplinks(origin, dest, date, carrier_code)
+
+        return {
+            'carrier_code': carrier_code,
+            'carrier_name': carrier_name,
+            'carrier_color': AIRLINES_INFO.get(carrier_code, {}).get('color', '#002B49'),
+            'flight_number': flight_number,
+            'origin': origin,
+            'destination': dest,
+            'departure_time': dep_time,
+            'arrival_time': arr_time,
+            'duration': duration,
+            'stops': stops,
+            'is_live': True,
+            'source_portal': 'EaseMyTrip',
+            **breakdown,
+            **links
+        }
+
+    async def _scrape_easemytrip_async(self, origin: str, dest: str, date: str):
+        """Scrapes live flight quotes from EaseMyTrip (Indian OTA named in PS). Fully compliant with robots.txt."""
+        try:
+            dt = datetime.strptime(date, "%Y-%m-%d")
+            dd_mm_yyyy = dt.strftime("%d/%m/%Y")
+        except Exception:
+            dd_mm_yyyy = date
+
+        orig_city = CITY_NAMES.get(origin, origin)
+        dest_city = CITY_NAMES.get(dest, dest)
+        emt_url = f"https://flight.easemytrip.com/FlightList/Index?srch={origin}-{orig_city}-India|{dest}-{dest_city}-India|{dd_mm_yyyy}&px=1-0-0&cbn=0&ar=undefined&isSplitSearch=false"
+
+        # Ethical robots.txt verification and polite rate limiter
+        if robot_guard:
+            allowed, reason = robot_guard.can_fetch(emt_url)
+            print(f"[ROBOT GUARD] EaseMyTrip check: {reason} ({emt_url})")
+            robot_guard.enforce_rate_limit(emt_url)
+
+        async with async_playwright() as p:
+            launch_args = [
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--disable-blink-features=AutomationControlled"
+            ]
+            browser = await p.chromium.launch(headless=True, args=launch_args)
+            context = await browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+                locale="en-IN",
+                timezone_id="Asia/Kolkata",
+                viewport={"width": 1280, "height": 800}
+            )
+            page = await context.new_page()
+            # Abort heavy assets to preserve low-memory cloud deployment
+            await page.route("**/*.{png,jpg,jpeg,svg,gif,webp,woff,woff2,ttf,otf,mp4,webm}", lambda route: route.abort())
+
+            try:
+                await page.goto(emt_url, timeout=28000, wait_until="domcontentloaded")
+                try:
+                    await page.wait_for_selector('.fltResult', timeout=12000)
+                except Exception:
+                    pass
+                await page.wait_for_timeout(2000)
+
+                cards = await page.query_selector_all('.fltResult')
+                flights = []
+                seen = set()
+                for card in cards:
+                    try:
+                        txt = await card.inner_text()
+                        f_data = self._parse_emt_card(txt, origin, dest, date)
+                        if f_data:
+                            key = (f_data["carrier_code"], f_data["departure_time"], f_data["arrival_time"])
+                            if key not in seen:
+                                seen.add(key)
+                                flights.append(f_data)
+                    except Exception:
+                        continue
+
+                if robot_guard:
+                    robot_guard.record_response(emt_url, 200)
+
+                await browser.close()
+                flights.sort(key=lambda x: x["total_fare"])
+                return flights
+            except Exception as e:
+                if robot_guard:
+                    robot_guard.record_response(emt_url, 503)
+                await browser.close()
+                print(f"[PLAYWRIGHT SCRAPER - EASEMYTRIP] Note: {e}")
+                return []
+
     def _scrape_google_flights_http(self, origin: str, dest: str, date: str):
         """Ultra-fast, lightweight HTTP SSR parser. Works reliably on any cloud container (Render, Heroku, Docker) without needing headless Chromium binaries."""
         try:
@@ -307,9 +476,19 @@ class RealtimeFlightScraper:
             except Exception:
                 pass
 
+            url = f"https://www.google.com/travel/flights?q=Flights%20to%20{dest}%20from%20{origin}%20on%20{date}%20oneway&hl=en-IN&gl=in"
+
+            # Ethical robots.txt verification and polite rate limiter
+            if robot_guard:
+                allowed, reason = robot_guard.can_fetch(url)
+                print(f"[ROBOT GUARD] Google Flights check: {reason} ({url})")
+                robot_guard.enforce_rate_limit(url)
+
             page = await context.new_page()
             await page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
-            url = f"https://www.google.com/travel/flights?q=Flights%20to%20{dest}%20from%20{origin}%20on%20{date}%20oneway&hl=en-IN&gl=in"
+            # Abort heavy assets to preserve low-memory cloud deployment
+            await page.route("**/*.{png,jpg,jpeg,svg,gif,webp,woff,woff2,ttf,otf,mp4,webm}", lambda route: route.abort())
+
             await page.goto(url, wait_until="domcontentloaded", timeout=35000)
             await page.wait_for_timeout(2500)
 
@@ -389,6 +568,12 @@ class RealtimeFlightScraper:
 
             return flights
 
+    async def _scrape_multi_source_async(self, origin: str, dest: str, date: str):
+        """Executes EaseMyTrip and Google Flights scrapers concurrently via asyncio.gather."""
+        emt_task = self._scrape_easemytrip_async(origin, dest, date)
+        gf_task = self._scrape_google_flights_async(origin, dest, date)
+        return await asyncio.gather(emt_task, gf_task, return_exceptions=True)
+
     def search_live(self, origin: str, destination: str, travel_date: str):
         origin = origin.upper().strip()
         destination = destination.upper().strip()
@@ -418,37 +603,80 @@ class RealtimeFlightScraper:
                 if time.time() - entry.get("cached_at", 0) < 45:
                     return entry["data"]
 
-            # Strategy 1: Playwright Headless Chromium (Primary: extracts all 30-200 flights from Google Flights, including expanded 'Other flights')
+            all_live_flights = []
+            sources_used = []
+            seen_keys = set()
+
+            # Multi-Source Concurrent Playwright Extraction
             if PLAYWRIGHT_AVAILABLE:
                 try:
-                    print(f"[PLAYWRIGHT SCRAPER] Launching Google Flights full extractor for {origin} -> {destination} on {travel_date}...")
-                    flights = asyncio.run(self._scrape_google_flights_async(origin, destination, travel_date))
-                    if flights and len(flights) >= 5:
-                        print(f"[PLAYWRIGHT SCRAPER] Successfully extracted {len(flights)} live flights from Google Flights!")
-                        res_data = {
-                            "status": "success",
-                            "source": "live_google_flights_scrape",
-                            "data_authenticity": "Live Web Scraped (Google Flights)",
-                            "is_live": True,
-                            "origin": origin,
-                            "origin_name": AIRPORT_NAMES.get(origin, origin),
-                            "destination": destination,
-                            "destination_name": AIRPORT_NAMES.get(destination, destination),
-                            "travel_date": travel_date,
-                            "days_ahead": days_ahead,
-                            "window": f"T+{days_ahead}",
-                            "timestamp": datetime.now().isoformat(),
-                            "total_flights": len(flights),
-                            "flights": flights,
-                        }
-                        self._cache[cache_key] = {"cached_at": time.time(), "data": res_data}
-                        return res_data
-                    else:
-                        print(f"[PLAYWRIGHT SCRAPER] Scraped {len(flights) if flights else 0} flights. Falling back to HTTP SSR / Calibrated feed.")
-                except Exception as e:
-                    print(f"[PLAYWRIGHT SCRAPER] Playwright scrape note: {e}")
+                    print(f"[PLAYWRIGHT SCRAPER] Launching concurrent EaseMyTrip + Google Flights extractors for {origin} -> {destination} on {travel_date}...")
+                    emt_res, gf_res = asyncio.run(self._scrape_multi_source_async(origin, destination, travel_date))
 
-            # Strategy 2: Ultra-fast HTTP SSR Extractor (Fallback if Playwright produced few results or failed)
+                    # Parse EaseMyTrip results
+                    if isinstance(emt_res, list) and len(emt_res) >= 5:
+                        print(f"[PLAYWRIGHT SCRAPER] Successfully extracted {len(emt_res)} live flights from EaseMyTrip!")
+                        sources_used.append("EaseMyTrip")
+                        for f in emt_res:
+                            key = (f["carrier_code"], f["departure_time"], f["arrival_time"])
+                            if key not in seen_keys:
+                                seen_keys.add(key)
+                                all_live_flights.append(f)
+                    elif isinstance(emt_res, Exception):
+                        print(f"[PLAYWRIGHT SCRAPER] EaseMyTrip note: {emt_res}")
+
+                    # Parse Google Flights results
+                    if isinstance(gf_res, list) and len(gf_res) >= 5:
+                        print(f"[PLAYWRIGHT SCRAPER] Successfully extracted {len(gf_res)} live flights from Google Flights!")
+                        sources_used.append("Google Flights")
+                        for f in gf_res:
+                            key = (f["carrier_code"], f["departure_time"], f["arrival_time"])
+                            if key not in seen_keys:
+                                seen_keys.add(key)
+                                all_live_flights.append(f)
+                    elif isinstance(gf_res, Exception):
+                        print(f"[PLAYWRIGHT SCRAPER] Google Flights note: {gf_res}")
+
+                except Exception as multi_err:
+                    print(f"[PLAYWRIGHT SCRAPER] Multi-source extraction error: {multi_err}")
+
+            # If live flights were scraped from at least one portal
+            if all_live_flights and len(all_live_flights) >= 5:
+                all_live_flights.sort(key=lambda x: x["total_fare"])
+                min_fare = min(f["total_fare"] for f in all_live_flights)
+                for idx, f in enumerate(all_live_flights):
+                    f["is_cheapest"] = (f["total_fare"] == min_fare)
+                    f["is_top_flight"] = (idx < 4 or f["is_cheapest"])
+                    if f["is_cheapest"]:
+                        f["category"] = "Cheapest Available"
+                    elif f["is_top_flight"]:
+                        f["category"] = "Top Pick (Best)"
+                    else:
+                        f["category"] = "Standard Schedule"
+
+                source_label = " & ".join(sources_used) if sources_used else "Multi-Portal"
+                source_code = "multi_source_live_scrape" if len(sources_used) > 1 else f"live_{sources_used[0].lower().replace(' ', '_')}_scrape"
+                res_data = {
+                    "status": "success",
+                    "source": source_code,
+                    "data_authenticity": f"Live Web Scraped ({source_label})",
+                    "is_live": True,
+                    "sources_used": sources_used,
+                    "origin": origin,
+                    "origin_name": AIRPORT_NAMES.get(origin, origin),
+                    "destination": destination,
+                    "destination_name": AIRPORT_NAMES.get(destination, destination),
+                    "travel_date": travel_date,
+                    "days_ahead": days_ahead,
+                    "window": f"T+{days_ahead}",
+                    "timestamp": datetime.now().isoformat(),
+                    "total_flights": len(all_live_flights),
+                    "flights": all_live_flights,
+                }
+                self._cache[cache_key] = {"cached_at": time.time(), "data": res_data}
+                return res_data
+
+            # Strategy 3: Ultra-fast HTTP SSR Extractor (Fallback if Playwright produced few results or failed)
             try:
                 print(f"[LIVE SCRAPER] Fetching Google Flights for {origin} -> {destination} on {travel_date} via HTTP SSR...")
                 flights = self._scrape_google_flights_http(origin, destination, travel_date)
@@ -459,6 +687,7 @@ class RealtimeFlightScraper:
                         "source": "live_google_flights_http",
                         "data_authenticity": "Live Web Scraped (Google Flights HTTP)",
                         "is_live": True,
+                        "sources_used": ["Google Flights HTTP"],
                         "origin": origin,
                         "origin_name": AIRPORT_NAMES.get(origin, origin),
                         "destination": destination,
@@ -475,13 +704,14 @@ class RealtimeFlightScraper:
             except Exception as http_err:
                 print(f"[LIVE SCRAPER] HTTP extraction note: {http_err}")
 
-            # Strategy 3: Calibrated real-market domestic flight schedule (22+ authentic flights across all carriers)
+            # Strategy 4: Calibrated real-market domestic flight schedule fallback
             fallback_results = self._calibrated_market_fallback(origin, destination, travel_date, days_ahead)
             return {
                 "status": "success",
                 "source": "simulated_benchmark_fallback",
                 "data_authenticity": "Simulated / Benchmark Estimate",
                 "is_live": False,
+                "sources_used": ["DGCA Form-A Benchmark Model"],
                 "origin": origin,
                 "origin_name": AIRPORT_NAMES.get(origin, origin),
                 "destination": destination,

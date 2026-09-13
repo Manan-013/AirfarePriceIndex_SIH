@@ -8,7 +8,7 @@ Features:
 3. Plain-language, jargon-free synthesis for MoSPI & RBI decision-makers.
 4. Instant 1-click English and Hindi (शुद्ध हिन्दी) multilingual toggle.
 5. Interactive Conversational Q&A grounded 100% in live SQLite data.
-6. Powered by Gemini 3.7 Flash (with model fallback to gemini-2.5-flash and deterministic offline generator).
+6. Powered by Gemini 3.6 Flash (with automated fallback to gemini-flash-latest and deterministic offline generator).
 """
 
 import os
@@ -399,7 +399,7 @@ class AirfareAIEngine:
 
     def generate_gemini_briefing(self, facts):
         """
-        Invokes Gemini 3.7 Flash (with fallback to gemini-2.5-flash) to synthesize
+        Invokes Gemini 3.6 Flash (with fallback to gemini-flash-latest) to synthesize
         an executive MoSPI/RBI situation brief in English and Hindi.
         """
         if not self.gemini_client:

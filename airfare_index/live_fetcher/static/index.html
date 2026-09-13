@@ -446,7 +446,7 @@
  <button onclick="openApiKeyModal()" 
  class="w-full py-2 px-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] hover:bg-[#F1F5F9] text-[#26364A] text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer">
  <span></span>
- <span>Gemini 3.7 Configuration</span>
+ <span>Gemini AI Configuration</span>
  </button>
  </div>
  </div>
@@ -2707,7 +2707,7 @@
 
       const provenancePill = f.is_live === false
         ? `<span class="text-[10px] px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold" title="Calibrated DGCA benchmark estimate">⚠️ Benchmark</span>`
-        : `<span class="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono font-bold" title="Verified live web scraped quote">🟢 Live</span>`;
+        : `<span class="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono font-bold" title="Verified live web scraped quote from ${f.source_portal || 'OTA'}">🟢 ${f.source_portal || 'Live'}</span>`;
 
       card.innerHTML = `
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -2779,6 +2779,11 @@
               <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#389B8D]"></span>GST: <strong class="text-[#26364A]">₹${f.gst.toLocaleString('en-IN')}</strong></span>
             </div>
             <div class="flex items-center gap-2">
+              ${f.easemytrip_url ? `
+              <a href="${f.easemytrip_url}" target="_blank" rel="noopener noreferrer" 
+                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition font-mono shadow-2xs" title="Verify live fare on EaseMyTrip">
+                EaseMyTrip ↗
+              </a>` : ''}
               <a href="${gflightsUrl}" target="_blank" rel="noopener noreferrer" 
                 class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 text-[#3064C4] border border-[#5B8DEF]/30 text-xs font-bold transition font-mono shadow-2xs">
                 Google Flights ↗
@@ -3735,7 +3740,7 @@
  const statusEl = document.getElementById('modalStatusMsg');
  const submitBtn = document.getElementById('saveKeySubmitBtn');
  const apiKey = input.value.trim();
- const model = modelSelect ? modelSelect.value : 'gemini-3.7-flash';
+ const model = modelSelect ? modelSelect.value : 'gemini-3.6-flash';
 
  if (!apiKey) {
  statusEl.className = 'p-2.5 rounded-xl text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200';
@@ -3790,7 +3795,7 @@
  const res = await fetch('/api/v1/ai/config', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ api_key: '', model: 'gemini-3.7-flash' })
+ body: JSON.stringify({ api_key: '', model: 'gemini-3.6-flash' })
  });
  const data = await res.json();
  const keyBtnText = document.getElementById('aiConfigKeyText');

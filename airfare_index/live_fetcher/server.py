@@ -27,6 +27,7 @@ from database import db
 from ai_engine import AirfareAIEngine
 from forecasting_engine import forecast_engine
 from live_calamity_tracker import live_calamity_tracker
+from robot_guard import robot_guard
 
 PORT = int(os.environ.get("PORT", 8000))
 STATIC_DIR = os.path.join(CURRENT_DIR, "static")
@@ -389,6 +390,16 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(data, indent=2).encode("utf-8"))
             return
 
+        # API: Ethical Robots.txt & Rate-Limiter Compliance Audit Log
+        if parsed.path == "/api/v1/compliance/robots":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            data = robot_guard.get_compliance_status() if robot_guard else {"status": "unavailable"}
+            self.wfile.write(json.dumps(data, indent=2).encode("utf-8"))
+            return
+
         
         # API: Export MoSPI Daily Sector Airfare Bulletin (CSV)
         if parsed.path == "/api/v1/export/daily":
@@ -618,7 +629,7 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
                 params = {k: v[0] for k, v in params.items()}
 
             api_key = params.get("api_key", "")
-            model = params.get("model", "gemini-3.7-flash")
+            model = params.get("model", "gemini-3.6-flash")
             success, message = ai_engine.configure_gemini(api_key, model)
             status_data = ai_engine.get_config_status()
             self.send_response(200 if success else 400)
