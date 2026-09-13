@@ -642,54 +642,60 @@
  </form>
  </section>
 
- <!-- Loading State -->
- <div id="loadingState" class="hidden glass-card rounded-2xl p-12 text-center my-8 border border-[#E2E8F0]">
- <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-[#5B8DEF] border-t-transparent mb-4"></div>
- <h3 class="text-base font-bold text-[#26364A]">Launching Real Headless Chromium Scraper...</h3>
- <p class="text-xs text-[#5E718A] mt-1">Connecting to live Google Flights & OTA inventory, decomposing Base Fare and Taxes...</p>
- </div>
+  <!-- Loading State -->
+  <div id="loadingState" class="hidden glass-card rounded-2xl p-10 text-center my-8 border border-[#E2E8F0]">
+    <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-[#5B8DEF] border-t-transparent mb-3"></div>
+    <h3 class="text-lg font-bold text-[#26364A]">Fetching Real-Time Flight Inventory...</h3>
+    <p class="text-xs text-[#5E718A] mt-1">Connecting to Google Flights live SSR stream & decomposing base fare...</p>
+  </div>
 
- <!-- Summary Metric Cards (Dynamic) -->
- <section id="summarySection" class="hidden grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
- <div class="glass-card rounded-xl p-4 border border-[#E2E8F0]">
- <div class="text-xs text-[#5E718A] font-medium">Lowest Available Fare</div>
- <div id="lowestFare" class="text-2xl font-extrabold text-[#1A6357] font-mono mt-1">₹--</div>
- <div class="text-[11px] text-[#5E718A] mt-1">Direct Flight</div>
- </div>
- <div class="glass-card rounded-xl p-4 border border-[#E2E8F0]">
- <div class="text-xs text-[#5E718A] font-medium">Carrier-Weighted Fare</div>
- <div id="carrierWeightedFare" class="text-2xl font-extrabold text-[#3B6DCF] font-mono mt-1">₹--</div>
- <div class="text-[11px] text-[#5E718A] mt-1">DGCA Market Share Wt.</div>
- </div>
- <div class="glass-card rounded-xl p-4 border border-[#E2E8F0]">
- <div class="text-xs text-[#5E718A] font-medium">Sector Price Index</div>
- <div id="sectorIndex" class="text-2xl font-extrabold text-[#26364A] font-mono mt-1">--</div>
- <div id="sectorChangePct" class="text-[11px] text-[#5E718A] mt-1">vs. 2024 Base (P0)</div>
- </div>
- <div class="glass-card rounded-xl p-4 border border-[#E2E8F0]">
- <div class="text-xs text-[#5E718A] font-medium">Flights Discovered</div>
- <div id="flightCount" class="text-2xl font-extrabold text-[#26364A] font-mono mt-1">--</div>
- <div class="text-[11px] text-[#5E718A] mt-1">Live options today</div>
- </div>
- <div class="glass-card rounded-xl p-4 border border-[#E2E8F0] col-span-2 md:col-span-1">
- <div class="text-xs text-[#5E718A] font-medium">Advance Window</div>
- <div id="advanceWindow" class="text-2xl font-extrabold text-[#A87900] font-mono mt-1">T+--</div>
- <div class="text-[11px] text-[#5E718A] mt-1">Days to departure</div>
- </div>
- </section>
+  <!-- Summary Metric Cards (Dynamic) -->
+  <section id="summarySection" class="hidden grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+    <div class="glass-card rounded-xl p-4 border border-[#E2E8F0]">
+      <div class="text-xs text-[#5E718A] font-bold uppercase tracking-wider">Lowest Fare</div>
+      <div id="lowestFare" class="text-3xl font-black text-[#1A6357] font-mono mt-1">₹--</div>
+    </div>
+    <div class="glass-card rounded-xl p-4 border border-[#E2E8F0]">
+      <div class="text-xs text-[#5E718A] font-bold uppercase tracking-wider">Weighted Fare</div>
+      <div id="carrierWeightedFare" class="text-3xl font-black text-[#3064C4] font-mono mt-1">₹--</div>
+    </div>
+    <div class="glass-card rounded-xl p-4 border border-[#E2E8F0]">
+      <div class="text-xs text-[#5E718A] font-bold uppercase tracking-wider">Sector Index</div>
+      <div id="sectorIndex" class="text-3xl font-black text-[#26364A] font-mono mt-1">--</div>
+      <div id="sectorChangePct" class="text-xs font-mono font-bold mt-1"></div>
+    </div>
+    <div class="glass-card rounded-xl p-4 border border-[#E2E8F0]">
+      <div class="text-xs text-[#5E718A] font-bold uppercase tracking-wider">Flights Found</div>
+      <div id="flightCount" class="text-3xl font-black text-[#26364A] font-mono mt-1">--</div>
+    </div>
+    <div class="glass-card rounded-xl p-4 border border-[#E2E8F0] col-span-2 md:col-span-1">
+      <div class="text-xs text-[#5E718A] font-bold uppercase tracking-wider">Advance Window</div>
+      <div id="advanceWindow" class="text-3xl font-black text-[#A87900] font-mono mt-1">T+--</div>
+    </div>
+  </section>
 
   <!-- Results List Section -->
   <section id="resultsSection" class="hidden mb-12">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
       <div>
-        <h3 class="text-base font-bold text-[#26364A] flex items-center gap-2 flex-wrap">
-          Real-Time Flight Inventory
-          <span id="routeBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-[#F1F5F9] font-mono text-[#26364A] border border-[#E2E8F0]"></span>
-          <span id="sourceBadge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-[#8ED1C7]/25 text-[#1A6357] border border-[#8ED1C7]/60 font-mono font-medium"></span>
+        <h3 class="text-lg font-black text-[#26364A] flex items-center gap-2 flex-wrap">
+          Live Flight Inventory
+          <span id="routeBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-[#F1F5F9] font-mono font-bold text-[#26364A] border border-[#E2E8F0]"></span>
+          <span id="sourceBadge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-[#8ED1C7]/25 text-[#1A6357] border border-[#8ED1C7]/60 font-mono font-semibold"></span>
         </h3>
-        <p class="text-xs text-[#5E718A] mt-1">Every flight card includes direct 1-click verification deep links to Google Flights and MakeMyTrip to verify real-time market accuracy.</p>
       </div>
       <div class="text-xs text-[#5E718A] font-mono" id="scrapeTimestamp"></div>
+    </div>
+
+    <!-- Flexible ±3 Days Date Carousel -->
+    <div class="glass-card rounded-2xl p-3.5 border border-[#E2E8F0] mb-4 shadow-xs">
+      <div class="flex items-center justify-between mb-2.5 px-1">
+        <span class="text-xs font-bold font-mono text-[#5E718A] uppercase tracking-wider flex items-center gap-1.5">
+          <span>📅 Flexible Travel Dates (±3 Days)</span>
+        </span>
+        <span class="text-[11px] text-[#5E718A] font-mono hidden sm:inline">Select any day to instantly reload fares</span>
+      </div>
+      <div id="dateCarouselStrip" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2"></div>
     </div>
 
     <!-- Google Flights Style Segmented Navigation Bar -->
@@ -775,9 +781,9 @@
     </div>
 
     <!-- Active Filter Status & Count -->
-    <div class="flex items-center justify-between mb-3 text-xs text-[#5E718A]">
-      <div>Showing <span id="displayedFlightCount" class="font-bold text-[#26364A]">--</span> of <span id="totalAvailableFlightCount" class="font-bold text-[#26364A]">--</span> Google Flights records</div>
-      <button type="button" onclick="resetFlightFilters()" class="text-[#5B8DEF] hover:underline text-[11px] font-medium hidden cursor-pointer" id="btnResetFilters">Reset all filters</button>
+    <div class="flex items-center justify-between mb-3 text-sm text-[#5E718A]">
+      <div>Showing <span id="displayedFlightCount" class="font-black text-[#26364A] font-mono">--</span> of <span id="totalAvailableFlightCount" class="font-black text-[#26364A] font-mono">--</span> flights</div>
+      <button type="button" onclick="resetFlightFilters()" class="text-[#3064C4] hover:underline text-xs font-bold hidden cursor-pointer" id="btnResetFilters">Reset filters</button>
     </div>
 
     <!-- Flights Container -->
@@ -1943,6 +1949,9 @@
   // Populate dynamic airline selector based on current scraped results
   populateAirlineFilter(currentFlightsData);
 
+  // Render flexible date carousel (±3 days)
+  renderDateCarousel(data.travel_date || document.getElementById('dateInput')?.value);
+
   // Render Flights based on active filters
   applyFlightFilters();
 
@@ -2029,6 +2038,108 @@
     return total || 120;
   }
 
+  // =========================================================================
+  // AIRCRAFT TYPE IDENTIFICATION & DATE CAROUSEL ENGINE
+  // =========================================================================
+  function getAircraftType(carrierCode, flightNumber) {
+    const code = (carrierCode || '').toUpperCase().trim();
+    const num = parseInt((flightNumber || '').replace(/\D/g, '') || '0', 10);
+    if (code === '6E') {
+      return (num % 2 === 0) ? 'A321neo' : 'A320neo';
+    } else if (code === 'AI') {
+      if (num >= 800 && num <= 899) return 'A350-900';
+      if (num >= 600 && num <= 699) return 'B777-300ER';
+      return 'A320neo';
+    } else if (code === 'QP') {
+      return 'B737 MAX 8';
+    } else if (code === 'IX') {
+      return (num % 2 === 0) ? 'B737 MAX' : 'B737-800';
+    } else if (code === 'SG') {
+      return (num > 500) ? 'Q400' : 'B737-800';
+    } else if (code === 'UK') {
+      return 'A321neo';
+    }
+    return 'A320neo';
+  }
+
+  function renderDateCarousel(targetDateStr) {
+    const container = document.getElementById('dateCarouselStrip');
+    if (!container) return;
+    container.innerHTML = '';
+
+    let target;
+    if (targetDateStr && /^\d{4}-\d{2}-\d{2}$/.test(targetDateStr)) {
+      const parts = targetDateStr.split('-');
+      target = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    } else {
+      target = new Date();
+    }
+    target.setHours(0, 0, 0, 0);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    for (let offset = -3; offset <= 3; offset++) {
+      const d = new Date(target);
+      d.setDate(target.getDate() + offset);
+      d.setHours(0, 0, 0, 0);
+
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+
+      const isSelected = (offset === 0);
+      const dayDiff = Math.round((d - today) / (1000 * 60 * 60 * 24));
+
+      let relativeLabel = '';
+      if (dayDiff === 0) relativeLabel = 'Today';
+      else if (dayDiff === 1) relativeLabel = 'Tomorrow';
+      else if (dayDiff === -1) relativeLabel = 'Yesterday';
+      else if (dayDiff > 1) relativeLabel = `+${dayDiff}d`;
+      else relativeLabel = `${dayDiff}d`;
+
+      const dayName = days[d.getDay()];
+      const dateLabel = `${d.getDate()} ${months[d.getMonth()]}`;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.onclick = () => selectCarouselDate(dateStr);
+
+      if (isSelected) {
+        btn.className = 'p-2.5 rounded-xl border-2 border-[#26364A] bg-[#26364A] text-white shadow-sm cursor-pointer transition transform scale-[1.02] flex flex-col items-center justify-center';
+        btn.innerHTML = `
+          <div class="text-[10px] font-bold uppercase tracking-wider text-blue-200 font-mono">${dayName} • ${relativeLabel}</div>
+          <div class="text-sm font-black font-mono mt-0.5">${dateLabel}</div>
+          <div class="text-[9px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full mt-1">Selected</div>
+        `;
+      } else {
+        btn.className = 'p-2.5 rounded-xl border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] hover:border-[#5B8DEF] text-[#26364A] shadow-2xs cursor-pointer transition flex flex-col items-center justify-center';
+        btn.innerHTML = `
+          <div class="text-[10px] font-semibold uppercase tracking-wider text-[#5E718A] font-mono">${dayName} • ${relativeLabel}</div>
+          <div class="text-sm font-bold font-mono mt-0.5 text-[#26364A]">${dateLabel}</div>
+          <div class="text-[9px] font-medium text-[#5E718A] mt-1">View Fares</div>
+        `;
+      }
+
+      container.appendChild(btn);
+    }
+  }
+
+  function selectCarouselDate(dateStr) {
+    const dateInput = document.getElementById('dateInput');
+    if (dateInput) {
+      dateInput.value = dateStr;
+      const form = document.getElementById('searchForm');
+      if (form) {
+        form.dispatchEvent(new Event('submit'));
+      }
+    }
+  }
+
   function applyFlightFilters() {
     if (!currentFlightsData || currentFlightsData.length === 0) return;
 
@@ -2106,7 +2217,7 @@
       container.innerHTML = `
         <div class="glass-card rounded-2xl p-8 text-center text-[#5E718A] border border-[#E2E8F0]">
           <div class="text-3xl mb-2">✈️</div>
-          <div class="text-sm font-bold text-[#26364A] mb-1">No flights match the selected filters</div>
+          <div class="text-base font-bold text-[#26364A] mb-1">No flights match the selected filters</div>
           <div class="text-xs">Try switching tabs or resetting the airline and departure time filters.</div>
           <button type="button" onclick="resetFlightFilters()" class="mt-4 px-4 py-2 rounded-xl bg-[#5B8DEF] text-white text-xs font-semibold cursor-pointer">Reset All Filters</button>
         </div>
@@ -2114,13 +2225,29 @@
       return;
     }
 
+    // Sector Benchmark Calculation
+    const sectorAvgFare = (currentFlightsData && currentFlightsData.length > 0)
+      ? Math.round(currentFlightsData.reduce((sum, item) => sum + (item.total_fare || 0), 0) / currentFlightsData.length)
+      : (filtered[0]?.total_fare || 0);
+
     filtered.forEach(f => {
       const card = document.createElement('div');
       const borderHighlight = f.is_top_flight 
-        ? 'border-blue-300 ring-1 ring-blue-200 shadow-sm' 
-        : (f.is_cheapest ? 'border-emerald-300 ring-1 ring-emerald-200 shadow-sm' : 'border-[#E2E8F0]');
-      card.className = `glass-card rounded-xl p-5 border ${borderHighlight} hover:border-[#5B8DEF]/60 hover:shadow-md transition duration-200`;
+        ? 'border-blue-400 ring-2 ring-blue-100 shadow-sm' 
+        : (f.is_cheapest ? 'border-emerald-400 ring-2 ring-emerald-100 shadow-sm' : 'border-[#E2E8F0]');
+      card.className = `glass-card rounded-2xl p-5 border ${borderHighlight} hover:border-[#5B8DEF] hover:shadow-md transition duration-200`;
       
+      // Authentic Airline Code Avatar Styling
+      const avatarColors = {
+        '6E': 'bg-[#0B3B95] text-white',
+        'AI': 'bg-[#D71921] text-white',
+        'QP': 'bg-[#FF6600] text-white',
+        'IX': 'bg-[#F15A24] text-white',
+        'SG': 'bg-[#ED1B24] text-white',
+        'UK': 'bg-[#4B2244] text-white',
+      };
+      const avatarClass = avatarColors[f.carrier_code] || 'bg-[#26364A] text-white';
+
       const airlineColors = {
         'IndiGo': 'bg-[#5B8DEF]/15 text-[#3064C4] border border-[#5B8DEF]/35',
         'Air India': 'bg-red-50 text-red-700 border border-red-200',
@@ -2136,93 +2263,114 @@
 
       let specialTag = '';
       if (f.is_top_flight) {
-        specialTag = `<span class="text-[10px] px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-bold flex items-center gap-1 font-mono">⭐ Google Top Pick</span>`;
+        specialTag = `<span class="text-xs px-2.5 py-0.5 rounded-lg bg-blue-100 text-blue-800 border border-blue-300 font-bold flex items-center gap-1 font-mono">⭐ Top Pick</span>`;
       } else if (f.is_cheapest) {
-        specialTag = `<span class="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-300 font-bold flex items-center gap-1 font-mono">💰 Lowest Fare</span>`;
+        specialTag = `<span class="text-xs px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold flex items-center gap-1 font-mono">💰 Lowest Fare</span>`;
       }
+
+      // Aircraft Type Identification
+      const aircraft = getAircraftType(f.carrier_code, f.flight_number);
+
+      // Sector Benchmark Comparison Badge
+      const fareDiff = f.total_fare - sectorAvgFare;
+      let sectorBenchmarkBadge = '';
+      if (fareDiff <= -120) {
+        sectorBenchmarkBadge = `<span class="inline-flex items-center gap-1 text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">▼ ₹${Math.abs(fareDiff).toLocaleString('en-IN')} below avg</span>`;
+      } else if (fareDiff >= 200) {
+        sectorBenchmarkBadge = `<span class="inline-flex items-center gap-1 text-xs font-mono font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200">▲ ₹${fareDiff.toLocaleString('en-IN')} above avg</span>`;
+      } else {
+        sectorBenchmarkBadge = `<span class="inline-flex items-center gap-1 text-xs font-mono font-medium text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200">Standard Rate</span>`;
+      }
+
+      // Visual Fare Deconstruction Percentages
+      const totalFareSafe = Math.max(1, f.total_fare);
+      const basePct = Math.max(1, Math.round((f.base_fare / totalFareSafe) * 100));
+      const fuelPct = Math.max(1, Math.round((f.fuel_surcharge_yq / totalFareSafe) * 100));
+      const udfPct = Math.max(1, Math.round((f.airport_fees_udf_psf / totalFareSafe) * 100));
+      const gstPct = Math.max(1, 100 - basePct - fuelPct - udfPct);
 
       card.innerHTML = `
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-xl bg-[#F7FAFC] border border-[#E2E8F0] flex items-center justify-center font-bold font-mono text-sm text-[#26364A] shadow-xs">
+          <!-- Carrier & Flight Info -->
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl ${avatarClass} flex items-center justify-center font-black font-mono text-base shadow-xs flex-shrink-0">
               ${f.carrier_code}
             </div>
             <div>
               <div class="flex items-center gap-2 flex-wrap">
-                <h4 class="text-sm font-bold text-[#26364A]">${f.carrier_name}</h4>
-                <span class="text-[11px] px-2 py-0.5 rounded border ${badgeClass} font-mono font-medium">${f.flight_number}</span>
+                <h4 class="text-base font-bold text-[#26364A]">${f.carrier_name}</h4>
+                <span class="text-xs px-2 py-0.5 rounded border ${badgeClass} font-mono font-bold">${f.flight_number}</span>
+                <span class="text-[11px] px-2 py-0.5 rounded bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0] font-mono font-semibold">✈ ${aircraft}</span>
                 ${specialTag}
               </div>
-              <div class="text-xs text-[#5E718A] mt-0.5">${f.stops} • Direct Domestic Sector</div>
+              <div class="text-xs font-mono text-[#5E718A] mt-1 flex items-center gap-2">
+                <span class="font-semibold ${f.stops === 'Non-stop' ? 'text-[#1A6357]' : 'text-amber-700'}">${f.stops}</span>
+              </div>
             </div>
           </div>
 
-          <div class="flex items-center gap-6 text-center">
+          <!-- Departure, Route Duration & Arrival Times -->
+          <div class="flex items-center gap-6 sm:gap-8 text-center my-1 md:my-0">
             <div>
-              <div class="text-base font-bold text-[#26364A] font-mono">${f.departure_time}</div>
-              <div class="text-[11px] text-[#5E718A] font-mono">${f.origin}</div>
+              <div class="text-2xl font-black text-[#26364A] font-mono leading-none">${f.departure_time}</div>
+              <div class="text-xs font-bold text-[#5E718A] font-mono mt-1 tracking-wider">${f.origin}</div>
             </div>
             <div class="flex flex-col items-center">
-              <span class="text-[10px] text-[#5E718A] font-mono">${f.duration}</span>
-              <div class="w-20 h-px bg-[#D8E2EC] my-1 relative">
-                <div class="w-1.5 h-1.5 rounded-full bg-[#5B8DEF] absolute -top-[2px] right-0"></div>
+              <span class="text-xs font-bold text-[#475569] font-mono">${f.duration}</span>
+              <div class="w-20 sm:w-24 h-[2px] bg-[#CBD5E1] my-1.5 relative flex items-center justify-center">
+                <div class="w-2 h-2 rounded-full bg-[#5B8DEF] absolute -top-[3px] right-0"></div>
               </div>
-              <span class="text-[9px] font-mono uppercase tracking-wider font-semibold ${f.stops === 'Non-stop' ? 'text-[#1A6357]' : 'text-amber-700'}">${f.stops}</span>
+              <span class="text-[10px] font-mono uppercase tracking-wider font-bold ${f.stops === 'Non-stop' ? 'text-[#1A6357]' : 'text-amber-700'}">${f.stops}</span>
             </div>
             <div>
-              <div class="text-base font-bold text-[#26364A] font-mono">${f.arrival_time}</div>
-              <div class="text-[11px] text-[#5E718A] font-mono">${f.destination}</div>
+              <div class="text-2xl font-black text-[#26364A] font-mono leading-none">${f.arrival_time}</div>
+              <div class="text-xs font-bold text-[#5E718A] font-mono mt-1 tracking-wider">${f.destination}</div>
             </div>
           </div>
 
-          <div class="text-right">
-            <div class="text-2xl font-extrabold text-[#26364A] font-mono">₹${f.total_fare.toLocaleString('en-IN')}</div>
-            <div class="text-[11px] text-[#5E718A]">Total All-Inclusive</div>
+          <!-- Total Fare & Benchmark Alert -->
+          <div class="text-left md:text-right flex flex-col md:items-end justify-center">
+            <div class="text-3xl font-black text-[#26364A] font-mono tracking-tight">₹${f.total_fare.toLocaleString('en-IN')}</div>
+            <div class="mt-1">${sectorBenchmarkBadge}</div>
           </div>
         </div>
 
-        <div class="mt-4 pt-3 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div class="flex flex-wrap items-center gap-4 text-[#5E718A] font-mono text-[11px]">
-            <span class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-[#5B8DEF]"></span> Base Fare: <strong class="text-[#26364A] font-semibold">₹${f.base_fare.toLocaleString('en-IN')}</strong>
-            </span>
-            <span class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-[#FFD166]"></span> Fuel YQ: <strong class="text-[#26364A] font-semibold">₹${f.fuel_surcharge_yq.toLocaleString('en-IN')}</strong>
-            </span>
-            <span class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-[#8ED1C7]"></span> UDF/Airport: <strong class="text-[#26364A] font-semibold">₹${f.airport_fees_udf_psf.toLocaleString('en-IN')}</strong>
-            </span>
-            <span class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-[#389B8D]"></span> GST (5%): <strong class="text-[#26364A] font-semibold">₹${f.gst.toLocaleString('en-IN')}</strong>
+        <!-- Interactive Visual Fare Deconstruction Progress Bar -->
+        <div class="mt-4 pt-3.5 border-t border-[#F1F5F9]">
+          <div class="flex items-center justify-between text-xs font-mono mb-1.5">
+            <span class="font-bold text-[#475569] text-xs">Fare Deconstruction</span>
+            <span class="text-xs text-[#5E718A]">
+              Base Fare: <strong class="text-[#3064C4] font-bold">${basePct}%</strong> (₹${f.base_fare.toLocaleString('en-IN')}) • Taxes/Fees: <strong class="text-[#26364A] font-bold">${100 - basePct}%</strong>
             </span>
           </div>
-          <div class="text-[11px] text-[#5E718A] font-mono">
-            Base Ratio: <span class="text-[#3B6DCF] font-bold">${Math.round((f.base_fare / f.total_fare) * 100)}%</span>
+          <div class="w-full bg-[#E2E8F0] h-2.5 rounded-full overflow-hidden flex cursor-help shadow-inner" 
+               title="Base Fare: ₹${f.base_fare.toLocaleString('en-IN')} (${basePct}%) | Fuel YQ: ₹${f.fuel_surcharge_yq.toLocaleString('en-IN')} (${fuelPct}%) | Airport UDF: ₹${f.airport_fees_udf_psf.toLocaleString('en-IN')} (${udfPct}%) | GST: ₹${f.gst.toLocaleString('en-IN')} (${gstPct}%)">
+            <div style="width: ${basePct}%" class="bg-[#5B8DEF] h-full transition-all hover:opacity-90" title="Base: ₹${f.base_fare.toLocaleString('en-IN')} (${basePct}%)"></div>
+            <div style="width: ${fuelPct}%" class="bg-[#FFD166] h-full transition-all hover:opacity-90" title="Fuel YQ: ₹${f.fuel_surcharge_yq.toLocaleString('en-IN')} (${fuelPct}%)"></div>
+            <div style="width: ${udfPct}%" class="bg-[#8ED1C7] h-full transition-all hover:opacity-90" title="Airport Fees: ₹${f.airport_fees_udf_psf.toLocaleString('en-IN')} (${udfPct}%)"></div>
+            <div style="width: ${gstPct}%" class="bg-[#389B8D] h-full transition-all hover:opacity-90" title="GST 5%: ₹${f.gst.toLocaleString('en-IN')} (${gstPct}%)"></div>
           </div>
-        </div>
-
-        <div class="mt-3 pt-3 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center gap-2">
-            <span class="inline-flex items-center gap-1.5 text-[11px] font-mono font-semibold text-[#1A6357]">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#8ED1C7]"></span>
-              100% Live Google Flights Data
-            </span>
-          </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <a href="${gflightsUrl}" target="_blank" rel="noopener noreferrer" 
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 text-[#3064C4] border border-[#5B8DEF]/30 text-xs font-semibold transition hover:scale-[1.02] shadow-xs">
-              <svg class="w-3.5 h-3.5 text-[#5B8DEF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-              Verify on Google Flights ↗
-            </a>
-            <a href="${mmtUrl}" target="_blank" rel="noopener noreferrer" 
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-semibold transition hover:scale-[1.02] shadow-xs">
-              <svg class="w-3.5 h-3.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-              MakeMyTrip ↗
-            </a>
-            <a href="${airlineUrl}" target="_blank" rel="noopener noreferrer" 
-              class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] text-xs font-medium transition">
-              ${f.carrier_name} Portal ↗
-            </a>
+          <div class="flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-[#5E718A] mt-2.5">
+            <div class="flex flex-wrap items-center gap-3 sm:gap-4">
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#5B8DEF]"></span>Base: <strong class="text-[#26364A]">₹${f.base_fare.toLocaleString('en-IN')}</strong></span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#FFD166]"></span>Fuel: <strong class="text-[#26364A]">₹${f.fuel_surcharge_yq.toLocaleString('en-IN')}</strong></span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#8ED1C7]"></span>Airport: <strong class="text-[#26364A]">₹${f.airport_fees_udf_psf.toLocaleString('en-IN')}</strong></span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#389B8D]"></span>GST: <strong class="text-[#26364A]">₹${f.gst.toLocaleString('en-IN')}</strong></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <a href="${gflightsUrl}" target="_blank" rel="noopener noreferrer" 
+                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 text-[#3064C4] border border-[#5B8DEF]/30 text-xs font-bold transition font-mono shadow-2xs">
+                Google Flights ↗
+              </a>
+              <a href="${mmtUrl}" target="_blank" rel="noopener noreferrer" 
+                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold transition font-mono shadow-2xs">
+                MakeMyTrip ↗
+              </a>
+              <a href="${airlineUrl}" target="_blank" rel="noopener noreferrer" 
+                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] text-xs font-semibold transition font-mono">
+                ${f.carrier_code} ↗
+              </a>
+            </div>
           </div>
         </div>
       `;
