@@ -122,6 +122,21 @@
  border-color: #5B8DEF;
  transform: translateY(-1px);
  }
+ /* Sleek custom scrollbar for graph history */
+ .chart-scrollbar::-webkit-scrollbar {
+ height: 7px;
+ }
+ .chart-scrollbar::-webkit-scrollbar-track {
+ background: #F1F5F9;
+ border-radius: 4px;
+ }
+ .chart-scrollbar::-webkit-scrollbar-thumb {
+ background: #CBD5E1;
+ border-radius: 4px;
+ }
+ .chart-scrollbar::-webkit-scrollbar-thumb:hover {
+ background: #5B8DEF;
+ }
  </style>
 </head>
 <body class="min-h-screen pb-16 bg-[#F7FAFC] text-[#26364A]">
@@ -1205,10 +1220,69 @@
  </div>
  </div>
 
- <!-- Chart Canvas -->
- <div class="relative w-full h-[340px]">
- <canvas id="macroChart"></canvas>
- </div>
+  <!-- Graph History & Window Controller Ribbon -->
+  <div class="flex flex-wrap items-center justify-between gap-3 py-2.5 border-t border-b border-[#F1F5F9] my-3">
+    <!-- Left: Window / Scope Controls -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="text-xs font-mono font-bold text-[#5E718A] uppercase flex items-center gap-1">
+        <span>Scope / Window:</span>
+      </span>
+
+      <!-- Stream Mode Controls -->
+      <div id="streamControlsGroup" class="flex items-center gap-1 bg-[#F1F5F9] p-1 rounded-xl border border-[#E2E8F0]">
+        <button type="button" onclick="setStreamWindow('live12')" id="btnStream-live12"
+          class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition bg-[#26364A] text-white shadow-2xs cursor-pointer">
+          Live 12
+        </button>
+        <button type="button" onclick="setStreamWindow('last30')" id="btnStream-last30"
+          class="px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition text-[#5E718A] hover:text-[#26364A] cursor-pointer">
+          Last 30
+        </button>
+        <button type="button" onclick="setStreamWindow('all')" id="btnStream-all"
+          class="px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition text-[#5E718A] hover:text-[#26364A] cursor-pointer">
+          📜 Full History (<span id="streamTickTotalBadge">8</span>)
+        </button>
+      </div>
+
+      <!-- Timeline Mode Controls -->
+      <div id="timelineControlsGroup" class="hidden flex items-center gap-1 bg-[#F1F5F9] p-1 rounded-xl border border-[#E2E8F0]">
+        <button type="button" onclick="setTimelineRange('all_fit')" id="btnTimeline-all_fit"
+          class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition bg-[#26364A] text-white shadow-2xs cursor-pointer">
+          All (Fit)
+        </button>
+        <button type="button" onclick="setTimelineRange('all_scroll')" id="btnTimeline-all_scroll"
+          class="px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition text-[#5E718A] hover:text-[#26364A] cursor-pointer">
+          📜 All (Scrollable)
+        </button>
+        <button type="button" onclick="setTimelineRange('1y')" id="btnTimeline-1y"
+          class="px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition text-[#5E718A] hover:text-[#26364A] cursor-pointer">
+          1 Year
+        </button>
+        <button type="button" onclick="setTimelineRange('6m')" id="btnTimeline-6m"
+          class="px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition text-[#5E718A] hover:text-[#26364A] cursor-pointer">
+          6 Months
+        </button>
+      </div>
+    </div>
+
+    <!-- Right: Live status & Jump to live button -->
+    <div class="flex items-center gap-2.5">
+      <span id="chartScrollHint" class="text-[11px] font-mono text-[#5E718A] hidden sm:inline">
+        💡 Tip: Scroll or swipe horizontally to inspect history
+      </span>
+      <button id="btnJumpToLive" type="button" onclick="jumpToLiveStream()" 
+        class="hidden px-2.5 py-1 rounded-lg bg-[#5B8DEF] hover:bg-[#4A7DE0] text-white text-xs font-mono font-bold shadow-xs transition cursor-pointer flex items-center gap-1">
+        <span>⚡ Jump to Latest</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Scrollable Chart Canvas Wrapper -->
+  <div id="chartScrollWrapper" class="relative w-full overflow-x-auto chart-scrollbar rounded-xl border border-transparent transition-all">
+    <div id="chartInnerContainer" class="relative h-[340px] w-full min-w-full">
+      <canvas id="macroChart"></canvas>
+    </div>
+  </div>
 
  <!-- Econometric Summary Cards -->
  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-4 border-t border-[#F1F5F9]">
@@ -1588,230 +1662,454 @@
  startLiveStreamEngine();
  }
 
- // =========================================================================
- // DUAL-MODE ECONOMETRIC & LIVE INTRADAY TICK STREAM CHART
- // =========================================================================
- let currentChartMode = 'stream'; // Default: Live moving tick stream
- let liveStreamTicks = [];
- let historicalTimelineData = null;
+  // =========================================================================
+  // =========================================================================
+  // DUAL-MODE ECONOMETRIC & LIVE INTRADAY TICK STREAM CHART
+  // =========================================================================
+  let currentChartMode = 'stream'; // Default: Live moving tick stream
+  let streamWindowMode = 'live12'; // 'live12' | 'last30' | 'all'
+  let timelineRangeMode = 'all_fit'; // 'all_fit' | 'all_scroll' | '1y' | '6m'
+  let allLiveStreamTicks = []; // Complete session tick buffer
+  let liveStreamTicks = [];
+  let historicalTimelineData = null;
+  let isUserScrolledBack = false;
 
- function initSeedTicks() {
- const now = new Date();
- const seedRoutes = ['DEL-BOM', 'BLR-DEL', 'DEL-CCU', 'DEL-HYD', 'DEL-PNQ', 'BOM-GOI', 'DEL-SXR', 'BOM-MAA'];
- const seedFares = [131.2, 133.5, 129.8, 134.2, 132.0, 137.4, 135.1, 136.9];
- liveStreamTicks = [];
- for (let i = 0; i < seedRoutes.length; i++) {
- const past = new Date(now.getTime() - (seedRoutes.length - i) * 12000);
- liveStreamTicks.push({
- time: past.toTimeString().split(' ')[0],
- route: seedRoutes[i],
- index: seedFares[i]
- });
- }
- }
+  function initSeedTicks() {
+    const now = new Date();
+    const seedRoutes = ['DEL-BOM', 'BLR-DEL', 'DEL-CCU', 'DEL-HYD', 'DEL-PNQ', 'BOM-GOI', 'DEL-SXR', 'BOM-MAA'];
+    const seedFares = [131.2, 133.5, 129.8, 134.2, 132.0, 137.4, 135.1, 136.9];
+    allLiveStreamTicks = [];
+    for (let i = 0; i < seedRoutes.length; i++) {
+      const past = new Date(now.getTime() - (seedRoutes.length - i) * 12000);
+      allLiveStreamTicks.push({
+        time: past.toTimeString().split(' ')[0],
+        route: seedRoutes[i],
+        index: seedFares[i]
+      });
+    }
+    liveStreamTicks = allLiveStreamTicks.slice(-12);
+    const badge = document.getElementById('streamTickTotalBadge');
+    if (badge) badge.textContent = allLiveStreamTicks.length;
+  }
 
- async function initMacroChart() {
- try {
- const res = await fetch('/api/v1/macro/timeline');
- historicalTimelineData = await res.json();
- initSeedTicks();
+  function initChartScrollListener() {
+    const wrapper = document.getElementById('chartScrollWrapper');
+    if (!wrapper) return;
+    wrapper.addEventListener('scroll', () => {
+      if (currentChartMode !== 'stream') return;
+      const jumpBtn = document.getElementById('btnJumpToLive');
+      if (!jumpBtn) return;
+      const distFromRight = wrapper.scrollWidth - wrapper.scrollLeft - wrapper.clientWidth;
+      if (distFromRight > 80 && (streamWindowMode === 'all' || streamWindowMode === 'last30')) {
+        isUserScrolledBack = true;
+        jumpBtn.classList.remove('hidden');
+      } else {
+        isUserScrolledBack = false;
+        jumpBtn.classList.add('hidden');
+      }
+    });
+  }
 
- if (currentChartMode === 'stream') {
- renderStreamChart();
- } else {
- renderTimelineChart();
- }
- } catch (err) {
- console.error("Failed to load macro timeline:", err);
- }
- }
+  function jumpToLiveStream() {
+    const wrapper = document.getElementById('chartScrollWrapper');
+    if (wrapper) {
+      wrapper.scrollTo({ left: wrapper.scrollWidth, behavior: 'smooth' });
+    }
+    isUserScrolledBack = false;
+    const jumpBtn = document.getElementById('btnJumpToLive');
+    if (jumpBtn) jumpBtn.classList.add('hidden');
+  }
 
- function renderStreamChart() {
- const ctx = document.getElementById('macroChart').getContext('2d');
- if (macroChartInstance) macroChartInstance.destroy();
+  async function initMacroChart() {
+    try {
+      const res = await fetch('/api/v1/macro/timeline');
+      historicalTimelineData = await res.json();
+      initSeedTicks();
+      initChartScrollListener();
 
- const labels = liveStreamTicks.map(t => `${t.time} (${t.route})`);
- const scrapedData = liveStreamTicks.map(t => t.index);
- const mospiData = liveStreamTicks.map(() => 125.46);
- const atfData = liveStreamTicks.map(() => 105.11);
+      if (currentChartMode === 'stream') {
+        renderStreamChart();
+      } else {
+        renderTimelineChart();
+      }
+    } catch (err) {
+      console.error("Failed to load macro timeline:", err);
+    }
+  }
 
- macroChartInstance = new Chart(ctx, {
- type: 'line',
- data: {
- labels: labels,
- datasets: [
- {
- label: 'Real-Time Scraped APIx (Live)',
- data: scrapedData,
- borderColor: '#5B8DEF',
- backgroundColor: 'rgba(91, 141, 239, 0.14)',
- borderWidth: 3,
- tension: 0.35,
- fill: true,
- pointRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 8 : 4),
- pointHoverRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 11 : 7),
- pointBackgroundColor: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? '#3B6DCF' : '#5B8DEF'),
- pointBorderColor: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? '#FFFFFF' : '#5B8DEF'),
- pointBorderWidth: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 3 : 1.5)
- },
- {
- label: 'Official MoSPI Baseline (07.3.3)',
- data: mospiData,
- borderColor: '#2CA390',
- borderDash: [5, 5],
- borderWidth: 2,
- tension: 0,
- fill: false,
- pointRadius: 0
- },
- {
- label: 'IOCL Jet Fuel (ATF) Index',
- data: atfData,
- borderColor: '#D49B0E',
- borderDash: [3, 3],
- borderWidth: 2,
- tension: 0,
- fill: false,
- pointRadius: 0
- }
- ]
- },
- options: {
- responsive: true,
- maintainAspectRatio: false,
- animation: {
- duration: 800,
- easing: 'easeOutQuart'
- },
- layout: {
- padding: { left: 6, right: 60, top: 25, bottom: 12 }
- },
- scales: {
- x: {
- grid: { color: 'rgba(38, 54, 74, 0.06)' },
- ticks: { color: '#5E718A', font: { family: "'JetBrains Mono', monospace", size: 10, weight: '500' } }
- },
- y: {
- suggestedMin: 90,
- suggestedMax: 160,
- grace: '5%',
- grid: { color: 'rgba(38, 54, 74, 0.06)' },
- ticks: { color: '#5E718A', font: { family: "'JetBrains Mono', monospace", size: 10, weight: '500' } }
- }
- },
- plugins: {
- legend: { display: false },
- tooltip: {
- backgroundColor: '#26364A',
- titleColor: '#FFFFFF',
- bodyColor: '#E2E8F0',
- borderColor: '#D8E2EC',
- borderWidth: 1
- }
- }
- }
- });
- }
+  function setStreamWindow(windowMode) {
+    streamWindowMode = windowMode;
+    const btnIds = {
+      'live12': 'btnStream-live12',
+      'last30': 'btnStream-last30',
+      'all': 'btnStream-all'
+    };
+    Object.keys(btnIds).forEach(k => {
+      const btn = document.getElementById(btnIds[k]);
+      if (btn) {
+        if (k === windowMode) {
+          btn.className = 'px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition bg-[#26364A] text-white shadow-2xs cursor-pointer';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition text-[#5E718A] hover:text-[#26364A] cursor-pointer';
+        }
+      }
+    });
+    isUserScrolledBack = false;
+    renderStreamChart();
+  }
 
- function renderTimelineChart() {
- if (!historicalTimelineData) return;
- const ctx = document.getElementById('macroChart').getContext('2d');
- if (macroChartInstance) macroChartInstance.destroy();
+  function setTimelineRange(rangeMode) {
+    timelineRangeMode = rangeMode;
+    const btnIds = {
+      'all_fit': 'btnTimeline-all_fit',
+      'all_scroll': 'btnTimeline-all_scroll',
+      '1y': 'btnTimeline-1y',
+      '6m': 'btnTimeline-6m'
+    };
+    Object.keys(btnIds).forEach(k => {
+      const btn = document.getElementById(btnIds[k]);
+      if (btn) {
+        if (k === rangeMode) {
+          btn.className = 'px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition bg-[#26364A] text-white shadow-2xs cursor-pointer';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition text-[#5E718A] hover:text-[#26364A] cursor-pointer';
+        }
+      }
+    });
+    renderTimelineChart();
+  }
 
- const labels = historicalTimelineData.map(t => t.period.replace('2025 ', "'25 ").replace('2026 ', "'26 "));
- const scrapedData = historicalTimelineData.map(t => t.realtime_scraped_index);
- const mospiData = historicalTimelineData.map(t => t.mospi_official_index);
- const atfData = historicalTimelineData.map(t => t.atf_fuel_index);
+  function renderStreamChart() {
+    const ctx = document.getElementById('macroChart')?.getContext('2d');
+    if (!ctx) return;
+    if (macroChartInstance) macroChartInstance.destroy();
 
- macroChartInstance = new Chart(ctx, {
- type: 'line',
- data: {
- labels: labels,
- datasets: [
- {
- label: 'Real-Time Scraped APIx',
- data: scrapedData,
- borderColor: '#5B8DEF',
- backgroundColor: 'rgba(91, 141, 239, 0.12)',
- borderWidth: 2.8,
- tension: 0.35,
- fill: true,
- pointRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 7.5 : 3.5),
- pointHoverRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 10 : 6),
- pointBackgroundColor: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? '#3B6DCF' : '#5B8DEF'),
- pointBorderColor: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? '#FFFFFF' : '#5B8DEF'),
- pointBorderWidth: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 3 : 1)
- },
- {
- label: 'Official MoSPI Baseline (07.3.3)',
- data: mospiData,
- borderColor: '#2CA390',
- borderDash: [4, 4],
- borderWidth: 2,
- tension: 0.3,
- fill: false,
- pointRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 5.5 : 3),
- pointBackgroundColor: '#8ED1C7'
- },
- {
- label: 'IOCL Jet Fuel (ATF) Index',
- data: atfData,
- borderColor: '#D49B0E',
- borderWidth: 2,
- tension: 0.25,
- fill: false,
- pointRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 5 : 2.5),
- pointBackgroundColor: '#FFD166'
- }
- ]
- },
- options: {
- responsive: true,
- maintainAspectRatio: false,
- layout: {
- padding: { left: 6, right: 60, top: 25, bottom: 12 }
- },
- scales: {
- x: {
- grid: { color: 'rgba(38, 54, 74, 0.06)' },
- ticks: { color: '#5E718A', font: { family: "'JetBrains Mono', monospace", size: 10, weight: '500' } }
- },
- y: {
- suggestedMin: 80,
- suggestedMax: 165,
- grace: '5%',
- grid: { color: 'rgba(38, 54, 74, 0.06)' },
- ticks: { color: '#5E718A', font: { family: "'JetBrains Mono', monospace", size: 10, weight: '500' } }
- }
- },
- plugins: {
- legend: { display: false },
- tooltip: {
- backgroundColor: '#26364A',
- titleColor: '#FFFFFF',
- bodyColor: '#E2E8F0',
- borderColor: '#D8E2EC',
- borderWidth: 1
- }
- }
- }
- });
- }
+    const total = allLiveStreamTicks.length;
+    let sliceTicks = [];
 
- function setChartMode(mode) {
- currentChartMode = mode;
- const btnStream = document.getElementById('chartModeBtn-stream');
- const btnTimeline = document.getElementById('chartModeBtn-timeline');
- if (mode === 'stream') {
- btnStream.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 bg-[#5B8DEF] text-white shadow-xs cursor-pointer';
- btnTimeline.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition flex items-center gap-1.5 text-[#5E718A] hover:text-[#26364A] cursor-pointer';
- renderStreamChart();
- } else {
- btnTimeline.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 bg-[#5B8DEF] text-white shadow-xs cursor-pointer';
- btnStream.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition flex items-center gap-1.5 text-[#5E718A] hover:text-[#26364A] cursor-pointer';
- renderTimelineChart();
- }
- }
+    if (streamWindowMode === 'live12') {
+      sliceTicks = allLiveStreamTicks.slice(-12);
+    } else if (streamWindowMode === 'last30') {
+      sliceTicks = allLiveStreamTicks.slice(-30);
+    } else {
+      sliceTicks = allLiveStreamTicks.slice();
+    }
+
+    liveStreamTicks = sliceTicks;
+
+    const inner = document.getElementById('chartInnerContainer');
+    const wrapper = document.getElementById('chartScrollWrapper');
+    const hint = document.getElementById('chartScrollHint');
+    const jumpBtn = document.getElementById('btnJumpToLive');
+    const badge = document.getElementById('streamTickTotalBadge');
+    if (badge) badge.textContent = total;
+
+    if (inner && wrapper) {
+      if (streamWindowMode === 'all' && sliceTicks.length > 12) {
+        const pxWidth = Math.max(wrapper.clientWidth, sliceTicks.length * 68);
+        inner.style.width = pxWidth + 'px';
+        if (hint) hint.classList.remove('hidden');
+      } else if (streamWindowMode === 'last30' && sliceTicks.length > 12) {
+        const pxWidth = Math.max(wrapper.clientWidth, sliceTicks.length * 56);
+        inner.style.width = pxWidth + 'px';
+        if (hint) hint.classList.remove('hidden');
+      } else {
+        inner.style.width = '100%';
+        if (hint) hint.classList.add('hidden');
+        if (jumpBtn) jumpBtn.classList.add('hidden');
+      }
+    }
+
+    const labels = sliceTicks.map(t => `${t.time} (${t.route})`);
+    const scrapedData = sliceTicks.map(t => t.index);
+    const mospiData = sliceTicks.map(() => 125.46);
+    const atfData = sliceTicks.map(() => 105.11);
+
+    macroChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Real-Time Scraped APIx (Live)',
+            data: scrapedData,
+            borderColor: '#5B8DEF',
+            backgroundColor: 'rgba(91, 141, 239, 0.14)',
+            borderWidth: 3,
+            tension: 0.35,
+            fill: true,
+            pointRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 8 : 4),
+            pointHoverRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 11 : 7),
+            pointBackgroundColor: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? '#3B6DCF' : '#5B8DEF'),
+            pointBorderColor: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? '#FFFFFF' : '#5B8DEF'),
+            pointBorderWidth: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 3 : 1.5)
+          },
+          {
+            label: 'Official MoSPI Baseline (07.3.3)',
+            data: mospiData,
+            borderColor: '#2CA390',
+            borderDash: [5, 5],
+            borderWidth: 2,
+            tension: 0,
+            fill: false,
+            pointRadius: 0
+          },
+          {
+            label: 'IOCL Jet Fuel (ATF) Index',
+            data: atfData,
+            borderColor: '#D49B0E',
+            borderDash: [3, 3],
+            borderWidth: 2,
+            tension: 0,
+            fill: false,
+            pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 350,
+          easing: 'easeOutQuart'
+        },
+        layout: {
+          padding: { left: 8, right: 40, top: 25, bottom: 12 }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(38, 54, 74, 0.06)' },
+            ticks: { 
+              color: '#5E718A', 
+              font: { family: "'JetBrains Mono', monospace", size: 10, weight: '500' },
+              maxRotation: (streamWindowMode === 'live12' ? 25 : 0),
+              autoSkip: false
+            }
+          },
+          y: {
+            suggestedMin: 90,
+            suggestedMax: 160,
+            grace: '5%',
+            grid: { color: 'rgba(38, 54, 74, 0.06)' },
+            ticks: { color: '#5E718A', font: { family: "'JetBrains Mono', monospace", size: 10, weight: '500' } }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#26364A',
+            titleColor: '#FFFFFF',
+            bodyColor: '#E2E8F0',
+            borderColor: '#D8E2EC',
+            borderWidth: 1
+          }
+        }
+      }
+    });
+
+    if (wrapper) {
+      setTimeout(() => {
+        wrapper.scrollLeft = wrapper.scrollWidth;
+      }, 50);
+    }
+  }
+
+  function updateStreamChartData(autoScroll = true) {
+    if (!macroChartInstance || currentChartMode !== 'stream') return;
+
+    const total = allLiveStreamTicks.length;
+    let sliceTicks = [];
+
+    if (streamWindowMode === 'live12') {
+      sliceTicks = allLiveStreamTicks.slice(-12);
+    } else if (streamWindowMode === 'last30') {
+      sliceTicks = allLiveStreamTicks.slice(-30);
+    } else {
+      sliceTicks = allLiveStreamTicks.slice();
+    }
+
+    liveStreamTicks = sliceTicks;
+
+    const inner = document.getElementById('chartInnerContainer');
+    const wrapper = document.getElementById('chartScrollWrapper');
+    const hint = document.getElementById('chartScrollHint');
+    const jumpBtn = document.getElementById('btnJumpToLive');
+    const badge = document.getElementById('streamTickTotalBadge');
+    if (badge) badge.textContent = total;
+
+    if (inner && wrapper) {
+      if (streamWindowMode === 'all' && sliceTicks.length > 12) {
+        const pxWidth = Math.max(wrapper.clientWidth, sliceTicks.length * 68);
+        inner.style.width = pxWidth + 'px';
+        if (hint) hint.classList.remove('hidden');
+      } else if (streamWindowMode === 'last30' && sliceTicks.length > 12) {
+        const pxWidth = Math.max(wrapper.clientWidth, sliceTicks.length * 56);
+        inner.style.width = pxWidth + 'px';
+        if (hint) hint.classList.remove('hidden');
+      } else {
+        inner.style.width = '100%';
+        if (hint) hint.classList.add('hidden');
+        if (jumpBtn) jumpBtn.classList.add('hidden');
+      }
+    }
+
+    macroChartInstance.data.labels = sliceTicks.map(t => `${t.time} (${t.route})`);
+    macroChartInstance.data.datasets[0].data = sliceTicks.map(t => t.index);
+    macroChartInstance.data.datasets[1].data = sliceTicks.map(() => 125.46);
+    macroChartInstance.data.datasets[2].data = sliceTicks.map(() => 105.11);
+    macroChartInstance.update('none');
+
+    if (autoScroll && wrapper && !isUserScrolledBack) {
+      wrapper.scrollLeft = wrapper.scrollWidth;
+    }
+  }
+
+  function renderTimelineChart() {
+    if (!historicalTimelineData) return;
+    const ctx = document.getElementById('macroChart')?.getContext('2d');
+    if (!ctx) return;
+    if (macroChartInstance) macroChartInstance.destroy();
+
+    let filteredTimeline = historicalTimelineData.slice();
+    if (timelineRangeMode === '6m') {
+      filteredTimeline = historicalTimelineData.slice(-6);
+    } else if (timelineRangeMode === '1y') {
+      filteredTimeline = historicalTimelineData.slice(-12);
+    }
+
+    const inner = document.getElementById('chartInnerContainer');
+    const wrapper = document.getElementById('chartScrollWrapper');
+    const hint = document.getElementById('chartScrollHint');
+    const jumpBtn = document.getElementById('btnJumpToLive');
+    if (jumpBtn) jumpBtn.classList.add('hidden');
+
+    const isScrollable = (timelineRangeMode === 'all_scroll');
+    if (inner && wrapper) {
+      if (isScrollable) {
+        inner.style.width = Math.max(wrapper.clientWidth, filteredTimeline.length * 75) + 'px';
+        if (hint) hint.classList.remove('hidden');
+      } else {
+        inner.style.width = '100%';
+        if (hint) hint.classList.add('hidden');
+      }
+    }
+
+    const labels = filteredTimeline.map(t => t.period.replace('2025 ', "'25 ").replace('2026 ', "'26 "));
+    const scrapedData = filteredTimeline.map(t => t.realtime_scraped_index);
+    const mospiData = filteredTimeline.map(t => t.mospi_official_index);
+    const atfData = filteredTimeline.map(t => t.atf_fuel_index);
+
+    macroChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Real-Time Scraped APIx',
+            data: scrapedData,
+            borderColor: '#5B8DEF',
+            backgroundColor: 'rgba(91, 141, 239, 0.12)',
+            borderWidth: 2.8,
+            tension: 0.35,
+            fill: true,
+            pointRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 7.5 : 3.5),
+            pointHoverRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 10 : 6),
+            pointBackgroundColor: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? '#3B6DCF' : '#5B8DEF'),
+            pointBorderColor: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? '#FFFFFF' : '#5B8DEF'),
+            pointBorderWidth: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 3 : 1)
+          },
+          {
+            label: 'Official MoSPI Baseline (07.3.3)',
+            data: mospiData,
+            borderColor: '#2CA390',
+            borderDash: [4, 4],
+            borderWidth: 2,
+            tension: 0.3,
+            fill: false,
+            pointRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 5.5 : 3),
+            pointBackgroundColor: '#8ED1C7'
+          },
+          {
+            label: 'IOCL Jet Fuel (ATF) Index',
+            data: atfData,
+            borderColor: '#D49B0E',
+            borderWidth: 2,
+            tension: 0.25,
+            fill: false,
+            pointRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 5 : 2.5),
+            pointBackgroundColor: '#FFD166'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: { left: 8, right: 40, top: 25, bottom: 12 }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(38, 54, 74, 0.06)' },
+            ticks: { 
+              color: '#5E718A', 
+              font: { family: "'JetBrains Mono', monospace", size: 10, weight: '500' },
+              maxRotation: (isScrollable || timelineRangeMode === '6m' ? 0 : 30),
+              minRotation: (isScrollable || timelineRangeMode === '6m' ? 0 : 0),
+              autoSkip: false
+            }
+          },
+          y: {
+            suggestedMin: 80,
+            suggestedMax: 165,
+            grace: '5%',
+            grid: { color: 'rgba(38, 54, 74, 0.06)' },
+            ticks: { color: '#5E718A', font: { family: "'JetBrains Mono', monospace", size: 10, weight: '500' } }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#26364A',
+            titleColor: '#FFFFFF',
+            bodyColor: '#E2E8F0',
+            borderColor: '#D8E2EC',
+            borderWidth: 1
+          }
+        }
+      }
+    });
+
+    if (isScrollable && wrapper) {
+      setTimeout(() => {
+        wrapper.scrollLeft = wrapper.scrollWidth;
+      }, 50);
+    }
+  }
+
+  function setChartMode(mode) {
+    currentChartMode = mode;
+    const btnStream = document.getElementById('chartModeBtn-stream');
+    const btnTimeline = document.getElementById('chartModeBtn-timeline');
+    const streamGroup = document.getElementById('streamControlsGroup');
+    const timelineGroup = document.getElementById('timelineControlsGroup');
+    const hint = document.getElementById('chartScrollHint');
+    const jumpBtn = document.getElementById('btnJumpToLive');
+
+    if (mode === 'stream') {
+      btnStream.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 bg-[#5B8DEF] text-white shadow-xs cursor-pointer';
+      btnTimeline.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition flex items-center gap-1.5 text-[#5E718A] hover:text-[#26364A] cursor-pointer';
+      if (streamGroup) streamGroup.classList.remove('hidden');
+      if (timelineGroup) timelineGroup.classList.add('hidden');
+      renderStreamChart();
+    } else {
+      btnTimeline.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 bg-[#5B8DEF] text-white shadow-xs cursor-pointer';
+      btnStream.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition flex items-center gap-1.5 text-[#5E718A] hover:text-[#26364A] cursor-pointer';
+      if (streamGroup) streamGroup.classList.add('hidden');
+      if (timelineGroup) timelineGroup.classList.remove('hidden');
+      if (jumpBtn) jumpBtn.classList.add('hidden');
+      renderTimelineChart();
+    }
+  }
 
  // Initialize Top Routes Table
  async function loadRoutesTable() {
@@ -2780,23 +3078,20 @@
  lastScrapeTimeRecord = data.last_scrape.time;
  countdownSeconds = 12;
 
- // Append new live tick to intraday stream buffer
- liveStreamTicks.push({
- time: data.last_scrape.time,
- route: data.last_scrape.route_code,
- index: Number(data.national_index)
- });
- if (liveStreamTicks.length > 12) {
- liveStreamTicks.shift(); // Smooth horizontal scroll to the left!
- }
+    // Append new live tick to master session history buffer
+    allLiveStreamTicks.push({
+      time: data.last_scrape.time,
+      route: data.last_scrape.route_code,
+      index: Number(data.national_index)
+    });
 
- if (currentChartMode === 'stream' && macroChartInstance) {
- macroChartInstance.data.labels = liveStreamTicks.map(t => `${t.time} (${t.route})`);
- macroChartInstance.data.datasets[0].data = liveStreamTicks.map(t => t.index);
- macroChartInstance.data.datasets[1].data = liveStreamTicks.map(() => 125.46);
- macroChartInstance.data.datasets[2].data = liveStreamTicks.map(() => 105.11);
- macroChartInstance.update(); // Visibly scrolls and plots the new live point!
- }
+    const badge = document.getElementById('streamTickTotalBadge');
+    if (badge) badge.textContent = allLiveStreamTicks.length;
+
+    if (currentChartMode === 'stream') {
+      updateStreamChartData(true);
+    }
+  }
  }
 
  if (currentChartMode === 'timeline' && macroChartInstance && macroChartInstance.data && macroChartInstance.data.datasets.length > 0) {
