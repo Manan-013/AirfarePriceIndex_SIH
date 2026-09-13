@@ -6,6 +6,8 @@ Tests statutory fare deconstruction, IQR outlier trimming, deeplinks, and RobotG
 import unittest
 import os
 import sys
+import asyncio
+from unittest.mock import patch, MagicMock
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(REPO_ROOT, "airfare_index", "live_fetcher"))
@@ -109,15 +111,45 @@ class TestRealtimeScraper(unittest.TestCase):
         self.assertIn("BOM", links["easemytrip_url"])
 
     def test_robot_guard_compliance(self):
-        """Verify RobotGuard checks robots.txt and tracks domain compliance."""
+        """Verify RobotGuard checks robots.txt and tracks domain compliance across all portals."""
         status = robot_guard.get_compliance_status()
         self.assertIn("user_agent", status)
         self.assertIn("cached_domains", status)
         self.assertIn("total_checks", status)
 
-        # EaseMyTrip should be checked and allowed under search path
-        allowed, reason = robot_guard.can_fetch("https://flight.easemytrip.com/FlightList/Index?srch=DEL-BOM")
-        self.assertTrue(allowed, "EaseMyTrip search route should be permitted under robots.txt")
+        # 1. Permitted targets
+        allowed_emt, _ = robot_guard.can_fetch("https://flight.easemytrip.com/FlightList/Index?srch=DEL-BOM")
+        self.assertTrue(allowed_emt, "EaseMyTrip search route on flight.easemytrip.com should be permitted under robots.txt")
+
+        allowed_gf, _ = robot_guard.can_fetch("https://www.google.com/travel/flights?q=Flights%20to%20BOM")
+        self.assertTrue(allowed_gf, "Google Flights search route should be permitted under robots.txt")
+
+        # 2. Disallowed targets
+        disallowed_emt_search, _ = robot_guard.can_fetch("https://www.easemytrip.com/flight-search/listing?srch=DEL-BOM")
+        self.assertFalse(disallowed_emt_search, "EaseMyTrip /flight-search/listing route on www.easemytrip.com must be disallowed under robots.txt")
+
+        disallowed_gf_booking, _ = robot_guard.can_fetch("https://www.google.com/travel/flights/booking")
+        self.assertFalse(disallowed_gf_booking, "Google Flights booking route must be disallowed under robots.txt")
+
+        disallowed_cleartrip, _ = robot_guard.can_fetch("https://www.cleartrip.com/flights/search?from=DEL")
+        self.assertFalse(disallowed_cleartrip, "Cleartrip flight search route must be disallowed under robots.txt")
+
+    def test_scraper_active_enforcement_gate_http(self):
+        """Verify HTTP scraper aborts immediately and returns [] when robots.txt disallows."""
+        with patch.object(robot_guard, "can_fetch", return_value=(False, "Disallowed by robots.txt")):
+            with patch("requests.get") as mock_get:
+                results = self.scraper._scrape_google_flights_http("DEL", "BOM", "2026-09-20")
+                self.assertEqual(results, [])
+                mock_get.assert_not_called()
+
+    def test_scraper_active_enforcement_gate_async(self):
+        """Verify Playwright scrapers abort immediately and return [] when robots.txt disallows."""
+        with patch.object(robot_guard, "can_fetch", return_value=(False, "Disallowed by robots.txt")):
+            results_emt = asyncio.run(self.scraper._scrape_easemytrip_async("DEL", "BOM", "2026-09-20"))
+            self.assertEqual(results_emt, [])
+
+            results_mmt = asyncio.run(self.scraper._scrape_makemytrip_async("DEL", "BOM", "2026-09-20"))
+            self.assertEqual(results_mmt, [])
 
     def test_makemytrip_card_parsing(self):
         """Verify MakeMyTrip card parsing extracts airline, flight number, times, and deconstructed fare."""

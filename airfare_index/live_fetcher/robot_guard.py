@@ -11,9 +11,11 @@ Features:
 
 import urllib.robotparser
 import urllib.parse
+import urllib.request
 import time
 import threading
-from typing import Dict, Tuple
+import re
+from typing import Dict, Tuple, List
 
 class RobotGuard:
     def __init__(self, user_agent: str = "AeroDex-SIH-Bot/1.0"):
@@ -39,6 +41,8 @@ class RobotGuard:
         Returns (is_allowed: bool, reason: str).
         """
         domain_root = self.get_domain_root(url)
+        parsed_url = urllib.parse.urlparse(url)
+        target_path = parsed_url.path + ("?" + parsed_url.query if parsed_url.query else "")
         robots_url = f"{domain_root}/robots.txt"
 
         with self.lock:
@@ -46,38 +50,103 @@ class RobotGuard:
             now = time.time()
             if cached and (now - cached[1] < 43200): # 12-hour cache
                 rp = cached[0]
+                raw_lines = cached[2] if len(cached) > 2 else []
             else:
                 rp = urllib.robotparser.RobotFileParser()
                 rp.set_url(robots_url)
+                raw_lines = []
                 try:
-                    rp.read()
-                    self.parsers[domain_root] = (rp, now)
+                    req = urllib.request.Request(
+                        robots_url,
+                        headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+                    )
+                    with urllib.request.urlopen(req, timeout=4.0) as resp:
+                        raw_lines = resp.read().decode("utf-8", errors="ignore").splitlines()
+
+                    # Sanitize line 9 bug in google.com ('Disallow: /?') so it doesn't truncate to '/'
+                    sanitized = []
+                    for line in raw_lines:
+                        trimmed = line.strip()
+                        if trimmed in ["Disallow: /?", "Disallow:/?"]:
+                            sanitized.append("Disallow: /\\?")
+                        else:
+                            sanitized.append(line)
+                    rp.parse(sanitized)
+                    self.parsers[domain_root] = (rp, now, raw_lines)
                 except Exception as e:
-                    # If robots.txt unreachable, allow with polite note
-                    note = f"robots.txt unreachable ({e}), defaulting to polite crawl delay"
+                    note = f"robots.txt unreachable ({e}), defaulting to polite rate limiting"
                     self.audit_log.append({
                         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
                         "domain": domain_root,
                         "allowed": True,
-                        "note": note
+                        "note": note,
+                        "url": target_path[:60]
                     })
                     return True, note
 
+        # Check standard urllib.robotparser
         try:
             allowed = rp.can_fetch(self.user_agent, url)
+            if not allowed:
+                allowed = rp.can_fetch("*", url)
+        except Exception:
+            allowed = True
+
+        # Custom RFC 9309 check against raw_lines for wildcard rules like 'Disallow: /flight-search/listing*'
+        disallow_rules = []
+        allow_rules = []
+        user_agent_applies = False
+        for line in raw_lines:
+            line_clean = line.split("#")[0].strip()
+            if not line_clean:
+                continue
+            if line_clean.lower().startswith("user-agent:"):
+                ua_val = line_clean.split(":", 1)[1].strip()
+                user_agent_applies = (ua_val == "*" or self.user_agent.lower() in ua_val.lower())
+            elif user_agent_applies:
+                if line_clean.lower().startswith("disallow:"):
+                    p = line_clean.split(":", 1)[1].strip()
+                    if p:
+                        disallow_rules.append(p)
+                elif line_clean.lower().startswith("allow:"):
+                    p = line_clean.split(":", 1)[1].strip()
+                    if p:
+                        allow_rules.append(p)
+
+        def rule_matches(rule_pattern: str, path: str) -> bool:
+            pattern = "^" + re.escape(rule_pattern).replace(r"\*", ".*")
+            if pattern.endswith(r"\$"):
+                pattern = pattern[:-2] + "$"
+            else:
+                pattern += ".*"
+            return bool(re.search(pattern, path))
+
+        matching_disallows = [r for r in disallow_rules if rule_matches(r, target_path)]
+        matching_allows = [r for r in allow_rules if rule_matches(r, target_path)]
+
+        if matching_disallows:
+            longest_disallow = max(matching_disallows, key=len)
+            longest_allow = max(matching_allows, key=len) if matching_allows else ""
+            if len(longest_disallow) > len(longest_allow):
+                allowed = False
+                reason = f"Restricted by robots.txt directive: Disallow {longest_disallow}"
+            else:
+                allowed = True
+                reason = f"Permitted by robots.txt directive: Allow {longest_allow}"
+        else:
             reason = "Permitted under robots.txt rules" if allowed else "Restricted by robots.txt directive"
-            with self.lock:
-                self.audit_log.append({
-                    "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-                    "domain": domain_root,
-                    "allowed": allowed,
-                    "note": reason
-                })
-                if len(self.audit_log) > 100:
-                    self.audit_log = self.audit_log[-100:]
-            return allowed, reason
-        except Exception as e:
-            return True, f"Parser evaluation exception: {e}"
+
+        with self.lock:
+            self.audit_log.append({
+                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "domain": domain_root,
+                "allowed": allowed,
+                "note": reason,
+                "url": target_path[:60]
+            })
+            if len(self.audit_log) > 100:
+                self.audit_log = self.audit_log[-100:]
+        return allowed, reason
 
     def enforce_rate_limit(self, url: str):
         """

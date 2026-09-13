@@ -129,9 +129,9 @@ Open **http://localhost:8000** in your browser.
 ## Ethical Scraping & Compliance
 
 The platform implements ethical scraping safeguards:
-1. **Robots.txt Consultation**: Every target URL is validated against the domain's `robots.txt` before execution using Python's `urllib.robotparser`.
-   - *Example*: EaseMyTrip `/FlightList/Index` is permitted under `robots.txt`.
-   - *Example*: Google Flights restrictions are detected and logged.
+1. **Robots.txt Pre-Request Verification & Enforcement Gate**: Every candidate scrape target URL is evaluated against RFC 9309 rules before initiating network requests. If an endpoint is disallowed, extraction is strictly aborted before launching browser automation, falling back safely to warehouse microdata.
+   - *Active Verification*: Checks domain directives prior to dispatching traffic;
+   - *Strict Abort*: Disallowed endpoints immediately halt Playwright/HTTP execution and log the restriction.
 2. **Polite Crawl Cadence**: Default 3.0s delay between requests to the same domain.
 3. **Adaptive Backoff**: Automatically escalates delay up to 8x upon encountering HTTP 429 (Too Many Requests) or 503 (Service Unavailable).
 4. **Verifiable Audit Log**: Evaluators can verify compliance status at any time via:

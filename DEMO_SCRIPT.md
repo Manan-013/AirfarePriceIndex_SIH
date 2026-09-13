@@ -33,7 +33,7 @@
 
 > *"A critical requirement in PS SIH26056 is legal and ethical scraping compliance. Rather than scraping blindly, we engineered **RobotGuard**:*
 > - *Before touching any portal, Python's `urllib.robotparser` fetches and evaluates the domain's `robots.txt`.*
-> - *Here you can inspect our live compliance telemetry: EaseMyTrip explicitly permits `/FlightList/Index` crawling under their directives, while Google Flights directs bots away.*
+> - *Here you can inspect our live compliance telemetry: RobotGuard validates target endpoints against robots.txt directives before initiating extraction. If an endpoint is disallowed, execution is gated and aborted before any browser automation begins, falling back cleanly to our microdata warehouse.*
 > - *We enforce polite per-domain crawl delays (minimum 3 seconds) and automatic exponential backoff if an HTTP 429 or 503 is returned.*
 > - *This live compliance log gives MoSPI and regulatory bodies complete auditing transparency."*
 
@@ -72,13 +72,13 @@
 ### Q1: "How will your scraper survive when airlines change their DOM selectors or deploy Cloudflare / Akamai bot detection?"
 **Answer**:
 > *"That is precisely why we designed a 3-tier resilient architecture:  
-> 1. We prioritize aggregators like EaseMyTrip and Google Flights, which maintain stable SSR layouts for search indexing and allow crawling under robots.txt.  
+> 1. We evaluate robots.txt directives across multi-source aggregators (EaseMyTrip, MakeMyTrip, Google Flights) before every scrape target, actively gating and bypassing any disallowed path.  
 > 2. We separate browser execution into a decoupled background worker (`worker_scraper.py`) that uses low-memory Chromium flags and request route aborting to prevent bot footprints.  
-> 3. If an OTA deploys an aggressive anti-bot challenge, our dual-layer architecture immediately falls back to calibrated DGCA Form-A benchmark models and clearly flags the provenance as `⚠️ Benchmark Estimate`, guaranteeing zero downtime for the CPI calculation pipeline."*
+> 3. If an OTA deploys an aggressive anti-bot challenge or restricts access, our dual-layer architecture immediately falls back to our SQLite microdata warehouse and calibrated DGCA Form-A benchmark models, clearly flagging the provenance as `⚠️ Benchmark Estimate` to guarantee zero downtime for the CPI calculation pipeline."*
 
 ### Q2: "Isn't scraping commercial airline websites legally questionable?"
 **Answer**:
-> *"We address this head-on through our `RobotGuard` module. The problem statement specifically asks for web scraping of airline and OTA portals. We implement automated `robots.txt` evaluation before every scrape target, enforce polite 3-second crawl delays, and respect rate limits. Furthermore, in an official government deployment under MoSPI or DGCA, this scraper would operate alongside direct Open Data / GDS API feeds from Air India and IndiGo, with web scraping serving as an independent validation auditor."*
+> *"We address this head-on through our `RobotGuard` module. The problem statement specifically asks for web scraping of airline and OTA portals. We implement automated `robots.txt` verification before every scrape target, actively gate executions so that restricted endpoints are immediately aborted without initiating browser connections, enforce polite 3-second per-domain crawl delays, and maintain transparent audit logs. If a portal disallows scraping, our pipeline respects the disallow and falls back to our SQLite microdata warehouse and calibrated DGCA Form-A benchmark models."*
 
 ### Q3: "How does airfare inflation actually impact India's CPI?"
 **Answer**:

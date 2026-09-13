@@ -513,10 +513,13 @@ class RealtimeFlightScraper:
         dest_city = CITY_NAMES.get(dest, dest)
         emt_url = f"https://flight.easemytrip.com/FlightList/Index?srch={origin}-{orig_city}-India|{dest}-{dest_city}-India|{dd_mm_yyyy}&px=1-0-0&cbn=0&ar=undefined&isSplitSearch=false"
 
-        # Ethical robots.txt verification and polite rate limiter
+        # Ethical robots.txt verification and active enforcement gate
         if robot_guard:
             allowed, reason = robot_guard.can_fetch(emt_url)
             print(f"[ROBOT GUARD] EaseMyTrip check: {reason} ({emt_url})")
+            if not allowed:
+                print(f"[ROBOT GUARD] EaseMyTrip disallowed by robots.txt: {reason}. Aborting live extraction.")
+                return []
             robot_guard.enforce_rate_limit(emt_url)
 
         async with async_playwright() as p:
@@ -584,10 +587,13 @@ class RealtimeFlightScraper:
 
         mmt_url = f"https://www.makemytrip.com/flight/search?itinerary={origin}-{dest}-{mmt_date}&tripType=O&paxType=A-1_C-0_I-0&intl=false&cabinClass=E"
 
-        # Ethical robots.txt verification and polite rate limiter
+        # Ethical robots.txt verification and active enforcement gate
         if robot_guard:
             allowed, reason = robot_guard.can_fetch(mmt_url)
             print(f"[ROBOT GUARD] MakeMyTrip check: {reason} ({mmt_url})")
+            if not allowed:
+                print(f"[ROBOT GUARD] MakeMyTrip disallowed by robots.txt: {reason}. Aborting live extraction.")
+                return []
             robot_guard.enforce_rate_limit(mmt_url)
 
         async with async_playwright() as p:
@@ -660,6 +666,13 @@ class RealtimeFlightScraper:
                 'Cookie': 'CONSENT=PENDING+999; SOCS=CAISHAgBEhJnd3NfMjAyNDA4MDgtMF9SQzIaAmVuIAEaBgiA_L20Bg'
             }
             url = f"https://www.google.com/travel/flights?q=Flights%20to%20{dest}%20from%20{origin}%20on%20{date}%20oneway&hl=en-IN&gl=in"
+            if robot_guard:
+                allowed, reason = robot_guard.can_fetch(url)
+                if not allowed:
+                    print(f"[ROBOT GUARD] Google Flights HTTP disallowed by robots.txt: {reason}. Aborting.")
+                    return []
+                robot_guard.enforce_rate_limit(url)
+
             r = requests.get(url, headers=headers, timeout=12)
             if r.status_code != 200:
                 return []
@@ -744,10 +757,14 @@ class RealtimeFlightScraper:
 
             url = f"https://www.google.com/travel/flights?q=Flights%20to%20{dest}%20from%20{origin}%20on%20{date}%20oneway&hl=en-IN&gl=in"
 
-            # Ethical robots.txt verification and polite rate limiter
+            # Ethical robots.txt verification and active enforcement gate
             if robot_guard:
                 allowed, reason = robot_guard.can_fetch(url)
                 print(f"[ROBOT GUARD] Google Flights check: {reason} ({url})")
+                if not allowed:
+                    print(f"[ROBOT GUARD] Google Flights disallowed by robots.txt: {reason}. Aborting live extraction.")
+                    await browser.close()
+                    return []
                 robot_guard.enforce_rate_limit(url)
 
             page = await context.new_page()

@@ -14,7 +14,7 @@ Under the revised Consumer Price Index (CPI) framework aligned with COICOP 07.3.
 AeroDex resolves this structural gap by combining:
 1. **Census-grade spatial weighting** from DGCA Form-A traffic returns (786 domestic routes; 136.0 million annual passenger origin-destination pairs).
 2. **Carrier market share aggregation** reflecting DGCA monthly airline census.
-3. **Multi-portal web scraping** across named Indian travel aggregators (MakeMyTrip, EaseMyTrip, Google Flights) operating under strict RFC 9309 `robots.txt` compliance.
+3. **Multi-portal web scraping** across named Indian travel aggregators (MakeMyTrip, EaseMyTrip, Google Flights) with pre-request RFC 9309 `robots.txt` verification and active enforcement gating.
 4. **Statutory fare decomposition** isolating pure base tariffs from aviation fuel surcharges (YQ), airport user fees (UDF/PSF), and statutory Goods and Services Tax (GST).
 5. **Non-parametric statistical cleaning** preventing luxury class skew from contaminating headline inflation metrics.
 
@@ -85,10 +85,10 @@ To eliminate single-source bias, the scraper ingests live flight quotes across t
 
 ### 4.2 Ethical Scraping Guard (`RobotGuard`)
 In compliance with SIH26056 legal and ethical mandates:
-- **`robots.txt` Verification**: Target URLs are evaluated against standard `urllib.robotparser` directives. If a path is disallowed, the system defers to permitted search endpoints.
-- **Polite Rate Limiting**: Per-domain request queues enforce a minimum crawl delay ($3.0\,\text{s}$).
+- **`robots.txt` Pre-Request Verification & Enforcement Gate**: Every candidate scrape target URL is evaluated against RFC 9309 rules prior to launching browser sessions or network requests. If a directive restricts the target path (`can_fetch() == False`), the extraction is immediately aborted without sending traffic, and the pipeline falls back to cached authentic warehouse quotes or benchmark models.
+- **Polite Rate Limiting**: Per-domain request queues enforce a minimum crawl delay ($3.0\,\text{s}$) between successive requests to the same origin.
 - **Exponential Backoff**: Dynamic backoff with randomized jitter on HTTP 429 / 503 status codes.
-- **Auditable Telemetry**: Real-time compliance logs are exposed via `GET /api/v1/compliance/robots`.
+- **Auditable Telemetry**: Real-time compliance verification logs are exposed via `GET /api/v1/compliance/robots`.
 
 ### 4.3 Zero-OOM Cloud Worker Architecture
 Headless browser automation on constrained cloud containers (Render Free Tier, 512MB RAM) poses severe Out-Of-Memory (OOM) risks. AeroDex implements a **decoupled architecture**:
