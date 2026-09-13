@@ -185,8 +185,10 @@ class AutoUpdateManager:
                         current_pulse = self.get_live_pulse()
                         # Instant synchronous update for 0ms cache freshness
                         ai_engine.refresh_situation_summary(force_local=True, live_pulse=current_pulse)
-                        # If Gemini client is active, trigger background AI upgrade
-                        if ai_engine.gemini_client:
+                        # Rate-limited background AI upgrade (at most once every 15 minutes to conserve quota)
+                        now_ts = time.time()
+                        if ai_engine.gemini_client and (now_ts - getattr(ai_engine, "_last_gemini_call", 0) > 900):
+                            ai_engine._last_gemini_call = now_ts
                             threading.Thread(target=ai_engine.refresh_situation_summary, kwargs={"force_local": False, "live_pulse": current_pulse}, daemon=True).start()
                     except Exception as ai_e:
                         print(f"  [AI Engine Error] {ai_e}")
@@ -574,22 +576,34 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
 
         # API: Conversational Grounded AI Query ("Ask AI")
         if parsed.path == "/api/v1/ai/query":
-            content_length = int(self.headers.get("Content-Length", 0))
-            post_data = self.rfile.read(content_length).decode("utf-8")
             try:
-                params = json.loads(post_data)
-            except Exception:
-                params = urllib.parse.parse_qs(post_data)
-                params = {k: v[0] for k, v in params.items()}
+                content_length = int(self.headers.get("Content-Length", 0))
+                post_data = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
+                try:
+                    params = json.loads(post_data)
+                except Exception:
+                    params = urllib.parse.parse_qs(post_data)
+                    params = {k: v[0] for k, v in params.items()}
 
-            question = params.get("question", "")
-            lang = params.get("lang", "auto")
-            response_data = ai_engine.handle_conversational_query(question, lang)
+                question = params.get("question", "")
+                lang = params.get("lang", "auto")
+                response_data = ai_engine.handle_conversational_query(question, lang)
+            except Exception as ex:
+                print(f"[AI Query Error] {ex}")
+                response_data = {
+                    "answer": f"AeroDex real-time data engine is active. Please ask about any specific route (e.g. DEL-BOM), cheapest fares, or CPI basis points impact.",
+                    "language": "en",
+                    "source": "AeroDex Grounded Engine"
+                }
+
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(json.dumps(response_data, ensure_ascii=False).encode("utf-8"))
+            try:
+                self.wfile.write(json.dumps(response_data, ensure_ascii=False).encode("utf-8"))
+            except Exception as write_err:
+                print(f"[AI Query Write Error] {write_err}")
             return
 
         # API: Set / Update Gemini API Key and Model dynamically

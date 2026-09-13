@@ -26,8 +26,8 @@ try:
 except ImportError:
     HAS_GOOGLE_GENAI = False
 
-GEMINI_MODEL_PRIMARY = os.environ.get("GEMINI_MODEL", "gemini-3.7-flash")
-GEMINI_MODEL_FALLBACK = "gemini-2.5-flash"
+GEMINI_MODEL_PRIMARY = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
+GEMINI_MODEL_FALLBACK = "gemini-flash-latest"
 
 
 class AirfareAIEngine:
@@ -218,16 +218,26 @@ class AirfareAIEngine:
 
         # 5. Lead-Time Spread (T+1 vs T+15) - Paired Route Econometric Comparison
         cur.execute("""
+            WITH t1_agg AS (
+                SELECT origin, destination, AVG(total_fare) as t1_avg
+                FROM scraped_quotes
+                WHERE advance_window = 'T+1'
+                GROUP BY origin, destination
+            ),
+            t15_agg AS (
+                SELECT origin, destination, AVG(total_fare) as t15_avg
+                FROM scraped_quotes
+                WHERE advance_window = 'T+15'
+                GROUP BY origin, destination
+            )
             SELECT 
-                q1.origin || '-' || q1.destination as route, 
-                AVG(q1.total_fare) as t1, 
-                AVG(q15.total_fare) as t15,
-                ((AVG(q1.total_fare) - AVG(q15.total_fare)) / AVG(q1.total_fare)) * 100 as sav_pct
-            FROM scraped_quotes q1
-            JOIN scraped_quotes q15 
-                ON q1.origin = q15.origin AND q1.destination = q15.destination
-            WHERE q1.advance_window = 'T+1' AND q15.advance_window = 'T+15'
-            GROUP BY route
+                t1_agg.origin || '-' || t1_agg.destination as route, 
+                t1_agg.t1_avg as t1, 
+                t15_agg.t15_avg as t15,
+                ((t1_agg.t1_avg - t15_agg.t15_avg) / t1_agg.t1_avg) * 100 as sav_pct
+            FROM t1_agg
+            JOIN t15_agg 
+                ON t1_agg.origin = t15_agg.origin AND t1_agg.destination = t15_agg.destination
             ORDER BY sav_pct DESC
         """)
         paired_rows = cur.fetchall()
@@ -435,7 +445,9 @@ Return ONLY a valid JSON object matching this exact schema (no markdown fences, 
 }}
 """
 
-        models_to_try = [GEMINI_MODEL_PRIMARY, GEMINI_MODEL_FALLBACK]
+        models_to_try = [GEMINI_MODEL_PRIMARY, "gemini-3.6-flash", "gemini-flash-latest", "gemini-flash-lite-latest", GEMINI_MODEL_FALLBACK]
+        seen_models = set()
+        models_to_try = [m for m in models_to_try if m and not (m in seen_models or seen_models.add(m))]
         for model_name in models_to_try:
             try:
                 response = self.gemini_client.models.generate_content(
@@ -617,7 +629,9 @@ LIVE GROUND TRUTH FACTS:
 - Highest Surging Routes: {surging_str}
 - Specific Route Match (if any): {route_match_str}
 """
-                models_to_try = [GEMINI_MODEL_PRIMARY, GEMINI_MODEL_FALLBACK]
+                models_to_try = [GEMINI_MODEL_PRIMARY, "gemini-3.6-flash", "gemini-flash-latest", "gemini-flash-lite-latest", GEMINI_MODEL_FALLBACK]
+                seen_models = set()
+                models_to_try = [m for m in models_to_try if m and not (m in seen_models or seen_models.add(m))]
                 for model_name in models_to_try:
                     try:
                         resp = self.gemini_client.models.generate_content(
