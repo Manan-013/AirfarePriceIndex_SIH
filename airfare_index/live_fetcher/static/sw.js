@@ -24,12 +24,12 @@ const PRECACHE_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      console.log('[APIx PWA] Precaching core application shell');
+      console.log('[AeroDex PWA] Precaching core application shell');
       for (const asset of PRECACHE_ASSETS) {
         try {
           await cache.add(asset);
         } catch (err) {
-          console.warn('[APIx PWA] Precache warning for', asset, err);
+          console.warn('[AeroDex PWA] Precache warning for', asset, err);
         }
       }
     }).then(() => self.skipWaiting())
@@ -44,7 +44,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         keys.map((key) => {
           if (!currentCaches.includes(key)) {
-            console.log('[APIx PWA] Removing outdated cache:', key);
+            console.log('[AeroDex PWA] Removing outdated cache:', key);
             return caches.delete(key);
           }
         })
