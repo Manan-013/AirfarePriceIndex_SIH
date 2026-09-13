@@ -68,7 +68,7 @@ MONITORED_ROUTES = [
 class AutoUpdateManager:
     def __init__(self):
         self.is_running = True
-        self.interval_seconds = 45  # 45-second live refresh cycle to avoid throttling
+        self.interval_seconds = 12  # 12-second live refresh cycle matching frontend cadence
         self.pause_until = 0
         self.current_route_idx = 0
         self.latest_fares = {
