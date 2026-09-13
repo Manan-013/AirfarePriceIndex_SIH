@@ -30,10 +30,11 @@ try:
 except ImportError:
     PLAYWRIGHT_AVAILABLE = False
 
-# Cloud detection: on Render free tier (512MB RAM), headless Chromium causes OOM kills or hangs on Google CAPTCHAs.
-# On cloud containers, safely bypass Playwright unless explicitly enabled via ENABLE_CLOUD_PLAYWRIGHT=1
+# Cloud deployment: Playwright is enabled by default across both local and cloud environments
+# thanks to low-memory sandbox flags and network route asset-aborting (<120MB RAM footprint).
+# Set DISABLE_CLOUD_PLAYWRIGHT=1 or ENABLE_CLOUD_PLAYWRIGHT=0 to disable if running on sub-100MB micro-containers.
 IS_RENDER_OR_CLOUD = bool(os.environ.get("RENDER") or (os.environ.get("PORT") and not sys.platform.startswith("win")))
-if IS_RENDER_OR_CLOUD and os.environ.get("ENABLE_CLOUD_PLAYWRIGHT") != "1":
+if os.environ.get("DISABLE_CLOUD_PLAYWRIGHT") == "1" or (IS_RENDER_OR_CLOUD and os.environ.get("ENABLE_CLOUD_PLAYWRIGHT") == "0"):
     PLAYWRIGHT_AVAILABLE = False
 
 CITY_NAMES = {
