@@ -786,12 +786,24 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
       <div>
         <h3 class="text-lg font-black text-[#26364A] flex items-center gap-2 flex-wrap">
-          Live Flight Inventory
+          Flight Inventory & Tariff Breakdown
           <span id="routeBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-[#F1F5F9] font-mono font-bold text-[#26364A] border border-[#E2E8F0]"></span>
-          <span id="sourceBadge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-[#8ED1C7]/25 text-[#1A6357] border border-[#8ED1C7]/60 font-mono font-semibold"></span>
+          <span id="sourceBadge" class="text-[11px] px-2.5 py-0.5 rounded-full font-mono font-bold shadow-2xs"></span>
         </h3>
       </div>
       <div class="text-xs text-[#5E718A] font-mono" id="scrapeTimestamp"></div>
+    </div>
+
+    <!-- Fallback / Simulated Notice Banner (Hidden when data is live) -->
+    <div id="fallbackNoticeBanner" class="hidden mb-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-3 shadow-xs">
+      <span class="text-lg flex-shrink-0">⚠️</span>
+      <div>
+        <div class="font-bold text-amber-950 flex items-center gap-2">
+          <span>Calibrated Market Benchmark Active</span>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">Continuous Pricing Fallback</span>
+        </div>
+        <p class="text-[11px] text-amber-800/90 leading-relaxed mt-1">Live portal extraction was unavailable or rate-limited. Fares shown are calibrated to official DGCA Form-A traffic census baseline and empirical surge coefficients for uninterrupted index calculation.</p>
+      </div>
     </div>
 
     <!-- Flexible ±3 Days Date Carousel -->
@@ -2269,9 +2281,23 @@
  document.getElementById('carrierWeightedFare').innerText = '₹' + (data.summary.carrier_weighted_fare || data.summary.avg_fare).toLocaleString('en-IN');
  document.getElementById('flightCount').innerText = data.summary.direct_flights;
  document.getElementById('advanceWindow').innerText = data.window;
- document.getElementById('routeBadge').innerText = `${data.origin} → ${data.destination}`;
- document.getElementById('sourceBadge').innerText = data.data_authenticity || 'Real-Time Live Web Feed';
- document.getElementById('scrapeTimestamp').innerText = `Extracted at: ${new Date(data.timestamp).toLocaleTimeString()}`;
+  document.getElementById('routeBadge').innerText = `${data.origin} → ${data.destination}`;
+  
+  const sourceEl = document.getElementById('sourceBadge');
+  const noticeBanner = document.getElementById('fallbackNoticeBanner');
+  const isLive = data.is_live === true || (data.data_authenticity && data.data_authenticity.toLowerCase().includes('live'));
+
+  if (isLive) {
+    sourceEl.innerText = `🟢 ${data.data_authenticity || 'Live Web Scraped'}`;
+    sourceEl.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 font-mono font-bold shadow-2xs";
+    if (noticeBanner) noticeBanner.classList.add('hidden');
+  } else {
+    sourceEl.innerText = `⚠️ Simulated / Benchmark Estimate (Fallback)`;
+    sourceEl.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-300 font-mono font-bold shadow-2xs";
+    if (noticeBanner) noticeBanner.classList.remove('hidden');
+  }
+
+  document.getElementById('scrapeTimestamp').innerText = `Extracted at: ${new Date(data.timestamp).toLocaleTimeString()}`;
 
  const liveBadge = document.getElementById('tabBadge-live');
  if (liveBadge && data.flights) {
@@ -2679,6 +2705,10 @@
       const udfPct = Math.max(1, Math.round((f.airport_fees_udf_psf / totalFareSafe) * 100));
       const gstPct = Math.max(1, 100 - basePct - fuelPct - udfPct);
 
+      const provenancePill = f.is_live === false
+        ? `<span class="text-[10px] px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold" title="Calibrated DGCA benchmark estimate">⚠️ Benchmark</span>`
+        : `<span class="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono font-bold" title="Verified live web scraped quote">🟢 Live</span>`;
+
       card.innerHTML = `
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <!-- Carrier & Flight Info -->
@@ -2691,6 +2721,7 @@
                 <h4 class="text-base font-bold text-[#26364A]">${f.carrier_name}</h4>
                 <span class="text-xs px-2 py-0.5 rounded border ${badgeClass} font-mono font-bold">${f.flight_number}</span>
                 <span class="text-[11px] px-2 py-0.5 rounded bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0] font-mono font-semibold">✈ ${aircraft}</span>
+                ${provenancePill}
                 ${specialTag}
               </div>
               <div class="text-xs font-mono text-[#5E718A] mt-1 flex items-center gap-2">

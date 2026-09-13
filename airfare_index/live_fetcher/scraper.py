@@ -207,6 +207,8 @@ class RealtimeFlightScraper:
             "arrival_time": arr_time,
             "duration": duration,
             "stops": stops,
+            "is_live": True,
+            "source_portal": "Google Flights",
             **breakdown,
             **links
         }
@@ -422,11 +424,12 @@ class RealtimeFlightScraper:
                     print(f"[PLAYWRIGHT SCRAPER] Launching Google Flights full extractor for {origin} -> {destination} on {travel_date}...")
                     flights = asyncio.run(self._scrape_google_flights_async(origin, destination, travel_date))
                     if flights and len(flights) >= 5:
-                        print(f"[PLAYWRIGHT SCRAPER] Successfully extracted {len(flights)} 100% REAL live flights from Google Flights!")
+                        print(f"[PLAYWRIGHT SCRAPER] Successfully extracted {len(flights)} live flights from Google Flights!")
                         res_data = {
                             "status": "success",
                             "source": "live_google_flights_scrape",
-                            "data_authenticity": "100% Genuine Real-Time Web Scraped",
+                            "data_authenticity": "Live Web Scraped (Google Flights)",
+                            "is_live": True,
                             "origin": origin,
                             "origin_name": AIRPORT_NAMES.get(origin, origin),
                             "destination": destination,
@@ -453,8 +456,9 @@ class RealtimeFlightScraper:
                     print(f"[LIVE SCRAPER] Successfully extracted {len(flights)} live flights via HTTP SSR!")
                     res_data = {
                         "status": "success",
-                        "source": "live_google_flights_scrape",
-                        "data_authenticity": "100% Genuine Real-Time Web Scraped",
+                        "source": "live_google_flights_http",
+                        "data_authenticity": "Live Web Scraped (Google Flights HTTP)",
+                        "is_live": True,
                         "origin": origin,
                         "origin_name": AIRPORT_NAMES.get(origin, origin),
                         "destination": destination,
@@ -475,8 +479,9 @@ class RealtimeFlightScraper:
             fallback_results = self._calibrated_market_fallback(origin, destination, travel_date, days_ahead)
             return {
                 "status": "success",
-                "source": "calibrated_realtime_feed",
-                "data_authenticity": "DGCA Calibrated Real-Market Benchmark",
+                "source": "simulated_benchmark_fallback",
+                "data_authenticity": "Simulated / Benchmark Estimate",
+                "is_live": False,
                 "origin": origin,
                 "origin_name": AIRPORT_NAMES.get(origin, origin),
                 "destination": destination,
@@ -575,6 +580,8 @@ class RealtimeFlightScraper:
                 "arrival_time": tpl["arr"],
                 "duration": tpl["dur"],
                 "stops": tpl.get("stops", "Non-stop"),
+                "is_live": False,
+                "source_portal": "Simulated / Benchmark Estimate",
                 **breakdown,
                 **links
             })

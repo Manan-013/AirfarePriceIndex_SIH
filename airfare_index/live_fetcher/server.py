@@ -146,7 +146,7 @@ class AutoUpdateManager:
                     sector_idx = index_engine.calculate_route_index(route_code, cw_fare)
 
                     # Persist to SQLite
-                    db.log_flight_quotes(flights, origin, dest, travel_date, window=window_key, source_portal=res.get("data_authenticity", "Automated Live Scraper"))
+                    db.log_flight_quotes(flights, origin, dest, travel_date, window=window_key, source_portal=res.get("data_authenticity", "Simulated / Benchmark Estimate"))
                     db.log_index_calculation(
                         {
                             "min_fare": min(fares),
@@ -177,7 +177,8 @@ class AutoUpdateManager:
                             "lowest_fare": min(fares),
                             "weighted_fare": round(cw_fare),
                             "window": window_key,
-                            "source": res.get("data_authenticity", "Live Google Flights / OTA"),
+                            "source": res.get("data_authenticity", "Simulated / Benchmark Estimate"),
+                            "is_live": res.get("is_live", False),
                             "status": "UPDATED"
                         }
                     print(f"  [AUTO-SCRAPER] Logged {len(flights)} quotes for {route_code}. SQLite updated!")
@@ -554,7 +555,7 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
                         destination,
                         travel_date,
                         window=results.get("window", "T+1"),
-                        source_portal=results.get("data_authenticity", "Live OTA / Google Flights")
+                        source_portal=results.get("data_authenticity", "Simulated / Benchmark Estimate")
                     )
                     db.log_index_calculation(
                         results["summary"],
