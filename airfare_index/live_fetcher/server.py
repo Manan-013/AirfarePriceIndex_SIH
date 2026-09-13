@@ -402,7 +402,7 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
 
         
         # API: Export MoSPI Daily Sector Airfare Bulletin (CSV)
-        if parsed.path == "/api/v1/export/daily":
+        if parsed.path in ["/api/v1/export/daily", "/api/v1/export/daily.csv"]:
             csv_content = index_engine.generate_daily_bulletin_csv(auto_manager.get_live_pulse())
             filename = f"MoSPI_Daily_Airfare_Index_Bulletin_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
             self.send_response(200)
@@ -413,8 +413,30 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(csv_content.encode("utf-8"))
             return
 
+        # API: Weekly Aggregation Timeline (JSON)
+        if parsed.path in ["/api/v1/index/weekly", "/api/v1/weekly"]:
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            weekly_data = index_engine.get_weekly_aggregation_timeline(weeks=12)
+            self.wfile.write(json.dumps(weekly_data, indent=2).encode("utf-8"))
+            return
+
+        # API: Export MoSPI Weekly Airfare Aggregation Bulletin (CSV)
+        if parsed.path in ["/api/v1/export/weekly", "/api/v1/export/weekly.csv"]:
+            csv_content = index_engine.generate_weekly_bulletin_csv(weeks=12)
+            filename = f"MoSPI_Weekly_Airfare_Index_Bulletin_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            self.send_response(200)
+            self.send_header("Content-Type", "text/csv; charset=utf-8")
+            self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(csv_content.encode("utf-8"))
+            return
+
         # API: Export MoSPI 20-Month Historical Timeline Series (CSV)
-        if parsed.path == "/api/v1/export/monthly":
+        if parsed.path in ["/api/v1/export/monthly", "/api/v1/export/monthly.csv"]:
             csv_content = index_engine.generate_monthly_timeline_csv()
             filename = f"MoSPI_Monthly_Airfare_Series_2025_2026.csv"
             self.send_response(200)
@@ -426,7 +448,7 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         # API: Export Scraped Flight Quotes Microdata Audit Log (CSV)
-        if parsed.path == "/api/v1/export/quotes":
+        if parsed.path in ["/api/v1/export/quotes", "/api/v1/export/quotes.csv"]:
             csv_content = db.export_quotes_csv(limit=10000)
             filename = f"Scraped_Flight_Quotes_Microdata_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
             self.send_response(200)

@@ -10,7 +10,7 @@ Features:
    - Intercepts and drops images, video, fonts, and heavy tracking scripts
    - Explicit garbage collection and browser context recycling
 3. Ethical Compliance: Checks robots.txt via RobotGuard and enforces domain rate limits.
-4. Multi-Source Ingestion: Pulls live quotes from EaseMyTrip and Google Flights.
+4. Multi-Source Ingestion: Pulls live quotes from MakeMyTrip, EaseMyTrip, and Google Flights.
 5. SQLite Storage: Writes fresh quotes directly into airfare_index.db for instant dashboard consumption.
 """
 

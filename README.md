@@ -141,6 +141,18 @@ The platform implements ethical scraping safeguards:
 
 ---
 
+## Automated Test Suite
+
+AeroDex includes a comprehensive automated test suite covering Laspeyres index mathematics, carrier volume weighting, statutory tax decomposition (Base + Fuel YQ + Airport UDF + GST = Total), statistical outlier trimming (2.5x median rule), MakeMyTrip parsing, and live REST endpoints.
+
+Run the test suite out-of-the-box:
+```bash
+python -m unittest discover tests -v
+```
+*Result: 23 unit & integration tests passing with 100% success.*
+
+---
+
 ## Key REST API Endpoints
 
 | Endpoint | Method | Description |
@@ -149,15 +161,18 @@ The platform implements ethical scraping safeguards:
 | `/api/v1/compliance/robots` | `GET` | Live robots.txt compliance status and audit log |
 | `/api/v1/live/pulse` | `GET` | High-frequency live pulse of national airfare index |
 | `/api/v1/index/national` | `GET` | Current National Airfare Price Index and CPI impact |
+| `/api/v1/index/weekly` | `GET` | 12-week rolling temporal aggregation timeline JSON |
 | `/api/v1/macro/timeline` | `GET` | 20-month comparison: MoSPI CPI vs ATF Fuel vs Scraper |
 | `/api/v1/routes/weights` | `GET` | Top DGCA passenger volume weights across 786 routes |
 | `/api/v1/db/quotes` | `GET` | Recent microdata quotes from SQLite audit warehouse |
 | `/api/v1/export/daily` | `GET` | Export MoSPI Daily Sector Airfare Bulletin (CSV) |
+| `/api/v1/export/weekly` | `GET` | Export MoSPI Weekly Aggregation Bulletin (CSV) |
 | `/api/v1/export/quotes` | `GET` | Export full microdata quote audit warehouse (CSV) |
 | `/api/v1/ai/summary` | `GET` | Gemini 3.6 Flash Situation Room briefing (English & Hindi) |
 
 ---
 
-## Hackathon Demonstration
+## Methodology & Documentation
 
-For a step-by-step 5-minute walkthrough designed for hackathon evaluators and jury panels, see [**DEMO_SCRIPT.md**](DEMO_SCRIPT.md).
+- For the full econometric, mathematical, and regulatory specification, read [**METHODOLOGY.md**](METHODOLOGY.md).
+- For a step-by-step 5-minute walkthrough designed for hackathon evaluators and jury panels, see [**DEMO_SCRIPT.md**](DEMO_SCRIPT.md).

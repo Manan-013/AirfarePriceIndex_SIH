@@ -127,7 +127,7 @@
 							<span class="truncate">AeroDex</span>
 							<span class="text-[9px] sm:text-[11px] px-2 py-0.5 rounded-full bg-[#8ED1C7]/25 text-[#1A6357] border border-[#8ED1C7]/60 font-mono font-semibold whitespace-nowrap inline-flex items-center">LIVE NSO</span>
 						</h1>
-						<p class="text-[10px] sm:text-xs text-[#5E718A] truncate">National Airfare Price Index • SIH 2026 PS 26056</p>
+						<p class="text-[10px] sm:text-xs text-[#5E718A] truncate">National Airfare Price Index &bull; SIH 2026 PS 26056</p>
 					</div>
 				</div>
 
@@ -1103,7 +1103,13 @@
  </div>
  </section>
 
-
+ <!-- Methodology Transparency Banner -->
+ <div class="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200/90 text-amber-900 text-xs flex items-center gap-2.5 shadow-2xs mb-6">
+ <span class="text-base flex-shrink-0">ℹ️</span>
+ <p class="leading-relaxed">
+ <strong class="font-semibold">Econometric Methodology Note:</strong> Festival and calamity multipliers (1.25x–1.90x) represent <em>calibrated econometric heuristic benchmarks</em> derived from historical MoSPI seasonal elasticities and DGCA load-factor curves, distinct from real-time web scrapes.
+ </p>
+ </div>
 
  <!-- Results Section -->
  <section id="forecastResultsSection" class="space-y-6 mb-12">
@@ -4068,14 +4074,14 @@
  if (!container || !events) return;
 
  const chips = [
- { id: 'real_live', name: ' Real-Time Sensors (Active Now)', date: new Date().toISOString().split('T')[0], badge: 'Live Radar', color: 'bg-sky-50 hover:bg-sky-100 text-sky-950 border-sky-300' },
- { id: 'diwali_rush', name: ' Diwali Peak Rush', date: '2026-11-09', badge: 'Severe (+80%)', color: 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200' },
- { id: 'chhath_puja', name: ' Chhath Puja Mahaparv', date: '2026-11-16', badge: 'Extreme (+90%)', color: 'bg-orange-50 hover:bg-orange-100 text-orange-900 border-orange-200' },
- { id: 'cyclone_coastal', name: ' Cyclone Michaung Benchmark', date: '2026-11-09', badge: 'Historical Shock (-45%)', color: 'bg-rose-50 hover:bg-rose-100 text-rose-900 border-rose-200' },
- { id: 'delhi_winter_fog', name: ' Delhi Fog CAT-III Benchmark', date: '2027-01-10', badge: 'Airspace Freeze (-35%)', color: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border-slate-200' },
- { id: 'holi_festival', name: ' Holi Festival of Colours', date: '2026-03-04', badge: 'Severe (+70%)', color: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200' },
- { id: 'onam_harvest', name: ' Onam Kerala Harvest', date: '2026-09-06', badge: 'Severe (+70%)', color: 'bg-yellow-50 hover:bg-yellow-100 text-yellow-900 border-yellow-200' },
- { id: 'christmas_newyear', name: ' Year-End Leisure Peak', date: '2026-12-30', badge: 'Leisure (+75%)', color: 'bg-purple-50 hover:bg-purple-100 text-purple-900 border-purple-200' }
+ { id: 'real_live', name: '⚡ Real-Time Sensors (Active Now)', date: new Date().toISOString().split('T')[0], badge: 'Live Radar', color: 'bg-sky-50 hover:bg-sky-100 text-sky-950 border-sky-300' },
+ { id: 'diwali_rush', name: '🪔 Diwali Peak Rush', date: '2026-11-09', badge: 'Est. +80% (Heuristic)', color: 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200' },
+ { id: 'chhath_puja', name: '🌅 Chhath Puja Mahaparv', date: '2026-11-16', badge: 'Est. +90% (Heuristic)', color: 'bg-orange-50 hover:bg-orange-100 text-orange-900 border-orange-200' },
+ { id: 'cyclone_coastal', name: '🌀 Cyclone Michaung Benchmark', date: '2026-11-09', badge: 'Est. -45% (Heuristic)', color: 'bg-rose-50 hover:bg-rose-100 text-rose-900 border-rose-200' },
+ { id: 'delhi_winter_fog', name: '🌫️ Delhi Fog CAT-III Benchmark', date: '2027-01-10', badge: 'Est. -35% (Heuristic)', color: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border-slate-200' },
+ { id: 'holi_festival', name: '🎨 Holi Festival of Colours', date: '2026-03-04', badge: 'Est. +70% (Heuristic)', color: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200' },
+ { id: 'onam_harvest', name: '🌾 Onam Kerala Harvest', date: '2026-09-06', badge: 'Est. +70% (Heuristic)', color: 'bg-yellow-50 hover:bg-yellow-100 text-yellow-900 border-yellow-200' },
+ { id: 'christmas_newyear', name: '🎉 Year-End Leisure Peak', date: '2026-12-30', badge: 'Est. +75% (Heuristic)', color: 'bg-purple-50 hover:bg-purple-100 text-purple-900 border-purple-200' }
  ];
 
  container.innerHTML = chips.map(c => `
@@ -4435,6 +4441,17 @@
  <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-semibold">Intraday Nowcast</span>
  </div>
  <p class="text-[11px] text-[#5E718A]">Today's live snapshot with 25-sector breakdown, DGCA weights (Wr), base fares (P0), and Headline CPI impact.</p>
+ </a>
+
+ <!-- Option 1B: Weekly Aggregation Bulletin -->
+ <a href="/api/v1/export/weekly" download class="block p-3.5 rounded-xl border border-[#E2E8F0] hover:border-indigo-300 hover:bg-[#F8FAFC] transition group cursor-pointer">
+ <div class="flex items-center justify-between mb-1">
+ <span class="text-xs font-bold text-[#26364A] group-hover:text-indigo-600 flex items-center gap-2">
+ <span> Weekly Aggregation Bulletin (.csv)</span>
+ </span>
+ <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-50 text-indigo-800 border border-indigo-200 font-semibold">12-Week Rolling</span>
+ </div>
+ <p class="text-[11px] text-[#5E718A]">Multi-frequency temporal aggregation across 12 rolling calendar weeks with WoW change and Headline CPI basis points.</p>
  </a>
 
  <!-- Option 2: Monthly Time-Series -->

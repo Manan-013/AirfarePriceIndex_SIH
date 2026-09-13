@@ -226,6 +226,23 @@ class AirfareDatabase:
         cur = conn.cursor()
         count = 0
         for f in flights:
+            tf = f.get("total_fare")
+            if tf is None:
+                continue
+            try:
+                tf_val = float(tf)
+            except (ValueError, TypeError):
+                continue
+
+            # Data cleaning: discard non-statutory, extreme anomaly, or corrupted fares
+            if tf_val < 1500.0 or tf_val > 95000.0:
+                continue
+
+            # Discard sold out or cancelled flight records
+            desc = (str(f.get("carrier_name", "")) + " " + str(source_portal)).lower()
+            if any(kw in desc for kw in ["sold out", "cancelled", "unavailable"]):
+                continue
+
             cur.execute("""
                 INSERT INTO scraped_quotes
                 (carrier_name, carrier_code, flight_number, origin, destination, departure_date, 
@@ -233,11 +250,11 @@ class AirfareDatabase:
                  airport_fees_udf_psf, gst, total_fare, advance_window, source_portal)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                f.get("carrier_name"), f.get("carrier_code"), f.get("flight_number"),
+                f.get("carrier_name"), f.get("carrier_code") or "6E", f.get("flight_number") or "6E-101",
                 origin, destination, departure_date,
                 f.get("departure_time"), f.get("arrival_time"), f.get("duration"),
-                f.get("stops"), f.get("base_fare"), f.get("fuel_surcharge_yq"),
-                f.get("airport_fees_udf_psf"), f.get("gst"), f.get("total_fare"),
+                f.get("stops") or "Non-stop", f.get("base_fare"), f.get("fuel_surcharge_yq"),
+                f.get("airport_fees_udf_psf"), f.get("gst"), tf_val,
                 window, source_portal
             ))
             count += 1

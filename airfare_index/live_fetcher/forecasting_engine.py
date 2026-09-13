@@ -913,6 +913,8 @@ class AirfareForecastingEngine:
             "scenario_name": scenario_name,
             "scenario_name_hi": scenario_name_hi,
             "scenario_multiplier": round(scenario_multiplier, 2),
+            "multiplier_type": "Econometric Heuristic Estimate (Calibrated)" if scenario not in ["real_live", "real_live_disruption"] else "Live METAR / GDACS Observed",
+            "methodology_note": "Festival & calamity multipliers represent calibrated heuristic benchmarks based on historical MoSPI seasonality curves.",
             "projected_national_index": projected_national_index,
             "pct_vs_base": pct_vs_base,
             "cpi_impact_bps": cpi_impact_bps,
