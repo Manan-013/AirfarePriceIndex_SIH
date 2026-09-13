@@ -26,6 +26,9 @@ try:
 except Exception:
     pass
 
+# Ensure cloud runner / standalone worker enables Playwright
+os.environ["ENABLE_CLOUD_PLAYWRIGHT"] = "1"
+
 # Ensure parent directory is in sys.path
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 if CURRENT_DIR not in sys.path:
@@ -70,7 +73,7 @@ def run_worker_cycle(routes, days_ahead=7, verbose=True):
         t0 = time.time()
 
         try:
-            res = scraper.search_live(origin, destination, target_date)
+            res = scraper.search_live(origin, destination, target_date, force_live=True)
             flights = res.get("flights", [])
             data_auth = res.get("data_authenticity", "Unknown")
             is_live = res.get("is_live", False)

@@ -22,6 +22,8 @@
 **/*.db-wal
 airfare_index.db
 airfare_cpi.db
+# Whitelist pre-seeded microdata SQLite database for cloud deployments and GitHub Actions
+!airfare_index/airfare_index.db
 
 # =========================================================================
 # Python Compiled & Cache Files

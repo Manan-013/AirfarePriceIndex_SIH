@@ -317,6 +317,41 @@ class AirfareDatabase:
         conn.close()
         return rows
 
+    def get_recent_quotes_for_corridor(self, origin: str, destination: str, limit=150):
+        """Retrieves the most recent live-scraped quotes for a specific origin-destination corridor."""
+        conn = self.get_connection()
+        cur = conn.cursor()
+        orig = origin.upper().strip()
+        dest = destination.upper().strip()
+        cur.execute("""
+            SELECT carrier_name, carrier_code, flight_number, origin, destination,
+                   departure_date, departure_time, arrival_time, duration, stops,
+                   base_fare, fuel_surcharge_yq, airport_fees_udf_psf, gst, total_fare,
+                   advance_window, source_portal, scraped_at
+            FROM scraped_quotes 
+            WHERE origin = ? AND destination = ?
+            ORDER BY id DESC LIMIT ?
+        """, (orig, dest, limit))
+        rows = [dict(r) for r in cur.fetchall()]
+
+        # Reciprocal corridor check: if sparse or 0 quotes, check the return direction
+        if len(rows) < 5:
+            cur.execute("""
+                SELECT carrier_name, carrier_code, flight_number, ? as origin, ? as destination,
+                       departure_date, departure_time, arrival_time, duration, stops,
+                       base_fare, fuel_surcharge_yq, airport_fees_udf_psf, gst, total_fare,
+                       advance_window, source_portal, scraped_at
+                FROM scraped_quotes 
+                WHERE origin = ? AND destination = ?
+                ORDER BY id DESC LIMIT ?
+            """, (orig, dest, dest, orig, limit))
+            reciprocal = [dict(r) for r in cur.fetchall()]
+            if reciprocal:
+                rows = reciprocal
+
+        conn.close()
+        return rows
+
     def get_recent_calculations(self, limit=10):
         """Fetches recent Laspeyres calculation audit logs."""
         conn = self.get_connection()

@@ -1,0 +1,70 @@
+﻿name: Scheduled Airfare Scraper & Index Refresh
+
+on:
+  schedule:
+    # Runs every 6 hours (at 00:00, 06:00, 12:00, 18:00 UTC)
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      routes:
+        description: 'Corridors to scrape (comma-separated, e.g. DEL-BOM,DEL-BLR,BOM-BLR)'
+        required: false
+        default: 'DEL-BOM,DEL-BLR,BOM-BLR,DEL-CCU,DEL-HYD'
+      days_ahead:
+        description: 'Advance booking window (days ahead, e.g. 7)'
+        required: false
+        default: '7'
+
+permissions:
+  contents: write
+
+jobs:
+  scrape-and-update:
+    name: Headless Flight Scraper & Microdata Warehouse Update
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install System & Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Run Standalone Ingestion Worker
+        env:
+          PYTHONUNBUFFERED: '1'
+          ENABLE_CLOUD_PLAYWRIGHT: '1'
+          ROUTES: ${{ github.event.inputs.routes || 'DEL-BOM,DEL-BLR,BOM-BLR,DEL-CCU,DEL-HYD' }}
+          WINDOW: ${{ github.event.inputs.days_ahead || '7' }}
+        run: |
+          echo "Starting ingestion pass for routes: $ROUTES (window: T+$WINDOW)"
+          python airfare_index/live_fetcher/worker_scraper.py --routes "$ROUTES" --window "$WINDOW" --once
+
+      - name: Check Database Status
+        run: |
+          python -c "from airfare_index.live_fetcher.database import db; import json; print(json.dumps(db.get_db_stats(), indent=2))"
+
+      - name: Commit & Push Updated Microdata Warehouse
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add airfare_index/airfare_index.db
+          if git diff --staged --quiet; then
+            echo "No new quote changes to commit."
+          else
+            git commit -m "chore(data): refresh airfare microdata warehouse [skip ci]"
+            git push
+            echo "Fresh quotes committed and pushed. Render will auto-deploy the updated dataset."
+          fi

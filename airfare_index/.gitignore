@@ -13,8 +13,8 @@
 *.sqlite
 *.sqlite3
 *.db-journal
-airfare_index.db
 airfare_cpi.db
+!airfare_index.db
 
 # Python Caches & Bytecode
 __pycache__/

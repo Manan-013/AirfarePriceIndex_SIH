@@ -1,5 +1,5 @@
 services:
-  # 1. Main Interactive Web Application & REST API
+  # Main Interactive Web Application & REST API (Free Tier)
   - type: web
     name: mospi-airfare-index
     runtime: python
@@ -11,20 +11,5 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
-      - key: ENABLE_CLOUD_PLAYWRIGHT
-        value: "1"
-
-  # 2. Decoupled Low-Memory Ingestion Worker Cron (Runs every 30 mins)
-  - type: cron
-    name: airfare-ingestion-cron
-    runtime: python
-    region: singapore
-    plan: free
-    schedule: "*/30 * * * *"
-    buildCommand: pip install -r requirements.txt && playwright install --with-deps chromium
-    startCommand: python airfare_index/live_fetcher/worker_scraper.py --routes DEL-BOM,DEL-BLR,BOM-BLR --once
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.9
-      - key: ENABLE_CLOUD_PLAYWRIGHT
-        value: "1"
+      - key: PORT
+        value: 8000
