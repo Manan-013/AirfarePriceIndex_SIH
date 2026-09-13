@@ -13,10 +13,19 @@ import random
 import threading
 import time
 
+import os
+import sys
+
 try:
     from playwright.async_api import async_playwright
     PLAYWRIGHT_AVAILABLE = True
 except ImportError:
+    PLAYWRIGHT_AVAILABLE = False
+
+# Cloud detection: on Render free tier (512MB RAM), headless Chromium causes OOM kills or hangs on Google CAPTCHAs.
+# On cloud containers, safely bypass Playwright unless explicitly enabled via ENABLE_CLOUD_PLAYWRIGHT=1
+IS_RENDER_OR_CLOUD = bool(os.environ.get("RENDER") or (os.environ.get("PORT") and not sys.platform.startswith("win")))
+if IS_RENDER_OR_CLOUD and os.environ.get("ENABLE_CLOUD_PLAYWRIGHT") != "1":
     PLAYWRIGHT_AVAILABLE = False
 
 AIRPORT_NAMES = {
@@ -392,10 +401,10 @@ class RealtimeFlightScraper:
         days_ahead = max(1, (target_dt.date() - today.date()).days)
         cache_key = (origin, destination, travel_date)
 
-        # 1. Check in-memory scrape cache (5-minute TTL) for instantaneous response
+        # 1. Check in-memory scrape cache (45-second TTL) for snappy duplicate queries
         if cache_key in self._cache:
             entry = self._cache[cache_key]
-            if time.time() - entry.get("cached_at", 0) < 300:
+            if time.time() - entry.get("cached_at", 0) < 45:
                 print(f"[SCRAPER CACHE HIT] Returning fresh live quotes for {origin} -> {destination} on {travel_date}")
                 return entry["data"]
 
@@ -404,7 +413,7 @@ class RealtimeFlightScraper:
             # Double-check cache inside lock
             if cache_key in self._cache:
                 entry = self._cache[cache_key]
-                if time.time() - entry.get("cached_at", 0) < 300:
+                if time.time() - entry.get("cached_at", 0) < 45:
                     return entry["data"]
 
             # Strategy 1: Playwright Headless Chromium (Primary: extracts all 30-200 flights from Google Flights, including expanded 'Other flights')

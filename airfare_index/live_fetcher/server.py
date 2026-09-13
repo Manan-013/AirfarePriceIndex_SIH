@@ -112,6 +112,9 @@ class AutoUpdateManager:
             "status": "INITIALIZED"
         }
         self.lock = threading.Lock()
+        self.is_scraping = False
+        self.active_scraping_route = None
+        self.next_scrape_timestamp = time.time() + self.interval_seconds
         self.worker_thread = threading.Thread(target=self._run_loop, daemon=True)
         self.worker_thread.start()
 
@@ -131,6 +134,8 @@ class AutoUpdateManager:
                 route_code = f"{origin}-{dest}"
                 window_key = f"T+{days_offset}"
 
+                self.is_scraping = True
+                self.active_scraping_route = f"{origin} → {dest} ({window_key})"
                 print(f"[AUTO-SCRAPER] Live automated extraction for {route_code} ({window_key})...")
                 res = scraper.search_live(origin, dest, travel_date)
 
@@ -188,6 +193,10 @@ class AutoUpdateManager:
 
             except Exception as e:
                 print(f"  [AUTO-SCRAPER ERROR] {e}")
+            finally:
+                self.is_scraping = False
+                self.active_scraping_route = None
+                self.next_scrape_timestamp = time.time() + self.interval_seconds
 
             time.sleep(self.interval_seconds)
 
@@ -198,10 +207,14 @@ class AutoUpdateManager:
             db_stats = db.get_db_stats()
             sector_matrix = index_engine.get_sector_heatmap_matrix()
 
+            seconds_remaining = max(0, int(round(self.next_scrape_timestamp - time.time())))
             return {
                 "status": "LIVE_FEED_ONLINE",
                 "is_running": self.is_running,
                 "interval_seconds": self.interval_seconds,
+                "is_scraping": self.is_scraping,
+                "active_scraping_route": self.active_scraping_route,
+                "seconds_until_next_scrape": seconds_remaining,
                 "timestamp": datetime.now().strftime("%H:%M:%S"),
                 "total_quotes_logged": db_stats.get("total_scraped_quotes_logged", 1000),
                 "last_scrape": self.last_scrape_event,

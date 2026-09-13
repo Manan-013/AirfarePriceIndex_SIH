@@ -3118,21 +3118,42 @@
  rollNumber(pill, data.total_quotes_logged, 900, 0, '', ' Quotes');
  }
 
- // 2. Ticker Tape Ribbon Status
- if (data.last_scrape) {
- const ls = data.last_scrape;
- if (ls.time !== lastScrapeTimeRecord) {
- lastScrapeTimeRecord = ls.time;
- countdownSeconds = 12; // Reset countdown on new scrape
- // Immediately fetch fresh AI narrative upon each background scrape
- fetchAISummary();
- }
+		// 2. Ticker Tape Ribbon Status & Sync
+		if (data.seconds_until_next_scrape !== undefined) {
+			countdownSeconds = data.seconds_until_next_scrape;
+		}
 
- const tickerScrapeEl = document.getElementById('tickerLastScrapeText');
- if (tickerScrapeEl) {
- tickerScrapeEl.innerHTML = `${ls.route} (${ls.window}) • <strong class="text-[#1A6357]">₹${ls.weighted_fare.toLocaleString('en-IN')}</strong> • ${ls.flights_count} Quotes @ ${ls.time}`;
- }
- }
+		const tickerScrapeEl = document.getElementById('tickerLastScrapeText');
+		const countdownEl = document.getElementById('nextScrapeCountdown');
+
+		if (data.is_scraping) {
+			if (countdownEl) {
+				countdownEl.innerHTML = '<span class="inline-flex items-center gap-1 text-[#3B6DCF] font-bold"><span class="w-1.5 h-1.5 rounded-full bg-[#3B6DCF] animate-ping"></span>Scraping...</span>';
+			}
+			if (tickerScrapeEl && data.active_scraping_route) {
+				tickerScrapeEl.innerHTML = `<span class="text-[#3B6DCF] font-bold animate-pulse">${data.active_scraping_route}</span> • <span class="text-[#5E718A]">Extracting live quotes in background...</span>`;
+			}
+		} else {
+			if (countdownEl) {
+				countdownEl.innerText = `${countdownSeconds}s`;
+			}
+			if (data.last_scrape) {
+				const ls = data.last_scrape;
+				if (ls.time !== lastScrapeTimeRecord) {
+					lastScrapeTimeRecord = ls.time;
+					// Immediately fetch fresh AI narrative upon each background scrape
+					fetchAISummary();
+					if (tickerScrapeEl) {
+						tickerScrapeEl.classList.add('metric-flash');
+						setTimeout(() => tickerScrapeEl.classList.remove('metric-flash'), 1200);
+					}
+				}
+
+				if (tickerScrapeEl) {
+					tickerScrapeEl.innerHTML = `${ls.route} (${ls.window}) • <strong class="text-[#1A6357]">₹${ls.weighted_fare.toLocaleString('en-IN')}</strong> • ${ls.flights_count} Quotes @ ${ls.time}`;
+				}
+			}
+		}
 
  // 3. Rolling Odometer: National Index & CPI KPI Metrics
  if (data.national_index) {
@@ -3243,17 +3264,27 @@
  countdownSeconds--;
  if (countdownSeconds <= 0) countdownSeconds = 12;
 
- const countdownEl = document.getElementById('nextScrapeCountdown');
- if (countdownEl) {
- countdownEl.innerText = `${countdownSeconds}s`;
- }
+ 		// Local 1-second cadence countdown & sync heartbeat
+		heartbeatTimer = setInterval(() => {
+			if (countdownSeconds > 0) {
+				countdownSeconds--;
+			}
 
- syncSeconds += 1;
- const syncEl = document.getElementById('telemetrySyncText');
- if (syncEl) {
- syncEl.innerText = `${syncSeconds.toFixed(1)}s ago`;
- }
- }, 1000);
+			const countdownEl = document.getElementById('nextScrapeCountdown');
+			if (countdownEl) {
+				if (countdownSeconds <= 0) {
+					countdownEl.innerHTML = '<span class="inline-flex items-center gap-1 text-[#3B6DCF] font-bold"><span class="w-1.5 h-1.5 rounded-full bg-[#3B6DCF] animate-ping"></span>Scraping...</span>';
+				} else {
+					countdownEl.innerText = `${countdownSeconds}s`;
+				}
+			}
+
+			syncSeconds += 1;
+			const syncEl = document.getElementById('telemetrySyncText');
+			if (syncEl) {
+				syncEl.innerText = `${syncSeconds.toFixed(1)}s ago`;
+			}
+		}, 1000);
  }
 
  async function toggleScraperStream() {
