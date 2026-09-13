@@ -4,42 +4,9 @@
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>MoSPI Real-Time Airfare Price Index (APIx) | SIH 26056</title>
- <script src="https://cdn.tailwindcss.com">
- // =========================================================================
- // NSO / RBI DATA EXPORT MODAL HANDLERS
- // =========================================================================
- function openExportModal() {
- document.getElementById('exportModal').classList.remove('hidden');
- }
-
- function closeExportModal() {
- document.getElementById('exportModal').classList.add('hidden');
- }
-
- // Close on background click
- document.getElementById('exportModal')?.addEventListener('click', (e) => {
- if (e.target.id === 'exportModal') closeExportModal();
- });
-
- </script>
- <script src="https://cdn.jsdelivr.net/npm/chart.js">
- // =========================================================================
- // NSO / RBI DATA EXPORT MODAL HANDLERS
- // =========================================================================
- function openExportModal() {
- document.getElementById('exportModal').classList.remove('hidden');
- }
-
- function closeExportModal() {
- document.getElementById('exportModal').classList.add('hidden');
- }
-
- // Close on background click
- document.getElementById('exportModal')?.addEventListener('click', (e) => {
- if (e.target.id === 'exportModal') closeExportModal();
- });
-
- </script>
+ <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✈️</text></svg>">
+ <script src="https://cdn.tailwindcss.com"></script>
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -3092,9 +3059,8 @@
       updateStreamChartData(true);
     }
   }
- }
 
- if (currentChartMode === 'timeline' && macroChartInstance && macroChartInstance.data && macroChartInstance.data.datasets.length > 0) {
+  if (currentChartMode === 'timeline' && macroChartInstance && macroChartInstance.data && macroChartInstance.data.datasets.length > 0) {
  const ds = macroChartInstance.data.datasets[0];
  const lastIdx = ds.data.length - 1;
  if (ds.data[lastIdx] !== data.national_index) {

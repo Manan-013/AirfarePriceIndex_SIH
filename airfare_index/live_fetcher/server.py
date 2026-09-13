@@ -224,7 +224,13 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
-        
+
+        # Favicon handler
+        if parsed.path == "/favicon.ico":
+            self.send_response(204)
+            self.end_headers()
+            return
+
         # API: Real-Time Live Stream Pulse (High-Frequency Feed)
         if parsed.path == "/api/v1/live/pulse":
             self.send_response(200)
