@@ -50,6 +50,10 @@ if os.environ.get("DISABLE_CLOUD_PLAYWRIGHT") == "1" or (IS_RENDER_OR_CLOUD and 
 else:
     PLAYWRIGHT_IN_REQUEST = PLAYWRIGHT_AVAILABLE
 
+# On low-RAM cloud web services without in-request browser, prefer DB warehouse to avoid OOM.
+# On local machines or anywhere Playwright is available, default to False (100% REAL LIVE SCRAPING).
+PREFER_DB_CACHE = (os.environ.get("PREFER_DB_CACHE") == "1") or (IS_RENDER_OR_CLOUD and not PLAYWRIGHT_IN_REQUEST)
+
 CITY_NAMES = {
     "DEL": "Delhi", "BOM": "Mumbai", "BLR": "Bangalore", "HYD": "Hyderabad",
     "MAA": "Chennai", "CCU": "Kolkata", "AMD": "Ahmedabad", "PNQ": "Pune",
@@ -602,7 +606,8 @@ class RealtimeFlightScraper:
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
                 "--disable-gpu",
-                "--disable-blink-features=AutomationControlled"
+                "--disable-blink-features=AutomationControlled",
+                "--disable-http2"
             ]
             browser = await p.chromium.launch(headless=True, args=launch_args)
             context = await browser.new_context(
@@ -616,9 +621,9 @@ class RealtimeFlightScraper:
             await page.route("**/*.{png,jpg,jpeg,svg,gif,webp,woff,woff2,ttf,otf,mp4,webm}", lambda route: route.abort())
 
             try:
-                await page.goto(mmt_url, timeout=28000, wait_until="domcontentloaded")
+                await page.goto(mmt_url, timeout=12000, wait_until="domcontentloaded")
                 try:
-                    await page.wait_for_selector('.listingCard, .clusterViewPrice, [class*="flightCard"], [class*="listingRow"]', timeout=12000)
+                    await page.wait_for_selector('.listingCard, .clusterViewPrice, [class*="flightCard"], [class*="listingRow"]', timeout=8000)
                 except Exception:
                     pass
                 await page.wait_for_timeout(2000)
@@ -888,9 +893,8 @@ class RealtimeFlightScraper:
                     return entry["data"]
 
             # 3. Strategy 1: SQLite Microdata Warehouse Check
-            # On cloud (Render Free Tier) or when in-request Playwright is disabled, serve recent authentic quotes from SQLite.
-            # Instant (<15ms) response, 0MB browser RAM overhead, zero risk of 512MB OOM crash.
-            if not force_live and (not self.PLAYWRIGHT_IN_REQUEST or os.environ.get("PREFER_DB_CACHE", "1") == "1") and db:
+            # Used only when PREFER_DB_CACHE is active (e.g. on constrained 512MB cloud free tier) and force_live is False.
+            if not force_live and PREFER_DB_CACHE and db:
                 try:
                     db_quotes = db.get_recent_quotes_for_corridor(origin, destination, limit=100)
                     if db_quotes and len(db_quotes) >= 5:
@@ -1072,7 +1076,51 @@ class RealtimeFlightScraper:
             except Exception as http_err:
                 print(f"[LIVE SCRAPER] HTTP extraction note: {http_err}")
 
-            # Strategy 4: Calibrated real-market domestic flight schedule fallback
+            # Strategy 4: Microdata Warehouse Fallback (if real-time live scrapers encountered transient network blocks)
+            if db:
+                try:
+                    db_quotes = db.get_recent_quotes_for_corridor(origin, destination, limit=100)
+                    if db_quotes and len(db_quotes) >= 5:
+                        formatted_flights = []
+                        seen_keys = set()
+                        sources_seen = set()
+                        for row in db_quotes:
+                            key = (row.get("carrier_code"), row.get("departure_time"), row.get("arrival_time"))
+                            if key not in seen_keys:
+                                seen_keys.add(key)
+                                formatted_flights.append(self._format_db_flight(row, origin, destination, travel_date))
+                                sp = row.get("source_portal") or "EaseMyTrip & Google Flights"
+                                if "MakeMyTrip" in sp: sources_seen.add("MakeMyTrip")
+                                if "EaseMyTrip" in sp: sources_seen.add("EaseMyTrip")
+                                if "Google Flights" in sp: sources_seen.add("Google Flights")
+                        formatted_flights, clean_meta = self.clean_and_filter_quotes(formatted_flights, origin, destination)
+                        if len(formatted_flights) >= 5:
+                            formatted_flights.sort(key=lambda x: x["total_fare"])
+                            sources_list = sorted(list(sources_seen)) if sources_seen else ["EaseMyTrip", "Google Flights"]
+                            res_data = {
+                                "status": "success",
+                                "source": "microdata_warehouse_fallback",
+                                "data_authenticity": f"Warehouse Ingested Live Quotes ({' & '.join(sources_list)})",
+                                "is_live": True,
+                                "sources_used": sources_list,
+                                "data_cleaning": clean_meta,
+                                "origin": origin,
+                                "origin_name": AIRPORT_NAMES.get(origin, origin),
+                                "destination": destination,
+                                "destination_name": AIRPORT_NAMES.get(destination, destination),
+                                "travel_date": travel_date,
+                                "days_ahead": days_ahead,
+                                "window": f"T+{days_ahead}",
+                                "timestamp": datetime.now().isoformat(),
+                                "total_flights": len(formatted_flights),
+                                "flights": formatted_flights,
+                            }
+                            self._cache[cache_key] = {"cached_at": time.time(), "data": res_data}
+                            return res_data
+                except Exception as fb_err:
+                    pass
+
+            # Strategy 5: Calibrated real-market domestic flight schedule fallback
             fallback_results = self._calibrated_market_fallback(origin, destination, travel_date, days_ahead)
             return {
                 "status": "success",

@@ -2268,7 +2268,7 @@
  const res = await fetch('/api/v1/search', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ origin, destination, date })
+ body: JSON.stringify({ origin, destination, date, force_live: true })
  });
  const data = await res.json();
  currentPayload = data;

@@ -138,7 +138,8 @@ class AutoUpdateManager:
                 self.is_scraping = True
                 self.active_scraping_route = f"{origin} → {dest} ({window_key})"
                 print(f"[AUTO-SCRAPER] Live automated extraction for {route_code} ({window_key})...")
-                res = scraper.search_live(origin, dest, travel_date)
+                should_force = not getattr(scraper, "IS_RENDER_OR_CLOUD", False) or getattr(scraper, "ENABLE_CLOUD_PLAYWRIGHT", False)
+                res = scraper.search_live(origin, dest, travel_date, force_live=should_force)
 
                 if res and res.get("flights"):
                     flights = res["flights"]
@@ -547,11 +548,15 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
             origin = params.get("origin", "DEL")
             destination = params.get("destination", "BOM")
             travel_date = params.get("date", datetime.now().strftime("%Y-%m-%d"))
+            force_live = params.get("force_live", True)
+            if isinstance(force_live, str):
+                force_live = force_live.lower() in ["true", "1", "yes"]
+
             route_code = f"{origin}-{destination}"
 
-            print(f"[LIVE SEARCH] {origin} -> {destination} on {travel_date}")
+            print(f"[LIVE SEARCH] {origin} -> {destination} on {travel_date} (force_live={force_live})")
             auto_manager.pause_briefly(25)
-            results = scraper.search_live(origin, destination, travel_date)
+            results = scraper.search_live(origin, destination, travel_date, force_live=force_live)
 
             if results["flights"]:
                 fares = [f["total_fare"] for f in results["flights"]]
