@@ -118,16 +118,26 @@
 
 	<!-- Top Navigation Header -->
 	<header class="border-b border-[#E2E8F0] bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-xs">
-		<div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-			<div class="flex items-center gap-3.5 flex-shrink-0">
-				<img src="/logo.png" alt="APIx Logo" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-contain bg-white border border-[#CBD5E1] shadow-sm flex-shrink-0 p-1 hover:scale-105 transition-transform">
-				<div>
-					<h1 class="text-base sm:text-xl font-bold tracking-tight text-[#26364A] flex flex-wrap items-center gap-2">
-						<span>MoSPI Airfare Price Index (APIx)</span>
-						<span class="text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-full bg-[#8ED1C7]/25 text-[#1A6357] border border-[#8ED1C7]/60 font-mono font-semibold whitespace-nowrap flex-shrink-0 inline-flex items-center">LIVE NSO ENGINE</span>
-					</h1>
-					<p class="text-xs text-[#5E718A]">SIH 2026 PS 26056 • Real-Time CPI Augmentation & RBI Inflation Feed</p>
+		<div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
+			<div class="flex items-center justify-between w-full lg:w-auto gap-2 sm:gap-3.5">
+				<div class="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
+					<img src="/logo.png" alt="APIx Logo" class="w-10 h-10 sm:w-13 sm:h-13 rounded-xl object-contain bg-white border border-[#CBD5E1] shadow-sm flex-shrink-0 p-1 hover:scale-105 transition-transform">
+					<div class="min-w-0">
+						<h1 class="text-sm sm:text-xl font-bold tracking-tight text-[#26364A] flex flex-wrap items-center gap-1.5 sm:gap-2">
+							<span class="truncate">MoSPI APIx Index</span>
+							<span class="text-[9px] sm:text-[11px] px-2 py-0.5 rounded-full bg-[#8ED1C7]/25 text-[#1A6357] border border-[#8ED1C7]/60 font-mono font-semibold whitespace-nowrap inline-flex items-center">LIVE NSO</span>
+						</h1>
+						<p class="text-[10px] sm:text-xs text-[#5E718A] truncate">SIH 2026 PS 26056 • Real-Time CPI Augmentation</p>
+					</div>
 				</div>
+
+				<!-- 3-line Hamburger Menu Button (visible on mobile/tablet <lg) -->
+				<button onclick="toggleMobileNav()" id="mobileNavToggleBtn" aria-label="Toggle navigation menu"
+						class="lg:hidden p-2 rounded-xl border border-[#CBD5E1] bg-[#F7FAFC] hover:bg-[#EDF2F7] active:bg-[#E2E8F0] text-[#26364A] shadow-xs cursor-pointer flex items-center justify-center flex-shrink-0">
+					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
+					</svg>
+				</button>
 			</div>
 
 			<!-- Dispersed Center & Right Status Elements across the header -->
@@ -231,11 +241,105 @@
  </div>
  </div>
 
- <!-- Main Layout Container (Sidebar + Content Area) -->
- <div class="max-w-[1680px] mx-auto px-4 sm:px-6 py-6 flex flex-col lg:flex-row gap-6 items-start">
+	<!-- Mobile Off-Canvas Navigation Drawer (<lg) -->
+	<div id="mobileNavDrawer" class="hidden fixed inset-0 z-50 lg:hidden">
+		<!-- Dark Blur Backdrop -->
+		<div onclick="toggleMobileNav(false)" class="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"></div>
+		
+		<!-- Slide-in Drawer Container -->
+		<div class="fixed inset-y-0 left-0 max-w-[320px] w-full bg-white shadow-2xl z-50 flex flex-col p-5 space-y-4 overflow-y-auto">
+			<!-- Drawer Top Bar -->
+			<div class="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
+				<div class="flex items-center gap-2.5">
+					<img src="/logo.png" alt="APIx Logo" class="w-8 h-8 rounded-lg object-contain bg-white border border-[#CBD5E1] p-0.5">
+					<div>
+						<div class="text-sm font-bold text-[#26364A]">MoSPI APIx</div>
+						<div class="text-[10px] text-[#5E718A]">Navigation Modules</div>
+					</div>
+				</div>
+				<button onclick="toggleMobileNav(false)" class="p-1.5 rounded-lg text-[#5E718A] hover:text-[#26364A] hover:bg-[#F1F5F9] cursor-pointer">
+					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+				</button>
+			</div>
 
- <!-- ==================== LEFT SIDEBAR NAVIGATION ==================== -->
-        <aside class="w-full lg:w-80 flex-shrink-0 lg:sticky lg:top-[124px] space-y-3">
+			<!-- Quick Dashboard Status Pill Card -->
+			<button type="button" onclick="switchMainTab('dashboard'); toggleMobileNav(false);" id="mobileSidebarDashboardCard"
+					class="w-full glass-card rounded-xl p-3 border border-[#5B8DEF]/40 bg-gradient-to-br from-[#5B8DEF]/10 via-white to-white shadow-xs text-left cursor-pointer">
+				<div class="flex items-center justify-between mb-1.5">
+					<div class="flex items-center gap-2">
+						<div class="w-6 h-6 rounded-lg bg-[#5B8DEF] text-white flex items-center justify-center font-mono text-[11px] font-bold">
+							CPI
+						</div>
+						<span class="text-xs font-bold text-[#26364A]">Executive Dashboard</span>
+					</div>
+					<span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+						<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+						LIVE
+					</span>
+				</div>
+				<div class="text-[11px] text-[#64748B] flex items-center justify-between pt-1 border-t border-[#F1F5F9]">
+					<span>National Index:</span>
+					<span class="font-mono font-extrabold text-[#3B6DCF]" id="mobileQuickIndexVal">140.36</span>
+				</div>
+			</button>
+
+			<!-- Navigation Links -->
+			<div class="space-y-1.5 flex-1">
+				<div class="px-2 py-1 text-[10px] font-mono font-bold text-[#94A3B8] uppercase tracking-wider flex items-center justify-between">
+					<span>Modules</span>
+					<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+				</div>
+				
+				<button onclick="switchMainTab('dashboard'); toggleMobileNav(false);" id="tabBtnMobile-dashboard" 
+						class="w-full px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-between bg-[#5B8DEF] text-white shadow-sm text-left cursor-pointer">
+					<span class="font-medium whitespace-nowrap">Main Dashboard</span>
+					<span class="text-[10px] px-2 py-0.5 rounded-full bg-white/25 font-mono">Overview</span>
+				</button>
+				<button onclick="switchMainTab('live'); toggleMobileNav(false);" id="tabBtnMobile-live" 
+						class="w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center justify-between text-[#5E718A] hover:text-[#26364A] hover:bg-[#F1F5F9] cursor-pointer text-left">
+					<span class="font-medium whitespace-nowrap">Live Fare Verifier</span>
+					<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#5B8DEF]/15 text-[#3064C4] border border-[#5B8DEF]/30 font-mono">Live</span>
+				</button>
+				<button onclick="switchMainTab('forecast'); toggleMobileNav(false);" id="tabBtnMobile-forecast" 
+						class="w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center justify-between text-[#5E718A] hover:text-[#26364A] hover:bg-[#F1F5F9] cursor-pointer text-left">
+					<span class="font-medium whitespace-nowrap">Forward Nowcast</span>
+					<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200 font-mono">ML Predict</span>
+				</button>
+				<button onclick="switchMainTab('heatmaps'); toggleMobileNav(false);" id="tabBtnMobile-heatmaps" 
+						class="w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center justify-between text-[#5E718A] hover:text-[#26364A] hover:bg-[#F1F5F9] cursor-pointer text-left">
+					<span class="font-medium whitespace-nowrap">Pricing Heatmaps</span>
+					<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#FFD166]/25 text-[#8F6600] border border-[#FFD166]/60 font-mono">Elasticity</span>
+				</button>
+				<button onclick="switchMainTab('macro'); toggleMobileNav(false);" id="tabBtnMobile-macro" 
+						class="w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center justify-between text-[#5E718A] hover:text-[#26364A] hover:bg-[#F1F5F9] cursor-pointer text-left">
+					<span class="font-medium whitespace-nowrap">Macro Alignment</span>
+					<span class="text-[10px] px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 border border-teal-200 font-mono">Econometrics</span>
+				</button>
+				<button onclick="switchMainTab('weights'); toggleMobileNav(false);" id="tabBtnMobile-weights" 
+						class="w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center justify-between text-[#5E718A] hover:text-[#26364A] hover:bg-[#F1F5F9] cursor-pointer text-left">
+					<span class="font-medium whitespace-nowrap">DGCA Route Basket</span>
+					<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200 font-mono">786 Routes</span>
+				</button>
+			</div>
+
+			<!-- Mobile Actions -->
+			<div class="pt-3 border-t border-[#E2E8F0] space-y-2">
+				<button onclick="openExportModal(); toggleMobileNav(false);" class="w-full py-2.5 px-3 rounded-xl border border-[#5B8DEF]/40 bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 text-[#3064C4] text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+					<span>Export CSV / NSO Feed</span>
+				</button>
+				<button onclick="openApiKeyModal(); toggleMobileNav(false);" class="w-full py-2.5 px-3 rounded-xl border border-[#E2E8F0] bg-[#F7FAFC] hover:bg-[#EDF2F7] text-[#26364A] text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
+					<span>Gemini 3.7 Settings</span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Main Layout Container (Sidebar + Content Area) -->
+	<div class="max-w-[1680px] mx-auto px-4 sm:px-6 py-6 flex flex-col lg:flex-row gap-6 items-start">
+
+ 		<!-- ==================== LEFT SIDEBAR NAVIGATION (Desktop) ==================== -->
+        <aside class="hidden lg:block w-80 flex-shrink-0 lg:sticky lg:top-[124px] space-y-3">
             
             <!-- Quick Dashboard Direct View Card -->
             <button type="button" onclick="switchMainTab('dashboard')" id="sidebarDashboardCard"
@@ -2695,79 +2799,116 @@
  }
  }
 
- function switchMainTab(tabKey) {
- const tabs = ['dashboard', 'live', 'forecast', 'heatmaps', 'macro', 'weights'];
- tabs.forEach(t => {
- const btn = document.getElementById(`tabBtn-${t}`);
- const panel = document.getElementById(`panel-${t}`);
- 
- if (btn) {
- if (t === tabKey) {
- btn.className = 'w-full px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-between bg-[#5B8DEF] text-white shadow-sm text-left cursor-pointer';
- } else {
- btn.className = 'w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center justify-between text-[#5E718A] hover:text-[#26364A] hover:bg-[#F1F5F9] cursor-pointer text-left';
- }
- }
- if (panel) {
- if (t === tabKey || (tabKey === 'dashboard' && t === 'live')) {
- panel.classList.remove('hidden');
- } else {
- panel.classList.add('hidden');
- }
- }
- });
+	function switchMainTab(tabKey) {
+		const tabs = ['dashboard', 'live', 'forecast', 'heatmaps', 'macro', 'weights'];
+		tabs.forEach(t => {
+			const btn = document.getElementById(`tabBtn-${t}`);
+			const btnMobile = document.getElementById(`tabBtnMobile-${t}`);
+			const panel = document.getElementById(`panel-${t}`);
+			
+			const activeClass = 'w-full px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-between bg-[#5B8DEF] text-white shadow-sm text-left cursor-pointer';
+			const inactiveClass = 'w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center justify-between text-[#5E718A] hover:text-[#26364A] hover:bg-[#F1F5F9] cursor-pointer text-left';
 
- // Update badge styling
- const badgeDash = document.getElementById('tabBadge-dashboard');
- const badgeLive = document.getElementById('tabBadge-live');
- if (badgeDash) {
- badgeDash.className = tabKey === 'dashboard' 
- ? 'text-[10px] px-2 py-0.5 rounded-full bg-white/25 font-mono flex-shrink-0' 
- : 'text-[10px] px-2 py-0.5 rounded-full bg-[#5B8DEF]/15 text-[#3064C4] border border-[#5B8DEF]/30 font-mono flex-shrink-0';
- }
- if (badgeLive) {
- badgeLive.className = tabKey === 'live' 
- ? 'text-[10px] px-2 py-0.5 rounded-full bg-white/25 font-mono flex-shrink-0' 
- : 'text-[10px] px-2 py-0.5 rounded-full bg-[#5B8DEF]/15 text-[#3064C4] border border-[#5B8DEF]/30 font-mono flex-shrink-0';
- }
+			if (btn) {
+				btn.className = (t === tabKey) ? activeClass : inactiveClass;
+			}
+			if (btnMobile) {
+				btnMobile.className = (t === tabKey) ? activeClass : inactiveClass;
+			}
+			if (panel) {
+				if (t === tabKey || (tabKey === 'dashboard' && t === 'live')) {
+					panel.classList.remove('hidden');
+				} else {
+					panel.classList.add('hidden');
+				}
+			}
+		});
 
- // Quick card border highlight
- const sidebarCard = document.getElementById('sidebarDashboardCard');
- if (sidebarCard) {
- if (tabKey === 'dashboard') {
- sidebarCard.classList.add('border-[#5B8DEF]', 'ring-2', 'ring-[#5B8DEF]/30');
- } else {
- sidebarCard.classList.remove('border-[#5B8DEF]', 'ring-2', 'ring-[#5B8DEF]/30');
- }
- }
+		// Update badge styling
+		const badgeDash = document.getElementById('tabBadge-dashboard');
+		const badgeLive = document.getElementById('tabBadge-live');
+		if (badgeDash) {
+			badgeDash.className = tabKey === 'dashboard' 
+				? 'text-[10px] px-2 py-0.5 rounded-full bg-white/25 font-mono flex-shrink-0' 
+				: 'text-[10px] px-2 py-0.5 rounded-full bg-[#5B8DEF]/15 text-[#3064C4] border border-[#5B8DEF]/30 font-mono flex-shrink-0';
+		}
+		if (badgeLive) {
+			badgeLive.className = tabKey === 'live' 
+				? 'text-[10px] px-2 py-0.5 rounded-full bg-white/25 font-mono flex-shrink-0' 
+				: 'text-[10px] px-2 py-0.5 rounded-full bg-[#5B8DEF]/15 text-[#3064C4] border border-[#5B8DEF]/30 font-mono flex-shrink-0';
+		}
 
- if (tabKey === 'dashboard') {
- window.scrollTo({ top: 0, behavior: 'smooth' });
- }
+		// Quick card border highlight
+		const sidebarCard = document.getElementById('sidebarDashboardCard');
+		const mobileCard = document.getElementById('mobileSidebarDashboardCard');
+		[sidebarCard, mobileCard].forEach(card => {
+			if (card) {
+				if (tabKey === 'dashboard') {
+					card.classList.add('border-[#5B8DEF]', 'ring-2', 'ring-[#5B8DEF]/30');
+				} else {
+					card.classList.remove('border-[#5B8DEF]', 'ring-2', 'ring-[#5B8DEF]/30');
+				}
+			}
+		});
 
- if (tabKey === 'live') {
- const searchEl = document.getElementById('searchForm');
- if (searchEl) {
- searchEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
- const inp = document.getElementById('originSearchInput');
- if (inp) inp.focus();
- }
- }
+		if (tabKey === 'dashboard') {
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		}
 
- if (tabKey === 'forecast') {
- initForecastTabIfNeeded();
- }
+		if (tabKey === 'live') {
+			const searchEl = document.getElementById('searchForm');
+			if (searchEl) {
+				searchEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				const inp = document.getElementById('originSearchInput');
+				if (inp) inp.focus();
+			}
+		}
 
- if (tabKey === 'heatmaps') {
- initHeatmap();
- }
+		if (tabKey === 'forecast') {
+			if (typeof initForecastTabIfNeeded === 'function') {
+				initForecastTabIfNeeded();
+			}
+		}
 
- if (tabKey === 'macro' && macroChartInstance) {
- setTimeout(() => {
- macroChartInstance.resize();
- }, 50);
- }
- }
+		if (tabKey === 'heatmaps') {
+			initHeatmap();
+		}
+
+		if (tabKey === 'macro' && macroChartInstance) {
+			setTimeout(() => {
+				macroChartInstance.resize();
+			}, 50);
+		}
+	}
+
+	// Mobile Navigation Drawer Toggle Handler
+	function toggleMobileNav(forceOpen) {
+		const drawer = document.getElementById('mobileNavDrawer');
+		if (!drawer) return;
+		if (forceOpen === true) {
+			drawer.classList.remove('hidden');
+			document.body.classList.add('overflow-hidden');
+		} else if (forceOpen === false) {
+			drawer.classList.add('hidden');
+			document.body.classList.remove('overflow-hidden');
+		} else {
+			const isHidden = drawer.classList.contains('hidden');
+			if (isHidden) {
+				drawer.classList.remove('hidden');
+				document.body.classList.add('overflow-hidden');
+			} else {
+				drawer.classList.add('hidden');
+				document.body.classList.remove('overflow-hidden');
+			}
+		}
+	}
+
+	// Close drawer on Escape key
+	window.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') {
+			toggleMobileNav(false);
+		}
+	});
 
  function setRouteWindow(orig, dest, winKey) {
  switchMainTab('live');
