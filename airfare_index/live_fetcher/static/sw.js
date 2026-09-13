@@ -1,11 +1,11 @@
 /**
- * MoSPI Real-Time Airfare Price Index (APIx)
+ * AeroDex — Real-Time Airfare Price Index
  * Progressive Web App Service Worker
- * Version: apix-pwa-v1.0.1
+ * Version: aerodex-pwa-v1.0.0
  */
 
-const CACHE_NAME = 'apix-static-v2';
-const API_CACHE_NAME = 'apix-api-v2';
+const CACHE_NAME = 'aerodex-static-v1';
+const API_CACHE_NAME = 'aerodex-api-v1';
 
 const PRECACHE_ASSETS = [
   '/',

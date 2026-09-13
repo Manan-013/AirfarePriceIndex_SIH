@@ -400,7 +400,7 @@ You are the Chief Econometrician for the Ministry of Statistics & Programme Impl
 Analyze this REAL-TIME EMPIRICAL AIRFARE & CPI DATA from India's civil aviation corridors:
 
 DATA SUMMARY:
-- National Airfare Price Index (APIx): {facts['national_index']:.2f} (Base: 100.0, 2024 reset)
+- AeroDex National Airfare Price Index: {facts['national_index']:.2f} (Base: 100.0, 2024 reset)
 - Index change vs base: {facts['pct_vs_base']:+.2f}%
 - Contribution to Headline Indian CPI: +{facts['cpi_impact_bps']:.2f} basis points (0.077% MoSPI basket weight)
 - Top Surging Routes: {json.dumps(facts['top_surges'])}

@@ -1,8 +1,8 @@
 {
   "id": "/?source=pwa",
-  "name": "MoSPI Real-Time Airfare Price Index (APIx)",
-  "short_name": "APIx Index",
-  "description": "High-Frequency DGCA Airfare Price Index, Real-Time CPI Augmentation & RBI Inflation Feed - SIH 2026 PS 26056",
+  "name": "AeroDex - Real-Time Airfare Price Index",
+  "short_name": "AeroDex",
+  "description": "AeroDex: High-Frequency DGCA Airfare Price Index, Real-Time CPI Augmentation & RBI Inflation Feed - SIH 2026 PS 26056",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
