@@ -452,11 +452,14 @@
  </div>
  </aside>
 
- <!-- ==================== MAIN CONTENT AREA ==================== -->
- <main class="flex-1 min-w-0 w-full space-y-6">
+ 	<!-- ==================== MAIN CONTENT AREA ==================== -->
+	<main class="flex-1 min-w-0 w-full space-y-6">
 
- <!-- Executive MoSPI Macroeconomic KPI Banner -->
- <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+		<!-- ==================== TAB PANEL 0: MAIN DASHBOARD OVERVIEW ==================== -->
+		<div id="panel-dashboard" class="tab-panel space-y-6">
+
+			<!-- Executive MoSPI Macroeconomic KPI Banner -->
+			<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
  <div class="glass-card rounded-2xl p-4 border border-[#5B8DEF]/30 bg-gradient-to-br from-[#5B8DEF]/10 to-white">
  				<div class="flex justify-between items-start">
 					<span class="text-xs font-semibold text-[#5E718A]">National Airfare Index (AeroDex)</span>
@@ -639,8 +642,12 @@
  </div>
  </section>
 
- <!-- ==================== TAB PANEL 1: LIVE FARE SEARCH & VERIFICATION ==================== -->
- <div id="panel-live" class="tab-panel">
+ 	</div>
+	</section>
+	</div> <!-- ==================== END TAB PANEL 0: MAIN DASHBOARD OVERVIEW ==================== -->
+
+	<!-- ==================== TAB PANEL 1: LIVE FARE SEARCH & VERIFICATION ==================== -->
+	<div id="panel-live" class="tab-panel hidden">
  <!-- Search Control Panel -->
  <section class="glass-card rounded-2xl p-6 shadow-xs mb-8 border border-[#E2E8F0]">
  <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-6 border-b border-[#F1F5F9] pb-4">
@@ -2816,7 +2823,7 @@
 				btnMobile.className = (t === tabKey) ? activeClass : inactiveClass;
 			}
 			if (panel) {
-				if (t === tabKey || (tabKey === 'dashboard' && t === 'live')) {
+				if (t === tabKey) {
 					panel.classList.remove('hidden');
 				} else {
 					panel.classList.add('hidden');
