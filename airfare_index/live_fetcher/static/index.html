@@ -19,14 +19,27 @@
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
  <style>
+ html {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+ }
  body {
- font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
- background-color: #F7FAFC;
- color: #26364A;
- letter-spacing: -0.011em;
- -webkit-font-smoothing: antialiased;
- -moz-osx-font-smoothing: grayscale;
- -webkit-tap-highlight-color: transparent;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #F7FAFC;
+  color: #26364A;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+  position: relative;
+  box-sizing: border-box;
+ }
+ *, *::before, *::after {
+  box-sizing: border-box;
  }
  /* PWA Safe Areas & Touch Ergonomics */
  .safe-pb {
@@ -664,25 +677,25 @@
 
 
 	<!-- Top Navigation Header -->
-	<header id="dashboardHeader" class="hidden border-b border-[#E2E8F0] bg-white/95 backdrop-blur-md sticky top-[34px] z-50 shadow-xs">
-		<div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-2.5 flex items-center justify-between gap-3">
+	<header id="dashboardHeader" class="hidden border-b border-[#E2E8F0] bg-white/95 backdrop-blur-md sticky top-[34px] z-50 shadow-xs max-w-full overflow-hidden">
+		<div class="w-full px-3 sm:px-6 lg:px-8 xl:px-10 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-3 max-w-full">
 			<!-- Left Brand & Navigation -->
-			<div class="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-shrink-0">
-				<button onclick="setPortalView(true)" class="text-xs px-2.5 py-1.5 rounded-lg bg-[#1B365D]/10 hover:bg-[#1B365D]/20 text-[#1B365D] font-bold border border-[#1B365D]/25 transition flex items-center gap-1.5 cursor-pointer flex-shrink-0" title="Back to National Portal">
+			<div class="flex items-center gap-1.5 sm:gap-3.5 min-w-0 flex-shrink">
+				<button onclick="setPortalView(true)" class="text-xs p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-[#1B365D]/10 hover:bg-[#1B365D]/20 text-[#1B365D] font-bold border border-[#1B365D]/25 transition flex items-center gap-1.5 cursor-pointer flex-shrink-0" title="Back to National Portal">
 					<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
 					<span class="hidden sm:inline">National Portal</span>
 				</button>
-				<div class="h-6 w-px bg-[#CBD5E1] hidden sm:block flex-shrink-0"></div>
+				<div class="h-5 sm:h-6 w-px bg-[#CBD5E1] hidden sm:block flex-shrink-0"></div>
 				<a href="https://www.mospi.gov.in" target="_blank" rel="noopener noreferrer" class="hidden md:block flex-shrink-0 hover:opacity-90 transition" title="Ministry of Statistics and Programme Implementation">
 					<img src="/logo_mospi.png" alt="MoSPI" class="h-7 w-auto object-contain">
 				</a>
 				<div class="h-6 w-px bg-[#CBD5E1] hidden md:block flex-shrink-0"></div>
-				<div class="flex items-center gap-2.5 min-w-0">
-					<img src="/logo.png" alt="AeroDex" class="w-8 h-8 rounded-lg object-contain bg-white border border-[#CBD5E1] shadow-2xs flex-shrink-0 p-0.5">
+				<div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+					<img src="/logo.png" alt="AeroDex" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-contain bg-white border border-[#CBD5E1] shadow-2xs flex-shrink-0 p-0.5">
 					<div class="min-w-0">
-						<div class="flex items-center gap-1.5">
-							<span class="text-base font-bold tracking-tight text-[#26364A] leading-tight">AeroDex</span>
-							<span class="text-[9px] px-1.5 py-0.5 rounded bg-[#8ED1C7]/30 text-[#1A6357] border border-[#8ED1C7]/60 font-mono font-bold leading-none">LIVE NSO</span>
+						<div class="flex items-center gap-1 sm:gap-1.5">
+							<span class="text-sm sm:text-base font-bold tracking-tight text-[#26364A] leading-tight truncate">AeroDex</span>
+							<span class="text-[8px] sm:text-[9px] px-1 sm:px-1.5 py-0.5 rounded bg-[#8ED1C7]/30 text-[#1A6357] border border-[#8ED1C7]/60 font-mono font-bold leading-none flex-shrink-0">LIVE</span>
 						</div>
 						<p class="text-[10px] text-[#5E718A] truncate hidden lg:block leading-tight">National Airfare Price Index &bull; Base 2024=100</p>
 					</div>
@@ -690,9 +703,9 @@
 			</div>
 
 			<!-- Right Status & Controls: Streamlined Single Line -->
-			<div class="flex items-center gap-2 sm:gap-3 justify-end flex-shrink-0">
+			<div class="flex items-center gap-1.5 sm:gap-3 justify-end flex-shrink-0">
 				<!-- Engine & DB Status Pill -->
-				<div class="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-mono">
+				<div class="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-mono">
 					<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
 					<span>Engine Online &bull; <strong id="dbQuotesPill" class="text-emerald-950 font-bold">Active</strong></span>
 				</div>
@@ -705,13 +718,20 @@
 
 				<!-- Consolidated Governance & Tools Dropdown -->
 				<div class="relative inline-block text-left" id="headerToolsDropdown">
-					<button type="button" onclick="toggleToolsMenu()" class="px-2.5 sm:px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] hover:bg-[#F1F5F9] text-[#26364A] text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
+					<button type="button" onclick="toggleToolsMenu()" class="px-2 sm:px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] hover:bg-[#F1F5F9] text-[#26364A] text-xs font-semibold transition flex items-center gap-1 sm:gap-1.5 shadow-2xs cursor-pointer">
 						<svg class="w-3.5 h-3.5 text-[#5E718A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-						<span>Audits &amp; Tools</span>
+						<span class="hidden xs:inline">Audits &amp; Tools</span>
 						<svg class="w-3 h-3 text-[#5E718A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
 					</button>
 					<div id="toolsMenuDropdown" class="hidden absolute right-0 mt-1.5 w-64 rounded-xl bg-white border border-[#CBD5E1] shadow-xl py-1.5 z-50 text-xs divide-y divide-[#F1F5F9]">
 						<div class="py-1">
+							<button onclick="toggleToolsMenu(false); openExportModal();" class="w-full text-left px-3.5 py-2 hover:bg-[#F8FAFC] text-[#26364A] flex items-center justify-between transition cursor-pointer">
+								<div class="flex items-center gap-2">
+									<svg class="w-3.5 h-3.5 text-[#1B365D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+									<span class="font-medium">Export CSV / NSO Feed</span>
+								</div>
+								<span class="text-[10px] text-[#5E718A]">Raw Data</span>
+							</button>
 							<button onclick="toggleToolsMenu(false); openShockReplayModal();" class="w-full text-left px-3.5 py-2 hover:bg-[#F8FAFC] text-[#26364A] flex items-center justify-between transition cursor-pointer">
 								<div class="flex items-center gap-2">
 									<svg class="w-3.5 h-3.5 text-amber-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
@@ -737,22 +757,22 @@
 					</div>
 				</div>
 
-				<!-- Export CSV Button -->
-				<button onclick="openExportModal()" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#1B365D] hover:bg-[#264775] text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer flex-shrink-0">
+				<!-- Export CSV Button (Desktop/Tablet) -->
+				<button onclick="openExportModal()" class="hidden sm:flex px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#1B365D] hover:bg-[#264775] text-white text-xs font-semibold transition items-center gap-1.5 shadow-xs cursor-pointer flex-shrink-0">
 					<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
 					<span>Export CSV</span>
 				</button>
 
 				<!-- Offline Cache Indicator (shown when connection is offline) -->
-				<div id="offlineIndicator" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-300 text-amber-800 text-xs font-mono font-semibold shadow-2xs">
+				<div id="offlineIndicator" class="hidden items-center gap-1.5 px-2 py-1 rounded-full bg-amber-50 border border-amber-300 text-amber-800 text-xs font-mono font-semibold shadow-2xs">
 					<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
 					<span>Offline</span>
 				</div>
 
 				<!-- PWA Install App Button (revealed when installable) -->
-				<button id="pwaInstallBtn" onclick="installPWAApp()" class="hidden px-2.5 py-1.5 rounded-lg border border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 text-xs font-semibold transition items-center gap-1 shadow-xs cursor-pointer">
+				<button id="pwaInstallBtn" onclick="installPWAApp()" class="hidden px-2 sm:px-2.5 py-1.5 rounded-lg border border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 text-xs font-semibold transition items-center gap-1 shadow-xs cursor-pointer">
 					<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-					<span>Install</span>
+					<span class="hidden xs:inline">Install</span>
 				</button>
 
 				<!-- Mobile Hamburger Toggle (<lg) -->
@@ -767,9 +787,9 @@
 	</header>
 
 	<!-- Live High-Frequency Economic Ticker Tape & Auto-Scraper Control Ribbon -->
-	<div id="liveTickerBar" class="bg-white border-b border-[#E2E8F0] shadow-xs sticky top-[78px] sm:top-[74px] z-40 backdrop-blur-md bg-white/95">
+	<div id="liveTickerBar" class="bg-white border-b border-[#E2E8F0] shadow-xs sticky top-[74px] sm:top-[74px] z-40 backdrop-blur-md bg-white/95 max-w-full overflow-hidden">
 		<!-- Top Command Strip: Streamlined Single Row -->
-		<div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-1.5 flex items-center justify-between gap-3 text-xs">
+		<div class="w-full px-3 sm:px-6 lg:px-8 xl:px-10 py-1.5 flex items-center justify-between gap-2 sm:gap-3 text-xs max-w-full">
 			<div class="flex items-center gap-2 sm:gap-3 min-w-0">
 				<div class="flex items-center gap-1.5 flex-shrink-0">
 					<span id="livePulseBeacon" class="relative flex h-2 w-2">
@@ -787,7 +807,7 @@
 					<strong id="nextScrapeCountdown" class="text-[#3B6DCF] font-bold">10s</strong>
 				</div>
 				<span class="text-[#CBD5E1] font-mono hidden md:inline">&bull;</span>
-				<div class="flex items-center gap-1.5 font-mono text-[11px] text-[#26364A] bg-[#F7FAFC] px-2.5 py-0.5 rounded-lg border border-[#E2E8F0] shadow-2xs truncate">
+				<div class="hidden sm:flex items-center gap-1.5 font-mono text-[11px] text-[#26364A] bg-[#F7FAFC] px-2.5 py-0.5 rounded-lg border border-[#E2E8F0] shadow-2xs truncate">
 					<span class="text-[#5E718A] flex-shrink-0">Sector:</span>
 					<span id="tickerLastScrapeText" class="font-bold text-[#3B6DCF] truncate">
 						DEL &rarr; BOM (T+1) &bull; Scraping in background...
@@ -803,31 +823,32 @@
 					<span class="px-2 py-0.5 rounded bg-[#F7FAFC] border border-[#E2E8F0] hidden xl:inline text-[10px]">Sync: <strong id="telemetrySyncText" class="text-[#1A6357]">0.2s</strong></span>
 				</div>
 				<button id="toggleScraperBtn" onclick="toggleScraperStream()" 
-					class="px-2.5 py-1 rounded-lg border border-[#E2E8F0] hover:bg-[#F1F5F9] active:bg-[#E2E8F0] text-[#26364A] text-[11px] font-mono font-semibold transition flex items-center gap-1 shadow-2xs cursor-pointer flex-shrink-0">
+					class="px-2 sm:px-2.5 py-1 rounded-lg border border-[#E2E8F0] hover:bg-[#F1F5F9] active:bg-[#E2E8F0] text-[#26364A] text-[11px] font-mono font-semibold transition flex items-center gap-1 shadow-2xs cursor-pointer flex-shrink-0">
 					<span id="pauseResumeIcon">II</span>
-					<span id="pauseResumeText">Pause</span>
+					<span id="pauseResumeText" class="hidden xs:inline">Pause</span>
 				</button>
 			</div>
 		</div>
 
- <!-- Gliding Continuous Financial Ticker Tape -->
- <div class="border-t border-[#E2E8F0] overflow-hidden whitespace-nowrap py-1 bg-[#F7FAFC]/90 relative flex items-center">
- <div class="px-3 font-mono text-[10px] font-bold text-[#3B6DCF] uppercase tracking-wider flex items-center gap-1.5 z-10 bg-[#F7FAFC] border-r border-[#E2E8F0] shadow-xs flex-shrink-0">
- <span class="w-1.5 h-1.5 rounded-full bg-[#3B6DCF] animate-ping"></span>
- SECTOR TAPE:
- </div>
- <div class="overflow-hidden flex-1 relative">
- <div class="ticker-glide-track flex items-center gap-3 text-xs font-mono pl-3" id="marqueeTrack">
- <div id="marqueeContent1" class="flex items-center gap-3 flex-shrink-0">
- <span class="text-[#5E718A]">Connecting to live streaming quotes...</span>
- </div>
- <div id="marqueeContent2" class="flex items-center gap-3 flex-shrink-0">
- <span class="text-[#5E718A]">Connecting to live streaming quotes...</span>
- </div>
- </div>
- </div>
- </div>
- </div>
+		<!-- Gliding Continuous Financial Ticker Tape -->
+		<div class="border-t border-[#E2E8F0] overflow-hidden whitespace-nowrap py-1 bg-[#F7FAFC]/90 relative flex items-center max-w-full w-full" style="contain: paint;">
+			<div class="px-2.5 sm:px-3 font-mono text-[10px] font-bold text-[#3B6DCF] uppercase tracking-wider flex items-center gap-1.5 z-10 bg-[#F7FAFC] border-r border-[#E2E8F0] shadow-xs flex-shrink-0">
+				<span class="w-1.5 h-1.5 rounded-full bg-[#3B6DCF] animate-ping"></span>
+				<span class="hidden xs:inline">SECTOR TAPE:</span>
+				<span class="xs:hidden">TAPE:</span>
+			</div>
+			<div class="overflow-hidden flex-1 relative max-w-full">
+				<div class="ticker-glide-track flex items-center gap-3 text-xs font-mono pl-3" id="marqueeTrack">
+					<div id="marqueeContent1" class="flex items-center gap-3 flex-shrink-0">
+						<span class="text-[#5E718A]">Connecting to live streaming quotes...</span>
+					</div>
+					<div id="marqueeContent2" class="flex items-center gap-3 flex-shrink-0">
+						<span class="text-[#5E718A]">Connecting to live streaming quotes...</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
 	<!-- Mobile Off-Canvas Navigation Drawer (<lg) -->
 	<div id="mobileNavDrawer" class="hidden fixed inset-0 z-50 lg:hidden">
@@ -1122,42 +1143,7 @@
  </div>
  </div>
 
- <!-- Actions: Language Switcher & Copy Bulletin -->
- <div class="flex items-center gap-2 self-end sm:self-center">
- <!-- Multilingual Switcher -->
- <div class="inline-flex items-center p-0.5 rounded-xl bg-[#E2E8F0]/70 border border-[#CBD5E1]">
- <button id="aiLangBtn-en" onclick="switchAILanguage('en')" 
- class="px-3 py-1 rounded-lg text-xs font-bold transition bg-white text-[#26364A] shadow-xs cursor-pointer">
- English
- </button>
- <button id="aiLangBtn-hi" onclick="switchAILanguage('hi')" 
- class="px-3 py-1 rounded-lg text-xs font-semibold transition text-[#5E718A] hover:text-[#26364A] cursor-pointer">
- हिन्दी (Hindi)
- </button>
- </div>
-
- <!-- Jump to Forward Calamity Simulator -->
- <button onclick="switchMainTab('forecast')" 
- class="px-2.5 py-1 rounded-xl border border-purple-200 bg-purple-50/80 hover:bg-purple-100 text-xs font-semibold text-purple-800 flex items-center gap-1.5 transition shadow-2xs cursor-pointer">
- <span></span>
- <span class="hidden md:inline">Forward Simulator</span>
- </button>
-
- <!-- Copy Bulletin -->
- <button onclick="copyAIBulletin()" id="copyAIBtn" 
- class="px-2.5 py-1 rounded-xl border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] text-xs font-semibold text-[#26364A] flex items-center gap-1.5 transition shadow-2xs cursor-pointer">
- <span id="copyIcon"></span>
- <span id="copyText" class="hidden sm:inline">Copy Brief</span>
- </button>
-
- <!-- Set Gemini API Key Button -->
- <button onclick="openApiKeyModal()" id="aiConfigBtn" 
- class="px-2.5 py-1 rounded-xl border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-xs font-semibold text-[#26364A] flex items-center gap-1.5 transition shadow-2xs cursor-pointer">
- <span id="aiConfigKeyIcon"></span>
- <span id="aiConfigKeyText">API Key</span>
- </button>
- </div>
-				<!-- Actions: Language Switcher & Copy Bulletin -->
+ 				<!-- Actions: Language Switcher & Copy Bulletin -->
 				<div class="flex flex-wrap items-center gap-1.5 sm:gap-2 self-start sm:self-center">
 					<!-- Multilingual Switcher -->
 					<div class="inline-flex items-center p-0.5 rounded-xl bg-[#E2E8F0]/70 border border-[#CBD5E1]">
@@ -1285,16 +1271,16 @@
  <h2 class="text-base font-bold text-[#26364A]">Live Route Price Extraction & Sector Index</h2>
  <p class="text-xs text-[#5E718A]">Real-time Playwright extraction, deconstructed taxes, and DGCA carrier-weighted tariffs</p>
  </div>
- <!-- Quick Route Category Chips -->
- <div class="flex flex-wrap items-center gap-2 text-xs">
- <span class="text-[#5E718A] font-medium font-mono text-[11px]">Quick Sectors:</span>
- <button type="button" onclick="setRoute('DEL', 'BOM')" class="px-2.5 py-1 rounded-lg bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 border border-[#5B8DEF]/30 text-[#3064C4] font-mono text-[11px] font-bold transition">DEL ⇄ BOM (Metro)</button>
- <button type="button" onclick="setRoute('DEL', 'GAU')" class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-mono text-[11px] font-bold transition">DEL ⇄ GAU (Northeast)</button>
- <button type="button" onclick="setRoute('DEL', 'SXR')" class="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 font-mono text-[11px] font-bold transition">DEL ⇄ SXR (J&K)</button>
- <button type="button" onclick="setRoute('DEL', 'COK')" class="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 font-mono text-[11px] font-bold transition">DEL ⇄ COK (South)</button>
- <button type="button" onclick="setRoute('DEL', 'PAT')" class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-mono text-[11px] font-bold transition">DEL ⇄ PAT (East)</button>
- <button type="button" onclick="setRoute('BOM', 'GOI')" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-800 font-mono text-[11px] font-bold transition">BOM ⇄ GOI (Leisure)</button>
- </div>
+ 				<!-- Quick Route Category Chips -->
+				<div class="flex items-center gap-1.5 sm:gap-2 text-xs overflow-x-auto no-scrollbar touch-scroll py-1 max-w-full w-full">
+					<span class="text-[#5E718A] font-medium font-mono text-[11px] flex-shrink-0">Quick Sectors:</span>
+					<button type="button" onclick="setRoute('DEL', 'BOM')" class="px-2.5 py-1 rounded-lg bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 border border-[#5B8DEF]/30 text-[#3064C4] font-mono text-[11px] font-bold transition flex-shrink-0 whitespace-nowrap">DEL ⇄ BOM (Metro)</button>
+					<button type="button" onclick="setRoute('DEL', 'GAU')" class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-mono text-[11px] font-bold transition flex-shrink-0 whitespace-nowrap">DEL ⇄ GAU (Northeast)</button>
+					<button type="button" onclick="setRoute('DEL', 'SXR')" class="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 font-mono text-[11px] font-bold transition flex-shrink-0 whitespace-nowrap">DEL ⇄ SXR (J&K)</button>
+					<button type="button" onclick="setRoute('DEL', 'COK')" class="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 font-mono text-[11px] font-bold transition flex-shrink-0 whitespace-nowrap">DEL ⇄ COK (South)</button>
+					<button type="button" onclick="setRoute('DEL', 'PAT')" class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-mono text-[11px] font-bold transition flex-shrink-0 whitespace-nowrap">DEL ⇄ PAT (East)</button>
+					<button type="button" onclick="setRoute('BOM', 'GOI')" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-800 font-mono text-[11px] font-bold transition flex-shrink-0 whitespace-nowrap">BOM ⇄ GOI (Leisure)</button>
+				</div>
  </div>
 
  <form id="searchForm" class="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-start">
@@ -1364,20 +1350,20 @@
  <input type="date" id="dateInput" class="input-cloud w-full px-4 py-3 rounded-xl text-sm font-medium">
  </div>
 
- <!-- Advance Window Selectors & Submit -->
- <div class="md:col-span-12 flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
- <div class="flex flex-wrap items-center gap-2">
- <span class="text-xs text-[#5E718A] font-medium">Advance Windows:</span>
- <button type="button" onclick="setDateOffset(1)" class="px-3 py-1.5 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#D8E2EC] text-xs font-medium text-[#26364A] transition">Tomorrow (T+1)</button>
- <button type="button" onclick="setDateOffset(7)" class="px-3 py-1.5 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#D8E2EC] text-xs font-medium text-[#26364A] transition">1 Week (T+7)</button>
- <button type="button" onclick="setDateOffset(15)" class="px-3 py-1.5 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#D8E2EC] text-xs font-medium text-[#26364A] transition">15 Days (T+15)</button>
- <button type="button" onclick="setDateOffset(30)" class="px-3 py-1.5 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#D8E2EC] text-xs font-medium text-[#26364A] transition">1 Month (T+30)</button>
- </div>
+	<!-- Advance Window Selectors & Submit -->
+	<div class="md:col-span-12 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 max-w-full">
+		<div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar touch-scroll py-1 max-w-full">
+			<span class="text-xs text-[#5E718A] font-medium flex-shrink-0">Windows:</span>
+			<button type="button" onclick="setDateOffset(1)" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#D8E2EC] text-xs font-medium text-[#26364A] transition flex-shrink-0 whitespace-nowrap">Tomorrow (T+1)</button>
+			<button type="button" onclick="setDateOffset(7)" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#D8E2EC] text-xs font-medium text-[#26364A] transition flex-shrink-0 whitespace-nowrap">1 Week (T+7)</button>
+			<button type="button" onclick="setDateOffset(15)" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#D8E2EC] text-xs font-medium text-[#26364A] transition flex-shrink-0 whitespace-nowrap">15 Days (T+15)</button>
+			<button type="button" onclick="setDateOffset(30)" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#D8E2EC] text-xs font-medium text-[#26364A] transition flex-shrink-0 whitespace-nowrap">1 Month (T+30)</button>
+		</div>
 
- <button type="submit" id="submitBtn" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#5B8DEF] hover:bg-[#4A7DE0] font-semibold text-sm text-white shadow-md shadow-[#5B8DEF]/30 transition duration-150 flex items-center justify-center gap-2">
- <span> Fetch Real-Time Fares</span>
- </button>
- </div>
+		<button type="submit" id="submitBtn" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#5B8DEF] hover:bg-[#4A7DE0] font-semibold text-sm text-white shadow-md shadow-[#5B8DEF]/30 transition duration-150 flex items-center justify-center gap-2 flex-shrink-0">
+			<span>Fetch Real-Time Fares</span>
+		</button>
+	</div>
  </form>
  </section>
 
