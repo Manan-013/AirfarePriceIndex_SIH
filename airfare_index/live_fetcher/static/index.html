@@ -177,7 +177,7 @@
 				<div class="h-6 w-px bg-[#E2E8F0] hidden sm:block"></div>
 				<!-- Data Sources Matrix Button -->
 				<button onclick="openSourcesModal()" class="px-3 py-1.5 rounded-xl border border-purple-300 bg-purple-50/80 hover:bg-purple-100 text-purple-800 text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer">
-					<span>Sources Matrix (6 OTAs + 5 Airlines)</span>
+					<span>Sources Matrix (4 Active Scrapers + 7 Verification Portals)</span>
 				</button>
 				<div class="h-6 w-px bg-[#E2E8F0] hidden sm:block"></div>
 				<!-- Export Data Button -->
@@ -4593,7 +4593,7 @@
         <div>
           <div class="flex items-center gap-2">
             <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-100 text-purple-800 border border-purple-200">PS SIH26056 Mandate</span>
-            <span class="text-xs text-[#5E718A] font-mono">11 Sources: 6 OTAs & 5 Airlines</span>
+            <span class="text-xs text-[#5E718A] font-mono">11 Sources (4 Active Scrapers + 7 Verification Portals)</span>
           </div>
           <h3 class="text-base font-bold text-[#26364A] mt-1">Multi-Source Governance & Anti-Bot Status Matrix</h3>
           <p class="text-xs text-[#5E718A]">Statutory provenance, RFC 9309 robots.txt compliance status, and enterprise anti-bot evasion telemetry.</p>
@@ -4703,6 +4703,10 @@
               integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">🟢 Active Live Scrape</span>`;
             } else if (s.active_status.includes('Ethically Gated')) {
               integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-amber-800 border border-amber-300">🛡️ RFC 9309 Gated</span>`;
+            } else if (s.active_status.includes('Anti-Bot Shielded')) {
+              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-50 text-purple-800 border border-purple-200">🛡️ Anti-Bot Shielded</span>`;
+            } else if (s.active_status.includes('Aggregator Ingested')) {
+              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200">📡 Aggregator Ingested</span>`;
             } else if (s.active_status.includes('Parser Pending')) {
               integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200">🔧 Parser Pending</span>`;
             } else {

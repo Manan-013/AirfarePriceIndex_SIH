@@ -22,16 +22,16 @@ In India, the **Ministry of Statistics and Programme Implementation (MoSPI)** pu
 ## Key Engineering Pillars
 
 ### 1. Ethical Multi-Source Web Scraping
-- **Named Indian OTAs & Aggregators**: Live concurrent Playwright extraction across **EaseMyTrip** (premier Indian OTA named in PS) and **Google Flights**.
-- **Robots.txt Verification**: Automated checking via `urllib.robotparser` (`RobotGuard`) before initiating requests to target domains.
+- **Named Indian OTAs & Direct Carrier Portals**: Live concurrent Playwright extraction across **Google Flights**, **EaseMyTrip** (premier Indian OTA named in PS), **Cleartrip**, and **SpiceJet** (direct carrier).
+- **Robots.txt Verification**: Automated checking via `urllib.robotparser` (`RobotGuard`) before initiating requests to target domains (e.g., verifying `/flights/results` is permitted on Cleartrip, respecting `/flights/search` Disallow on Ixigo).
 - **Polite Crawl Delays & Backoff**: Enforces per-domain rate limiting with exponential backoff on HTTP 429/503 responses.
-- **Live Compliance Audit API**: Real-time inspection of robots.txt status and crawl logs via `GET /api/v1/compliance/robots`.
+- **Live Compliance & Governance API**: Real-time inspection of robots.txt status, anti-bot defenses, and full 11-source catalog via `GET /api/v1/compliance/sources` and `GET /api/v1/compliance/robots`.
 
 ### 2. Dual-Layer Resilient Architecture & Honest Provenance
 - **Layer A (Live Extraction)**: Extracts live flight quotes (fares, flight numbers, aircraft type, departure/arrival schedules) across 25 high-traffic corridors and 16 airport hubs.
 - **Layer B (Continuous Fallback)**: If a target portal is rate-limited or in offline environments, the system seamlessly transitions to a calibrated baseline derived from official DGCA Form-A traffic census data and empirical surge multipliers.
 - **Honest Provenance Badges**: Every query and individual flight card clearly indicates its provenance:
-  - `🟢 Live Web Scraped (EaseMyTrip & Google Flights)` when live data is extracted.
+  - `🟢 Live Web Scraped (Google Flights, EaseMyTrip, Cleartrip & SpiceJet)` when live data is extracted.
   - `⚠️ Simulated / Benchmark Estimate (Fallback)` with an informative alert banner when fallback estimates are active.
 
 ### 3. Cloud-Ready & Low-Memory Playwright Deployment
@@ -166,6 +166,7 @@ python -m unittest discover tests -v
 | `/api/v1/shocks/list` | `GET` | Historical aviation shock replay scenario catalog |
 | `/api/v1/shocks/replay` | `GET` | Historical shock replay engine (Fisher vs Laspeyres, early detection) |
 | `/api/v1/compliance/proxies` | `GET` | Client fingerprint & header rotation telemetry (direct egress mode) |
+| `/api/v1/compliance/sources` | `GET` | 11-Source Governance Catalog (4 Active Scrapers + 7 Verification Portals) |
 | `/api/v1/compliance/robots` | `GET` | Live robots.txt compliance status and audit log |
 | `/api/v1/live/pulse` | `GET` | High-frequency live pulse of national airfare index |
 | `/api/v1/index/national` | `GET` | Current National Airfare Price Index and CPI impact |

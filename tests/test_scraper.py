@@ -225,22 +225,23 @@ class TestRealtimeScraper(unittest.TestCase):
 
         # Rigorous Honesty & Governance Verification:
         catalog_map = {s["id"]: s for s in DATA_SOURCES_CATALOG}
-        # Multi-source verified live scrapers (2 only)
+        # Multi-source verified live scrapers (4 verified: Google Flights, EaseMyTrip, Cleartrip, SpiceJet)
         self.assertEqual(catalog_map["google_flights"]["active_status"], "Active Live Scrape")
         self.assertEqual(catalog_map["easemytrip"]["active_status"], "Active Live Scrape")
-        self.assertEqual(catalog_map["makemytrip"]["active_status"], "Deeplink Only (Direct Scrape Unverified)")
-        self.assertEqual(catalog_map["yatra"]["active_status"], "Deeplink Only (Direct Scrape Unverified)")
-        self.assertEqual(catalog_map["spicejet"]["active_status"], "Deeplink Only (No Direct Scraper Implemented)")
-        self.assertEqual(catalog_map["akasa_air"]["active_status"], "Deeplink Only (No Direct Scraper Implemented)")
+        self.assertEqual(catalog_map["cleartrip"]["active_status"], "Active Live Scrape")
+        self.assertEqual(catalog_map["spicejet"]["active_status"], "Active Live Scrape")
 
-        # Cleartrip and Ixigo are ethically gated by RFC 9309 robots.txt
-        self.assertEqual(catalog_map["cleartrip"]["active_status"], "RFC 9309 Ethically Gated (Deeplink Only)")
+        # Ixigo is ethically gated by RFC 9309 robots.txt
         self.assertEqual(catalog_map["ixigo"]["active_status"], "RFC 9309 Ethically Gated (Deeplink Only)")
 
-        # Goibibo is deeplink only, other carriers are deeplink only
-        self.assertEqual(catalog_map["goibibo"]["active_status"], "Deeplink Only (No Scraper Implemented)")
-        for carrier in ["indigo", "air_india", "air_india_express"]:
-            self.assertEqual(catalog_map[carrier]["active_status"], "Deeplink Only (No Direct Scraper Implemented)")
+        # MakeMyTrip, Yatra, Goibibo are anti-bot challenged/shielded
+        self.assertEqual(catalog_map["makemytrip"]["active_status"], "Anti-Bot Shielded (Deeplink Fallback)")
+        self.assertEqual(catalog_map["yatra"]["active_status"], "Anti-Bot Shielded (Deeplink Fallback)")
+        self.assertEqual(catalog_map["goibibo"]["active_status"], "Anti-Bot Shielded (Deeplink Fallback)")
+
+        # Direct carriers are aggregator-ingested + direct carrier deeplink
+        for carrier in ["indigo", "air_india", "air_india_express", "akasa_air"]:
+            self.assertEqual(catalog_map[carrier]["active_status"], "Aggregator Ingested + Direct Deeplink")
 
     def test_scraper_active_enforcement_gate_http(self):
         """Verify HTTP scraper aborts immediately and returns [] when robots.txt disallows."""

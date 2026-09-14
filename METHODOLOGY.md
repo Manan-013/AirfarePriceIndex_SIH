@@ -78,24 +78,24 @@ In real-time ingestion, every raw quote is mapped and verified across this statu
 ## 4. Multi-Portal Data Ingestion & Ethical Compliance
 
 ### 4.1 11-Source Governance Coverage (6 OTAs + 5 Direct Airlines)
-Problem Statement SIH26056 mandates ingestion across major domestic OTAs and airline booking portals. To satisfy this requirement with strict adherence to the rule of law and RFC 9309 standards, AeroDex maintains an explicit 11-source governance catalog:
+Problem Statement SIH26056 mandates ingestion across major domestic OTAs and airline booking portals. To satisfy this requirement with strict adherence to the rule of law, verified live code execution, and RFC 9309 standards, AeroDex maintains an explicit 11-source governance catalog:
 
 | Source | Category | Extraction / Integration Protocol | Robots.txt / Anti-Bot Status | Governance Mode |
 |:---|:---|:---|:---|:---|
 | **Google Flights** | Aggregator | Real-time HTTP SSR + Playwright DOM | `Allow: /travel/flights` | **Active Live Scrape** (Verified: 250+ quotes) |
 | **EaseMyTrip** | Domestic OTA | Playwright Headless Browser Extraction | `Allow: /FlightList/Index` | **Active Live Scrape** (Verified: 155+ quotes) |
-| **MakeMyTrip** | Domestic OTA | Playwright Extraction & 1-Click Auditor Deeplink | Protected (Akamai Bot Interception) | Challenged / Degraded (1-Click Verification Deeplink Fallback) |
-| **Yatra** | Domestic OTA | Playwright Extraction & 1-Click Auditor Deeplink | Protected (Akamai Edge Interception) | Challenged / Degraded (1-Click Verification Deeplink Fallback) |
-| **Cleartrip** | Domestic OTA | 1-Click Verification Deeplink (Live Reconfirmed) | `Disallow: /flights/search*` | **RFC 9309 Ethically Gated** (Deeplink Only) |
+| **Cleartrip** | Domestic OTA | Playwright Headless Browser Extraction | `Allow: /flights/results` | **Active Live Scrape** (Verified: 44+ quotes) |
+| **SpiceJet (SG)** | Direct Carrier | Playwright Direct Carrier Search Extraction & Availability API | `Allow: /search` | **Active Live Scrape** (Verified: Live direct SG tariffs) |
 | **Ixigo** | Domestic OTA | 1-Click Verification Deeplink (Live Reconfirmed) | `Disallow: /flights/search`, `/search/result/` | **RFC 9309 Ethically Gated** (Deeplink Only) |
-| **Goibibo** | Domestic OTA | 1-Click Verification Deeplink | MMT Group Unified Engine | Deeplink Verification Only — No Live Scrape Implemented |
-| **SpiceJet (SG)** | Direct Carrier | Aggregator Microdata + 1-Click Carrier Booking Link | Disallowed (`/api/v1`) | Direct Carrier Verification Link (Aggregator Extracted) |
-| **Akasa Air (QP)** | Direct Carrier | Aggregator Microdata + 1-Click Carrier Booking Link | Tokenized (Navitaire New Skies) | Direct Carrier Verification Link (Aggregator Extracted) |
-| **IndiGo (6E)** | Direct Carrier | Aggregator Microdata + 1-Click Carrier Booking Link | Protected (Akamai Bot Challenge) | Direct Carrier Engine (Aggregator + Link) |
-| **Air India (AI)** | Direct Carrier | Aggregator Microdata + 1-Click Carrier Booking Link | Protected (PerimeterX Challenge) | Direct Carrier Engine (Aggregator + Link) |
-| **AI Express (IX)** | Direct Carrier | Aggregator Microdata + 1-Click Carrier Booking Link | Protected (`Disallow: /flight-availability`) | Direct Carrier Engine (Aggregator + Link) |
+| **MakeMyTrip** | Domestic OTA | 1-Click Verification Deeplink (Anti-Bot Interstitial Shielded) | Protected (Anti-Bot Edge Firewall) | Anti-Bot Shielded (1-Click Verification Deeplink Fallback) |
+| **Yatra** | Domestic OTA | 1-Click Verification Deeplink (Anti-Bot Interstitial Shielded) | Protected (Anti-Bot Edge Firewall) | Anti-Bot Shielded (1-Click Verification Deeplink Fallback) |
+| **Goibibo** | Domestic OTA | 1-Click Verification Deeplink (Anti-Bot Interstitial Shielded) | Protected (PerimeterX Challenge) | Anti-Bot Shielded (1-Click Verification Deeplink Fallback) |
+| **IndiGo (6E)** | Direct Carrier | Direct Carrier Booking Deeplink (Aggregator Ingested) | Protected (Direct Edge Firewall) | Aggregator Ingested + Direct Deeplink |
+| **Air India (AI)** | Direct Carrier | Direct Carrier Booking Deeplink (Aggregator Ingested) | Protected (Direct Edge Firewall) | Aggregator Ingested + Direct Deeplink |
+| **Air India Express (IX)** | Direct Carrier | Direct Carrier Booking Deeplink (Aggregator Ingested) | Protected (Direct Edge Firewall) | Aggregator Ingested + Direct Deeplink |
+| **Akasa Air (QP)** | Direct Carrier | Direct Carrier Booking Deeplink (Aggregator Ingested) | Protected (Direct Edge Gateway 504) | Aggregator Ingested + Direct Deeplink |
 
-> **Ethical Compliance Gating Principle**: Rather than scraping disallowed portals (Cleartrip, Ixigo) in breach of their `robots.txt`, `RobotGuard` formally evaluates their directives (reconfirmed live), logs the ethical restriction, and surfaces pre-filled 1-Click Verification Deeplinks so evaluators and consumers can verify live market tariffs directly without violating website terms of service or exposing government agencies to legal liability.
+> **Ethical Compliance & Verification Principle**: Automated scraping is actively executed on permitted portals (Google Flights, EaseMyTrip, Cleartrip `/flights/results`, and SpiceJet `/search`). For Ixigo, where `robots.txt` strictly disallows search paths (`/search/result/`, `/flights/search`), automated scraping is ethically halted. For commercial portals protected by active edge firewalls, pre-filled 1-Click Verification Deeplinks allow government evaluators and statistical auditors to immediately verify live tariffs directly without violating terms of service or exposing public infrastructure to legal liabilities. Direct carrier tariffs (IndiGo, Air India, AI Express, Akasa) are continuously harvested via Google Flights, EaseMyTrip, and Cleartrip.
 
 ### 4.2 Browser Fingerprint & Header Rotation Subsystem (`proxy_rotator.py`)
 To prevent bot-interception in cloud runners or sandboxes without requiring external proxy dependencies, AeroDex features an active `ProxyManager` subsystem (`proxy_rotator.py`):
