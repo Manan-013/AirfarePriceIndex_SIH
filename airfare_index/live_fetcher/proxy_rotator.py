@@ -80,22 +80,18 @@ CHALLENGE_SIGNATURES = [
     r"Security Check.*Enable JavaScript"
 ]
 
-# Default seeded rotating egress nodes (Indian domestic & regional gateway simulation)
-DEFAULT_SEEDED_PROXIES = [
-    {"url": "direct://", "region": "Primary Egress (Local Host)", "latency_ms": 12, "protocol": "Direct/HTTPS"},
-    {"url": "http://103.152.112.162:80", "region": "IN-West (Mumbai Gateway)", "latency_ms": 48, "protocol": "HTTP/CONNECT"},
-    {"url": "http://103.251.225.10:8080", "region": "IN-North (Delhi NCR Gateway)", "latency_ms": 36, "protocol": "HTTP/CONNECT"},
-    {"url": "http://103.216.51.210:80", "region": "IN-South (Bengaluru Gateway)", "latency_ms": 54, "protocol": "HTTP/CONNECT"},
-    {"url": "http://49.204.75.148:8080", "region": "IN-South (Chennai Gateway)", "latency_ms": 62, "protocol": "HTTP/CONNECT"},
-    {"url": "http://103.161.42.146:8080", "region": "IN-East (Kolkata Gateway)", "latency_ms": 78, "protocol": "HTTP/CONNECT"}
+# Default fallback when PROXY_POOL is unset: Direct Egress on host network
+DEFAULT_DIRECT_EGRESS = [
+    {"url": "direct://", "region": "Direct Host Network (Primary)", "latency_ms": 12, "protocol": "Direct/HTTPS"}
 ]
 
 
 class ProxyManager:
     """
-    Thread-safe enterprise proxy and egress rotator.
-    Supports environment proxy configuration, round-robin selection, failure quarantine,
-    and automatic challenge-triggered failover.
+    Thread-safe enterprise header and anti-bot challenge management module.
+    Rotates 6 distinct desktop User-Agent and Sec-CH-UA Client-Hints profiles.
+    When PROXY_POOL environment variable is configured, manages multi-node IP rotation.
+    When PROXY_POOL is unset, operates cleanly in direct egress mode (host network).
     """
     def __init__(self):
         self._lock = threading.Lock()
@@ -106,20 +102,21 @@ class ProxyManager:
         self._total_challenges_detected = 0
         self._quarantined_count = 0
         self._cooldown_seconds = 180
+        self._has_env_proxies = False
         
         self._init_proxies_from_env()
 
     # =========================================================================
     # PROXY PROVISIONING GUIDE:
-    # To provision external rotating proxies, set the PROXY_POOL environment variable
+    # To provision external rotating IP proxies, set the PROXY_POOL environment variable
     # as a comma-separated list of proxy URLs, e.g.:
-    #   export PROXY_POOL="http://user:pass@103.152.112.162:80,http://49.204.75.148:8080"
-    # Standard HTTP_PROXY and HTTPS_PROXY environment variables are also automatically ingested.
+    #   export PROXY_POOL="http://user:pass@proxy1:8080,http://proxy2:8080"
+    # Standard HTTP_PROXY and HTTPS_PROXY environment variables are also ingested.
     #
     # Direct Egress Fallback:
-    # When PROXY_POOL is unset, the engine falls back cleanly to direct egress mode
-    # (get_next_proxy() returns None, routing via the host's direct network),
-    # ensuring zero crashes and seamless operation in local, CI/CD, and government environments.
+    # When PROXY_POOL is unset (default), the engine operates in direct egress mode
+    # using the host's direct network with 6 browser fingerprint profiles,
+    # ensuring zero connection hangs or fake IP claims.
     # =========================================================================
     def _init_proxies_from_env(self):
         proxy_pool_env = os.environ.get("PROXY_POOL", "").strip()
@@ -136,6 +133,7 @@ class ProxyManager:
 
         with self._lock:
             if raw_list:
+                self._has_env_proxies = True
                 self._proxies = [
                     {
                         "url": p if (p.startswith("http://") or p.startswith("https://") or p.startswith("socks5://")) else f"http://{p}",
@@ -149,18 +147,17 @@ class ProxyManager:
                     for i, p in enumerate(raw_list)
                 ]
             else:
-                # Use seeded pool with verified metadata
+                self._has_env_proxies = False
                 self._proxies = [
                     {
-                        "url": sp["url"],
-                        "region": sp["region"],
+                        "url": "direct://",
+                        "region": "Direct Host Network (Primary)",
                         "failures": 0,
                         "quarantined_until": 0.0,
                         "successes": 1,
-                        "latency_ms": sp["latency_ms"],
-                        "protocol": sp["protocol"]
+                        "latency_ms": 12,
+                        "protocol": "Direct/HTTPS"
                     }
-                    for sp in DEFAULT_SEEDED_PROXIES
                 ]
 
     def add_proxy(self, proxy_url: str, region: str = "Custom Node"):
@@ -288,27 +285,28 @@ class ProxyManager:
 
             return {
                 "proxy_management_active": True,
-                "pool_size": len(self._proxies),
-                "active_egress_count": active_proxies,
-                "quarantined_egress_count": quarantined,
-                "mode": "Active Multi-Node Egress Pool with Latency Balancing" if not is_direct_only else "Direct Egress with Header & Fingerprint Rotation",
+                "ip_proxy_pool_configured": self._has_env_proxies,
+                "pool_size": len(self._proxies) if self._has_env_proxies else 0,
+                "active_egress_count": active_proxies if self._has_env_proxies else 1,
+                "quarantined_egress_count": quarantined if self._has_env_proxies else 0,
+                "mode": "Active Multi-Node IP Proxy Pool" if self._has_env_proxies else "Direct Egress (Host Network — Header & Fingerprint Rotation Only)",
                 "total_rotations": self._total_rotations,
                 "challenges_intercepted": self._total_challenges_detected,
                 "user_agent_pool_size": len(USER_AGENT_POOL),
                 "nodes": [
                     {
                         "node_id": f"EGRESS-{idx+1:02d}",
-                        "region": p.get("region", "Domestic Ingress"),
+                        "region": p.get("region", "Direct Host Network"),
                         "status": "Quarantined" if p["quarantined_until"] > now else "Healthy",
-                        "latency_ms": p.get("latency_ms", 45)
+                        "latency_ms": p.get("latency_ms", 12)
                     }
                     for idx, p in enumerate(self._proxies)
                 ],
                 "evasion_mechanisms": [
                     "Chromium --disable-blink-features=AutomationControlled",
-                    "Sec-CH-UA Client-Hints Header Synchronization",
-                    "Multi-Node Domestic Gateway IP Shuffling (IN-West, IN-North, IN-South, IN-East)",
-                    "Cloudflare Turnstile & Akamai Bot Manager Signature Interception",
+                    "Sec-CH-UA Client-Hints Header Synchronization across 6 Desktop Profiles",
+                    "Direct Host Egress Fallback (Safe Local/Sandbox Operation)",
+                    "Cloudflare & Akamai Challenge Signature Interception",
                     "Automatic Cooldown Quarantine & Microdata Warehouse Failover"
                 ]
             }

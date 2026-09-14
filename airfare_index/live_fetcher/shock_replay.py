@@ -1,13 +1,14 @@
 """
-shock_replay.py - Empirical Historical Shock Replay & Stress-Testing Engine
+shock_replay.py - Illustrative Historical Crisis Simulation & Stress-Testing Studio
 Smart India Hackathon 2026 (Problem Statement SIH26056)
 Ministry of Statistics and Programme Implementation (MoSPI)
 
-Simulates major historical aviation supply disruptions and fuel excise shocks to demonstrate:
-1. Laspeyres vs Superlative Fisher index divergence during sudden market capacity contraction.
-2. Route-specific dynamic pricing contagion (T-30 to T-0 departure horizons).
-3. Deconstructed Fuel Surcharge (YQ) pass-through vs statutory base fare stability.
-4. Autonomous bilingual policy briefings for MoSPI and RBI Monetary Policy Committee.
+METHODOLOGICAL & DATA PROVENANCE NOTE:
+These scenarios are stylized illustrative simulations hand-authored to model famous supply-side
+disruptions (Go First 2023, Jet Airways 2019, ATF 2022 crude spike).
+They serve as economic stress tests to demonstrate why Laspeyres indexing overstates inflation
+during supply contraction and why Superlative Fisher indexation is required.
+They are illustrative/calibrated models, NOT empirical extractions from 2025-2026 microdata.
 """
 
 import time
@@ -26,6 +27,9 @@ SHOCK_SCENARIOS = {
         "id": "gofirst_2023",
         "name": "Go First Fleet Grounding (May 2023)",
         "date_period": "May 2023 – July 2023",
+        "is_empirical": False,
+        "model_type": "Illustrative / Calibrated Stylized Model",
+        "methodology_note": "Hand-authored stylized economic scenario calibrated from DGCA capacity exit reports to demonstrate Laspeyres vs Fisher substitution divergence.",
         "description": "Sudden insolvency and grounding of 54 Airbus A320neos, removing 7.8% of domestic capacity overnight. Severe supply shortage across northern and vacation corridors.",
         "key_mechanics": [
             "Northern tourist routes (DEL-SXR, DEL-IXL) experienced spot fare surges exceeding +88%",
@@ -64,6 +68,9 @@ SHOCK_SCENARIOS = {
         "id": "jet_airways_2019",
         "name": "Jet Airways Collapse (April 2019)",
         "date_period": "April 2019 – June 2019",
+        "is_empirical": False,
+        "model_type": "Illustrative / Calibrated Stylized Model",
+        "methodology_note": "Hand-authored stylized economic scenario calibrated from DGCA capacity exit reports to demonstrate Laspeyres vs Fisher substitution divergence.",
         "description": "Full grounding of premier full-service carrier Jet Airways (115 aircraft), wiping out 20.4% of national seat capacity. Exemplifies massive capacity contraction and substitution bias.",
         "key_mechanics": [
             "Metro-Metro trunk capacity plummeted by 25%, causing business fare surges",
@@ -100,6 +107,9 @@ SHOCK_SCENARIOS = {
         "id": "atf_fuel_spike_2022",
         "name": "Global ATF Fuel Surcharge Surge (June 2022)",
         "date_period": "March 2022 – August 2022",
+        "is_empirical": False,
+        "model_type": "Illustrative / Calibrated Stylized Model",
+        "methodology_note": "Hand-authored stylized economic scenario calibrated from energy price spikes to demonstrate statutory fuel surcharge separation.",
         "description": "Post-geopolitical conflict spike in global crude oil ($123/bbl) and domestic Aviation Turbine Fuel (ATF) excise rates. Airlines doubled YQ fuel surcharges while keeping base fares constrained.",
         "key_mechanics": [
             "Fuel Surcharges (YQ) surged from ₹450 to ₹1,400 per domestic flight coupon (+211%)",
@@ -139,6 +149,8 @@ def list_shock_scenarios() -> List[Dict[str, Any]]:
             "id": s["id"],
             "name": s["name"],
             "date_period": s["date_period"],
+            "is_empirical": False,
+            "model_type": s["model_type"],
             "description": s["description"],
             "supply_drop_pct": s["supply_drop_pct"],
             "peak_fare_surge_pct": s["peak_fare_surge_pct"],
@@ -167,6 +179,9 @@ def replay_shock(scenario_id: str) -> Dict[str, Any]:
             "name": scenario["name"],
             "date_period": scenario["date_period"],
             "description": scenario["description"],
+            "is_empirical": False,
+            "model_type": scenario["model_type"],
+            "methodology_note": scenario["methodology_note"],
             "key_mechanics": scenario["key_mechanics"],
             "supply_drop_pct": scenario["supply_drop_pct"],
             "peak_fare_surge_pct": scenario["peak_fare_surge_pct"],
@@ -183,8 +198,8 @@ def replay_shock(scenario_id: str) -> Dict[str, Any]:
         },
         "policy_brief": scenario["policy_brief"],
         "econometric_takeaway": (
-            f"During the {scenario['name']}, fixed-basket Laspeyres overstated true consumer inflation by "
-            f"+{substitution_bias} index points at peak volatility. AeroDex's superlative Fisher indexation and "
-            f"automated microdata decomposition deliver accurate, lag-free nowcasts for MoSPI CPI 07.3.3."
+            f"In this illustrative simulation of the {scenario['name']}, fixed-basket Laspeyres overstates true consumer inflation by "
+            f"+{substitution_bias} index points at peak volatility. This demonstrates why AeroDex's superlative Fisher indexation and "
+            f"automated microdata decomposition are essential for MoSPI CPI 07.3.3 nowcasting."
         )
     }

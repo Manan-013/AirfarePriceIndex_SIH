@@ -97,13 +97,13 @@ Problem Statement SIH26056 mandates ingestion across major domestic OTAs and air
 
 > **Ethical Compliance Gating Principle**: Rather than scraping disallowed portals (Cleartrip, Ixigo) in breach of their `robots.txt`, `RobotGuard` formally evaluates their directives (reconfirmed live), logs the ethical restriction, and surfaces pre-filled 1-Click Verification Deeplinks so evaluators and consumers can verify live market tariffs directly without violating website terms of service or exposing government agencies to legal liability.
 
-### 4.2 Enterprise Anti-Bot & Proxy Rotation Architecture (`ProxyManager`)
-To prevent IP rate-limiting, Cloudflare/Akamai 403 blocks, and bot-interception in cloud runners or sandboxes, AeroDex features an active `ProxyManager` subsystem (`proxy_rotator.py`):
-1. **Multi-Node Egress Pool**: Curated pool of 6 domestic gateway nodes (IN-West Mumbai, IN-North Delhi NCR, IN-South Bengaluru, IN-South Chennai, IN-East Kolkata, and Primary Local Egress) with dynamic failover.
-2. **User-Agent & Client Hints Shuffling**: Rotates across a pool of desktop Chrome, Edge, Safari, and Firefox browser signatures, keeping `sec-ch-ua`, `sec-ch-ua-mobile`, and `sec-ch-ua-platform` synchronized.
+### 4.2 Browser Fingerprint & Header Rotation Subsystem (`proxy_rotator.py`)
+To prevent bot-interception in cloud runners or sandboxes without requiring external proxy dependencies, AeroDex features an active `ProxyManager` subsystem (`proxy_rotator.py`):
+1. **Direct Egress Architecture (Optional Proxy Pool)**: Operates in direct host network egress mode by default (retaining local sandbox security and zero external network dependencies), with automated failover and support for multi-node IP proxy pools via the `PROXY_POOL` environment variable.
+2. **User-Agent & Client Hints Shuffling**: Rotates across 6 desktop Chrome, Edge, Safari, and Firefox browser signatures, keeping `sec-ch-ua`, `sec-ch-ua-mobile`, and `sec-ch-ua-platform` synchronized.
 3. **Automated Bot Challenge Interception**: Inspects HTTP responses (status 403, 429) and HTML payloads for Cloudflare Turnstile (`cf-challenge`), Akamai Bot Manager (`Access Denied`), PerimeterX (`px-captcha`), and reCAPTCHA signatures.
-4. **Quarantine Cooldown & Failover**: Banned or challenged egress endpoints enter an automatic 180-second cooldown, while requests fail over to the next operational proxy before cleanly resorting to the SQLite microdata warehouse.
-5. **Auditable Telemetry & Node Health**: Real-time proxy health, per-node latency, and rotation counts are exposed at `GET /api/v1/compliance/proxies`.
+4. **Quarantine Cooldown & Failover**: Challenged egress endpoints enter an automatic 180-second cooldown, while requests fail over cleanly to the SQLite microdata warehouse.
+5. **Auditable Telemetry & Egress Health**: Real-time client fingerprint rotation counts, challenge interception metrics, and direct egress health are exposed at `GET /api/v1/compliance/proxies`.
 
 ### 4.3 Ethical Scraping Guard (`RobotGuard`)
 In compliance with SIH26056 legal and ethical mandates:
@@ -121,8 +121,8 @@ $$\text{Integrity Score} = 0.35 \cdot \text{Fidelity} + 0.25 \cdot \text{Outlier
 4. **Temporal Freshness (20%)**: Enforces cadence freshness decay for quotes within the active reporting cycle ($< 180\,\text{min}$).
 5. **Cryptographic Audit Seal**: Generates a SHA-256 tamper-evident governance stamp certified against the MoSPI Manual on CPI (2010/2020) and IMF CPI Manual (2020).
 
-### 4.5 Historical Aviation Shock Replay Studio (`shock_replay.py`)
-To assist macroeconomic forecasting and monetary policy deliberation by the RBI MPC, AeroDex includes an empirical Historical Shock Simulator:
+### 4.5 Historical Aviation Crisis Simulation & Stress-Testing Studio (`shock_replay.py`)
+To assist macroeconomic forecasting and monetary policy deliberation by the RBI MPC, AeroDex includes a calibrated stylized Historical Crisis Simulation Studio (calibrated against historical DGCA capacity exit and ATF surcharge data):
 - **May 2023 Go First Fleet Grounding**: Models the sudden grounding of 54 A320neos ($-7.8\%$ domestic capacity), isolating Northern trunk fare surges ($+88.4\%$) and demonstrating why dynamic pricing nowcasts eliminate MoSPI's 45-day survey lag.
 - **April 2019 Jet Airways Collapse**: Simulates the removal of 115 aircraft ($-20.4\%$ capacity), revealing the $+11.2$ to $+14.8$ index point overstatement of fixed-basket Laspeyres versus superlative Fisher price indexation.
 - **June 2022 Global ATF Fuel Spike**: Simulates Brent crude at \$123/bbl and OMC jet fuel excise surges, demonstrating that microdata fare deconstruction isolates Fuel Surcharges (YQ up $+211\%$) from core carrier markup (base fares flat at $+8.4\%$).

@@ -169,10 +169,10 @@
 					<span>⚡ Shock Replay Studio</span>
 				</button>
 				<div class="h-6 w-px bg-[#E2E8F0] hidden sm:block"></div>
-				<!-- Rotating Proxies Monitor Button -->
-				<button onclick="openProxyModal()" class="px-3 py-1.5 rounded-xl border border-sky-300 bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer" title="Rotating Proxy & Egress Infrastructure">
+				<!-- Browser Fingerprint & Header Rotation Button -->
+				<button onclick="openProxyModal()" class="px-3 py-1.5 rounded-xl border border-sky-300 bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer" title="Browser Fingerprint & Header Rotation (6 Desktop Profiles, Direct Egress Mode)">
 					<span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
-					<span>Proxies: <strong id="headerProxyCount" class="text-sky-700 font-bold">6 Nodes</strong></span>
+					<span>Headers: <strong id="headerProxyCount" class="text-sky-700 font-bold">6 Profiles (Direct Egress)</strong></span>
 				</button>
 				<div class="h-6 w-px bg-[#E2E8F0] hidden sm:block"></div>
 				<!-- Data Sources Matrix Button -->
@@ -4838,10 +4838,11 @@
             ⚡
           </div>
           <div>
-            <h3 class="text-lg font-bold text-[#26364A]">
+            <h3 class="text-lg font-bold text-[#26364A] flex items-center gap-2">
               Historical Aviation Shock Replay Studio
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-100 text-amber-900 border border-amber-300">Calibrated Stylized Model</span>
             </h3>
-            <p class="text-xs text-[#5E718A]">Simulate national capacity collapses & fuel price surges to test CPI index resilience</p>
+            <p class="text-xs text-[#5E718A]">Calibrated stylized stress-testing simulator modeling capacity collapses & fuel price surges</p>
           </div>
         </div>
         <button onclick="closeShockReplayModal()" class="text-[#5E718A] hover:text-[#26364A] text-xl font-bold p-1">&times;</button>
@@ -4896,7 +4897,7 @@
 
       <!-- Affected Routes Table -->
       <div class="space-y-2">
-        <h4 class="text-xs font-bold text-[#26364A] uppercase tracking-wider">Empirical Microdata: Most Impacted Corridors</h4>
+        <h4 class="text-xs font-bold text-[#26364A] uppercase tracking-wider">Calibrated Stylized Microdata: Most Impacted Corridors</h4>
         <div class="overflow-x-auto rounded-xl border border-[#E2E8F0]">
           <table class="w-full text-left text-xs">
             <thead class="bg-[#F8FAFC] border-b border-[#E2E8F0] font-semibold text-[#5E718A]">
@@ -4929,7 +4930,7 @@
     </div>
   </div>
 
-  <!-- ==================== 3. ROTATING PROXY POOL MODAL ==================== -->
+  <!-- ==================== 3. BROWSER FINGERPRINT & HEADER ROTATION MODAL ==================== -->
   <div id="proxyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
     <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-[#CBD5E1] space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-[#F1F5F9] pb-3">
@@ -4938,35 +4939,35 @@
             🌐
           </div>
           <div>
-            <h3 class="text-lg font-bold text-[#26364A]">Rotating Proxy & Anti-Bot Infrastructure</h3>
-            <p class="text-xs text-[#5E718A]">Multi-gateway domestic IP rotation and challenge failover telemetry</p>
+            <h3 class="text-lg font-bold text-[#26364A]">Browser Fingerprint & Header Rotation Engine</h3>
+            <p class="text-xs text-[#5E718A]">6 Desktop User-Agent & Sec-CH-UA profiles across Direct Host Egress (IP proxy pool optional via PROXY_POOL env)</p>
           </div>
         </div>
         <button onclick="closeProxyModal()" class="text-[#5E718A] hover:text-[#26364A] text-xl font-bold p-1">&times;</button>
       </div>
 
-      <!-- Proxy Telemetry Summary -->
+      <!-- Fingerprint & Header Telemetry Summary -->
       <div class="grid grid-cols-3 gap-3 font-mono text-center">
         <div class="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-          <div class="text-[10px] text-[#5E718A] uppercase font-bold">Active Nodes</div>
-          <div id="proxyActiveCount" class="text-xl font-extrabold text-sky-700 mt-0.5">6 / 6</div>
-          <div class="text-[9px] text-emerald-600 font-semibold">100% Operational</div>
+          <div class="text-[10px] text-[#5E718A] uppercase font-bold">Egress Mode</div>
+          <div id="proxyActiveCount" class="text-sm font-extrabold text-sky-700 mt-1">Direct Host Egress</div>
+          <div class="text-[9px] text-emerald-600 font-semibold">Local Sandbox Operational</div>
         </div>
         <div class="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-          <div class="text-[10px] text-[#5E718A] uppercase font-bold">Total Rotations</div>
-          <div id="proxyRotationsCount" class="text-xl font-extrabold text-[#26364A] mt-0.5">142</div>
-          <div class="text-[9px] text-[#5E718A]">Round-Robin Balancing</div>
+          <div class="text-[10px] text-[#5E718A] uppercase font-bold">Rotated Profiles</div>
+          <div id="proxyRotationsCount" class="text-xl font-extrabold text-[#26364A] mt-0.5">6 Profiles</div>
+          <div class="text-[9px] text-[#5E718A]">Sec-CH-UA Client-Hints</div>
         </div>
         <div class="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-          <div class="text-[10px] text-[#5E718A] uppercase font-bold">Bot Interceptions</div>
+          <div class="text-[10px] text-[#5E718A] uppercase font-bold">Anti-Bot Interceptions</div>
           <div id="proxyChallengesCount" class="text-xl font-extrabold text-amber-700 mt-0.5">0</div>
-          <div class="text-[9px] text-emerald-600 font-semibold">Clean Egress</div>
+          <div class="text-[9px] text-emerald-600 font-semibold">Direct Egress</div>
         </div>
       </div>
 
       <!-- Nodes Table -->
       <div class="space-y-2">
-        <h4 class="text-xs font-bold text-[#26364A] uppercase tracking-wider">Gateway Nodes Status & Latency</h4>
+        <h4 class="text-xs font-bold text-[#26364A] uppercase tracking-wider">Egress Status & Latency</h4>
         <div class="overflow-x-auto rounded-xl border border-[#E2E8F0]">
           <table class="w-full text-left text-xs font-mono">
             <thead class="bg-[#F8FAFC] border-b border-[#E2E8F0] font-semibold text-[#5E718A]">
@@ -5157,8 +5158,12 @@
         const res = await fetch('/api/v1/compliance/proxies');
         if (res.ok) {
           const telem = await res.json();
-          document.getElementById('proxyActiveCount').innerText = `${telem.active_egress_count} / ${telem.pool_size}`;
-          document.getElementById('proxyRotationsCount').innerText = telem.total_rotations || 0;
+          if (telem.ip_proxy_pool_configured) {
+            document.getElementById('proxyActiveCount').innerText = `${telem.active_egress_count} / ${telem.pool_size}`;
+          } else {
+            document.getElementById('proxyActiveCount').innerText = 'Direct Host Egress';
+          }
+          document.getElementById('proxyRotationsCount').innerText = `${telem.user_agent_pool_size || 6} Profiles`;
           document.getElementById('proxyChallengesCount').innerText = telem.challenges_intercepted || 0;
           
           const tbody = document.getElementById('proxyNodesTableBody');

@@ -148,44 +148,8 @@ DATA_SOURCES_CATALOG = [
         "type": "Indian Domestic OTA",
         "scrape_method": "Playwright Headless Browser Extraction",
         "robots_status": "Permitted (/FlightList/Index)",
-        "legal_basis": "RFC 9309 compliant path traversal; polite 3.0s crawl delay",
+        "legal_basis": "RFC 9309 compliant path traversal; extracts live tariffs with statutory decomposition",
         "active_status": "Active Live Scrape"
-    },
-    {
-        "id": "makemytrip",
-        "name": "MakeMyTrip",
-        "type": "Indian Domestic OTA",
-        "scrape_method": "Playwright Headless Browser Extraction & 1-Click Auditor Deeplink",
-        "robots_status": "Protected (Akamai Bot Manager Interception)",
-        "legal_basis": "Robots.txt rate limits respected; direct headless automation intercepted by Akamai edge challenge; falls back to 1-click verification deeplink",
-        "active_status": "Challenged / Degraded (1-Click Verification Deeplink Fallback)"
-    },
-    {
-        "id": "yatra",
-        "name": "Yatra",
-        "type": "Indian Domestic OTA",
-        "scrape_method": "Playwright Headless Browser Extraction & 1-Click Auditor Deeplink",
-        "robots_status": "Protected (Akamai Edge Interception)",
-        "legal_basis": "Direct headless automation intercepted by edge RST/HTTP2 challenges; falls back to 1-click verification deeplink",
-        "active_status": "Challenged / Degraded (1-Click Verification Deeplink Fallback)"
-    },
-    {
-        "id": "spicejet",
-        "name": "SpiceJet (SG)",
-        "type": "Direct Airline Portal",
-        "scrape_method": "Aggregator Microdata Extraction & 1-Click Carrier Booking Verification",
-        "robots_status": "Disallowed (/api/v1)",
-        "legal_basis": "Robots.txt disallows /api/v1; extracted via live aggregator microdata + direct carrier booking URL for verification",
-        "active_status": "Direct Carrier Verification Link (Aggregator Extracted)"
-    },
-    {
-        "id": "akasa_air",
-        "name": "Akasa Air (QP)",
-        "type": "Direct Airline Portal",
-        "scrape_method": "Aggregator Microdata Extraction & 1-Click Carrier Booking Verification",
-        "robots_status": "Tokenized Session Protected (Navitaire New Skies)",
-        "legal_basis": "Requires encrypted dynamic session tokens; extracted via live aggregator microdata + direct carrier booking URL for verification",
-        "active_status": "Direct Carrier Verification Link (Aggregator Extracted)"
     },
     {
         "id": "cleartrip",
@@ -206,40 +170,76 @@ DATA_SOURCES_CATALOG = [
         "active_status": "RFC 9309 Ethically Gated (Deeplink Only)"
     },
     {
+        "id": "makemytrip",
+        "name": "MakeMyTrip",
+        "type": "Indian Domestic OTA",
+        "scrape_method": "1-Click Verification Deeplink (Direct Scrape Unverified)",
+        "robots_status": "Not Analyzed",
+        "legal_basis": "Direct pre-filled search URL generation for auditor cross-check; direct headless automation unverified",
+        "active_status": "Deeplink Only (Direct Scrape Unverified)"
+    },
+    {
+        "id": "yatra",
+        "name": "Yatra",
+        "type": "Indian Domestic OTA",
+        "scrape_method": "1-Click Verification Deeplink (Direct Scrape Unverified)",
+        "robots_status": "Not Analyzed",
+        "legal_basis": "Direct pre-filled search URL generation for auditor cross-check; direct headless automation unverified",
+        "active_status": "Deeplink Only (Direct Scrape Unverified)"
+    },
+    {
         "id": "goibibo",
         "name": "Goibibo",
         "type": "Indian Domestic OTA",
         "scrape_method": "1-Click Direct Verification Deeplink (MakeMyTrip Group Engine)",
-        "robots_status": "N/A (Deeplink Only)",
-        "legal_basis": "Direct pre-filled search URL generation for live auditor cross-check; no automated scrape",
-        "active_status": "Deeplink Verification Only — No Live Scrape Implemented"
+        "robots_status": "Not Analyzed",
+        "legal_basis": "Direct pre-filled search URL generation for live auditor cross-check; no scraper implemented",
+        "active_status": "Deeplink Only (No Scraper Implemented)"
     },
     {
         "id": "indigo",
         "name": "IndiGo (6E)",
         "type": "Direct Airline Portal",
-        "scrape_method": "Aggregator Direct Extraction & 1-Click Carrier Booking Verification",
-        "robots_status": "Protected (Akamai Bot Manager)",
-        "legal_basis": "DGCA market leader (62% share); extracted via multi-source aggregator microdata + direct carrier query URL for live auditor cross-check",
-        "active_status": "Direct Carrier Engine (Aggregator Extraction + Carrier Link)"
+        "scrape_method": "1-Click Direct Carrier Booking Deeplink",
+        "robots_status": "Not Analyzed",
+        "legal_basis": "Direct carrier query URL for live auditor cross-check; no direct scraper implemented",
+        "active_status": "Deeplink Only (No Direct Scraper Implemented)"
     },
     {
         "id": "air_india",
         "name": "Air India (AI)",
         "type": "Direct Airline Portal",
-        "scrape_method": "Aggregator Direct Extraction & 1-Click Carrier Booking Verification",
-        "robots_status": "Protected (PerimeterX Challenge)",
-        "legal_basis": "National full-service carrier; extracted via multi-source aggregator microdata + direct carrier query URL for live auditor cross-check",
-        "active_status": "Direct Carrier Engine (Aggregator Extraction + Carrier Link)"
+        "scrape_method": "1-Click Direct Carrier Booking Deeplink",
+        "robots_status": "Not Analyzed",
+        "legal_basis": "Direct carrier query URL for live auditor cross-check; no direct scraper implemented",
+        "active_status": "Deeplink Only (No Direct Scraper Implemented)"
     },
     {
         "id": "air_india_express",
         "name": "Air India Express (IX)",
         "type": "Direct Airline Portal",
-        "scrape_method": "Aggregator Direct Extraction & 1-Click Carrier Booking Verification",
-        "robots_status": "Protected (Cloudflare Turnstile)",
-        "legal_basis": "Low-cost subsidiary; extracted via multi-source aggregator microdata + direct carrier query URL for live auditor cross-check",
-        "active_status": "Direct Carrier Engine (Aggregator Extraction + Carrier Link)"
+        "scrape_method": "1-Click Direct Carrier Booking Deeplink",
+        "robots_status": "Not Analyzed",
+        "legal_basis": "Direct carrier query URL for live auditor cross-check; no direct scraper implemented",
+        "active_status": "Deeplink Only (No Direct Scraper Implemented)"
+    },
+    {
+        "id": "akasa_air",
+        "name": "Akasa Air (QP)",
+        "type": "Direct Airline Portal",
+        "scrape_method": "1-Click Direct Carrier Booking Deeplink",
+        "robots_status": "Not Analyzed",
+        "legal_basis": "Direct carrier query URL for live auditor cross-check; no direct scraper implemented",
+        "active_status": "Deeplink Only (No Direct Scraper Implemented)"
+    },
+    {
+        "id": "spicejet",
+        "name": "SpiceJet (SG)",
+        "type": "Direct Airline Portal",
+        "scrape_method": "1-Click Direct Carrier Booking Deeplink",
+        "robots_status": "Not Analyzed",
+        "legal_basis": "Direct carrier query URL for live auditor cross-check; no direct scraper implemented",
+        "active_status": "Deeplink Only (No Direct Scraper Implemented)"
     }
 ]
 
@@ -1184,86 +1184,13 @@ class RealtimeFlightScraper:
                 print(f"[PLAYWRIGHT SCRAPER - YATRA] Note: {e}")
                 return []
 
-    async def _scrape_spicejet_async(self, origin: str, dest: str, date: str):
-        """Scrapes live direct carrier quotes from SpiceJet portal (Direct Carrier named in PS)."""
-        sj_url = "https://www.spicejet.com/"
-        if robot_guard:
-            allowed, reason = robot_guard.can_fetch(sj_url)
-            if not allowed:
-                return []
-            robot_guard.enforce_rate_limit(sj_url)
-
-        if not self.PLAYWRIGHT_IN_REQUEST:
-            return []
-
-        async with async_playwright() as p:
-            try:
-                browser = await p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled", "--no-sandbox"])
-                context = await browser.new_context(
-                    user_agent=proxy_manager.get_random_headers()["User-Agent"] if proxy_manager else "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-                    locale="en-IN"
-                )
-                page = await context.new_page()
-                await page.route("**/*.{png,jpg,jpeg,svg,gif,webp,woff,woff2}", lambda r: r.abort())
-                resp = await page.goto(sj_url, timeout=20000, wait_until="domcontentloaded")
-                content = await page.content()
-                if proxy_manager and resp:
-                    challenged, reason = proxy_manager.detect_challenge(resp.status, content)
-                    if challenged:
-                        proxy_manager.record_failure(None, reason)
-                        await browser.close()
-                        return []
-                    proxy_manager.record_success(None)
-
-                await browser.close()
-                return []
-            except Exception as e:
-                print(f"[DIRECT CARRIER - SPICEJET] Note: {e}")
-                return []
-
-    async def _scrape_akasa_async(self, origin: str, dest: str, date: str):
-        """Scrapes live direct carrier quotes from Akasa Air portal (Direct Carrier named in PS)."""
-        akasa_url = "https://www.akasaair.com/"
-        if robot_guard:
-            allowed, reason = robot_guard.can_fetch(akasa_url)
-            if not allowed:
-                return []
-            robot_guard.enforce_rate_limit(akasa_url)
-
-        if not self.PLAYWRIGHT_IN_REQUEST:
-            return []
-
-        async with async_playwright() as p:
-            try:
-                browser = await p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled", "--no-sandbox"])
-                context = await browser.new_context(user_agent=proxy_manager.get_random_headers()["User-Agent"] if proxy_manager else "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
-                page = await context.new_page()
-                await page.route("**/*.{png,jpg,jpeg,svg,gif,webp,woff,woff2}", lambda r: r.abort())
-                resp = await page.goto(akasa_url, timeout=20000, wait_until="domcontentloaded")
-                content = await page.content()
-                if proxy_manager and resp:
-                    challenged, reason = proxy_manager.detect_challenge(resp.status, content)
-                    if challenged:
-                        proxy_manager.record_failure(None, reason)
-                        await browser.close()
-                        return []
-                    proxy_manager.record_success(None)
-
-                await browser.close()
-                return []
-            except Exception as e:
-                print(f"[DIRECT CARRIER - AKASA] Note: {e}")
-                return []
-
     async def _scrape_multi_source_async(self, origin: str, dest: str, date: str):
-        """Executes Google Flights, EaseMyTrip, MakeMyTrip, Yatra, SpiceJet, and Akasa scrapers concurrently via asyncio.gather."""
+        """Executes Google Flights, EaseMyTrip, MakeMyTrip, and Yatra scrapers concurrently via asyncio.gather."""
         mmt_task = self._scrape_makemytrip_async(origin, dest, date)
         emt_task = self._scrape_easemytrip_async(origin, dest, date)
         gf_task = self._scrape_google_flights_async(origin, dest, date)
         yatra_task = self._scrape_yatra_async(origin, dest, date)
-        sj_task = self._scrape_spicejet_async(origin, dest, date)
-        akasa_task = self._scrape_akasa_async(origin, dest, date)
-        return await asyncio.gather(mmt_task, emt_task, gf_task, yatra_task, sj_task, akasa_task, return_exceptions=True)
+        return await asyncio.gather(mmt_task, emt_task, gf_task, yatra_task, return_exceptions=True)
 
     def search_live(self, origin: str, destination: str, travel_date: str, force_live: bool = False):
         origin = origin.upper().strip()

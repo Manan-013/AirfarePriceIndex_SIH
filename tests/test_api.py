@@ -187,7 +187,8 @@ class TestAeroDexAPI(unittest.TestCase):
             self.assertEqual(resp.status, 200)
             data = json.loads(resp.read().decode("utf-8"))
             self.assertTrue(data.get("proxy_management_active"))
-            self.assertGreaterEqual(data.get("pool_size", 0), 6)
+            self.assertEqual(data.get("user_agent_pool_size"), 6)
+            self.assertEqual(data.get("ip_proxy_pool_configured"), False)
             self.assertIn("nodes_detail", data)
 
 if __name__ == "__main__":

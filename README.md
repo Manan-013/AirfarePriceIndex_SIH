@@ -46,7 +46,7 @@ In India, the **Ministry of Statistics and Programme Implementation (MoSPI)** pu
 
 ### 5. AI Econometric Situation Room & Differentiating Features
 - **Data Integrity Governance Engine** (`integrity_engine.py`): Calculates real-time composite data quality scores (0–100%, Grade A+) evaluating mathematical fare reconciliation ($Base + YQ + Fees + GST = Total$), Tukey 1.5× IQR outlier trimming, source diversity, and temporal freshness.
-- **Historical Aviation Shock Replay Studio** (`shock_replay.py`): Interactive macroeconomic scenario simulator modeling famous supply shocks (May 2023 Go First Grounding, April 2019 Jet Airways Collapse, June 2022 ATF Fuel Spike) showing Laspeyres overstatement vs Superlative Fisher index trajectories.
+- **Historical Aviation Crisis Simulation Studio** (`shock_replay.py`): Calibrated stylized stress-testing simulator modeling historical supply shocks (May 2023 Go First Grounding, April 2019 Jet Airways Collapse, June 2022 ATF Fuel Spike) showing Laspeyres substitution bias vs Superlative Fisher index trajectories.
 - **Autonomous Executive Briefings**: AI policy memos in English and formal Hindi (**शुद्ध हिन्दी**) powered by **Gemini 3.6 Flash** (`gemini-3.6-flash`) with deterministic offline fallback.
 
 ---
@@ -165,7 +165,7 @@ python -m unittest discover tests -v
 | `/api/v1/integrity/score` | `GET` | Real-time Econometric Data Integrity Score (4D composite, SHA-256 seal) |
 | `/api/v1/shocks/list` | `GET` | Historical aviation shock replay scenario catalog |
 | `/api/v1/shocks/replay` | `GET` | Historical shock replay engine (Fisher vs Laspeyres, early detection) |
-| `/api/v1/compliance/proxies` | `GET` | Multi-node proxy pool status, regional latency & challenge telemetry |
+| `/api/v1/compliance/proxies` | `GET` | Client fingerprint & header rotation telemetry (direct egress mode) |
 | `/api/v1/compliance/robots` | `GET` | Live robots.txt compliance status and audit log |
 | `/api/v1/live/pulse` | `GET` | High-frequency live pulse of national airfare index |
 | `/api/v1/index/national` | `GET` | Current National Airfare Price Index and CPI impact |
