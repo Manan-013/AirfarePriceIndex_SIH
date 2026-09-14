@@ -26,12 +26,25 @@ except ImportError:
         robot_guard = None
 
 try:
-    from proxy_rotator import proxy_manager
+    from proxy_rotator import (
+        proxy_manager,
+        apply_playwright_stealth,
+        human_pause,
+        simulate_human_interaction
+    )
 except ImportError:
     try:
-        from airfare_index.live_fetcher.proxy_rotator import proxy_manager
+        from airfare_index.live_fetcher.proxy_rotator import (
+            proxy_manager,
+            apply_playwright_stealth,
+            human_pause,
+            simulate_human_interaction
+        )
     except ImportError:
         proxy_manager = None
+        apply_playwright_stealth = None
+        human_pause = None
+        simulate_human_interaction = None
 
 try:
     from database import db
@@ -879,24 +892,32 @@ class RealtimeFlightScraper:
                 "--disable-gpu",
                 "--disable-blink-features=AutomationControlled"
             ]
-            browser = await p.chromium.launch(headless=True, args=launch_args)
+            pw_proxy = proxy_manager.get_playwright_proxy() if proxy_manager else None
+            browser = await p.chromium.launch(headless=True, args=launch_args, proxy=pw_proxy)
             context = await browser.new_context(
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+                user_agent=proxy_manager.get_random_headers()["User-Agent"] if proxy_manager else "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
                 locale="en-IN",
                 timezone_id="Asia/Kolkata",
                 viewport={"width": 1280, "height": 800}
             )
             page = await context.new_page()
+            if apply_playwright_stealth:
+                await apply_playwright_stealth(page)
             # Abort heavy assets to preserve low-memory cloud deployment
             await page.route("**/*.{png,jpg,jpeg,svg,gif,webp,woff,woff2,ttf,otf,mp4,webm}", lambda route: route.abort())
 
             try:
                 await page.goto(emt_url, timeout=28000, wait_until="domcontentloaded")
+                if simulate_human_interaction:
+                    await simulate_human_interaction(page)
                 try:
                     await page.wait_for_selector('.fltResult', timeout=12000)
                 except Exception:
                     pass
-                await page.wait_for_timeout(2000)
+                if human_pause:
+                    await human_pause(1.0, 2.0)
+                else:
+                    await page.wait_for_timeout(2000)
 
                 cards = await page.query_selector_all('.fltResult')
                 flights = []
@@ -951,27 +972,45 @@ class RealtimeFlightScraper:
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
                 "--disable-gpu",
-                "--disable-blink-features=AutomationControlled",
-                "--disable-http2"
+                "--disable-blink-features=AutomationControlled"
             ]
-            browser = await p.chromium.launch(headless=True, args=launch_args)
+            pw_proxy = proxy_manager.get_playwright_proxy() if proxy_manager else None
+            browser = await p.chromium.launch(headless=True, args=launch_args, proxy=pw_proxy)
             context = await browser.new_context(
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+                user_agent=proxy_manager.get_random_headers()["User-Agent"] if proxy_manager else "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
                 locale="en-IN",
                 timezone_id="Asia/Kolkata",
                 viewport={"width": 1280, "height": 800}
             )
             page = await context.new_page()
+            if apply_playwright_stealth:
+                await apply_playwright_stealth(page)
             # Abort heavy assets to preserve low-memory cloud execution
             await page.route("**/*.{png,jpg,jpeg,svg,gif,webp,woff,woff2,ttf,otf,mp4,webm}", lambda route: route.abort())
 
             try:
-                await page.goto(mmt_url, timeout=6000, wait_until="domcontentloaded")
+                # Step 1: Session Warm-up on Homepage
+                try:
+                    await page.goto("https://www.makemytrip.com/", timeout=8000, wait_until="domcontentloaded")
+                    if simulate_human_interaction:
+                        await simulate_human_interaction(page)
+                    if human_pause:
+                        await human_pause(0.5, 1.2)
+                except Exception:
+                    pass
+
+                # Step 2: Navigate to search URL
+                await page.goto(mmt_url, timeout=15000, wait_until="domcontentloaded")
+                if simulate_human_interaction:
+                    await simulate_human_interaction(page)
                 try:
                     await page.wait_for_selector('.listingCard, .clusterViewPrice, [class*="flightCard"], [class*="listingRow"]', timeout=8000)
                 except Exception:
                     pass
-                await page.wait_for_timeout(2000)
+                if human_pause:
+                    await human_pause(1.0, 2.0)
+                else:
+                    await page.wait_for_timeout(2000)
 
                 cards = await page.query_selector_all('.listingCard, [class*="flightListing"], [class*="listingRow"], [class*="clusterViewPrice"]')
                 if not cards:
@@ -1001,7 +1040,7 @@ class RealtimeFlightScraper:
                 if robot_guard:
                     robot_guard.record_response(mmt_url, 503)
                 await browser.close()
-                print(f"[PLAYWRIGHT SCRAPER - MAKEMYTRIP] Note: {e}")
+                print(f"[PLAYWRIGHT SCRAPER - MAKEMYTRIP] Note: {e} (Requires Residential Proxy if Akamai TLS blocked)")
                 return []
 
     def _scrape_google_flights_http(self, origin: str, dest: str, date: str):
@@ -1107,15 +1146,16 @@ class RealtimeFlightScraper:
                 "--disable-blink-features=AutomationControlled",
                 "--disable-gpu"
             ]
+            pw_proxy = proxy_manager.get_playwright_proxy() if proxy_manager else None
             try:
-                browser = await p.chromium.launch(headless=True, args=launch_args)
+                browser = await p.chromium.launch(headless=True, args=launch_args, proxy=pw_proxy)
             except Exception as launch_err:
                 err_msg = str(launch_err).lower()
                 if "executable doesn't exist" in err_msg or "playwright install" in err_msg or "not found" in err_msg:
                     print(f"[PLAYWRIGHT SCRAPER] Chromium missing on host. Automatically downloading binary...")
                     import subprocess, sys
                     subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=True)
-                    browser = await p.chromium.launch(headless=True, args=launch_args)
+                    browser = await p.chromium.launch(headless=True, args=launch_args, proxy=pw_proxy)
                 else:
                     raise launch_err
 
@@ -1146,12 +1186,20 @@ class RealtimeFlightScraper:
                 robot_guard.enforce_rate_limit(url)
 
             page = await context.new_page()
-            await page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
+            if apply_playwright_stealth:
+                await apply_playwright_stealth(page)
+            else:
+                await page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
             # Abort heavy assets to preserve low-memory cloud deployment
             await page.route("**/*.{png,jpg,jpeg,svg,gif,webp,woff,woff2,ttf,otf,mp4,webm}", lambda route: route.abort())
 
             await page.goto(url, wait_until="domcontentloaded", timeout=35000)
-            await page.wait_for_timeout(2500)
+            if simulate_human_interaction:
+                await simulate_human_interaction(page)
+            if human_pause:
+                await human_pause(1.5, 2.5)
+            else:
+                await page.wait_for_timeout(2500)
 
             # Dismiss any consent dialog if present
             try:
@@ -1256,11 +1304,11 @@ class RealtimeFlightScraper:
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
                 "--disable-gpu",
-                "--disable-blink-features=AutomationControlled",
-                "--disable-http2"
+                "--disable-blink-features=AutomationControlled"
             ]
+            pw_proxy = proxy_manager.get_playwright_proxy() if proxy_manager else None
             try:
-                browser = await p.chromium.launch(headless=True, args=launch_args)
+                browser = await p.chromium.launch(headless=True, args=launch_args, proxy=pw_proxy)
                 context = await browser.new_context(
                     user_agent=proxy_manager.get_random_headers()["User-Agent"] if proxy_manager else "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
                     locale="en-IN",
@@ -1268,9 +1316,24 @@ class RealtimeFlightScraper:
                     viewport={"width": 1280, "height": 800}
                 )
                 page = await context.new_page()
+                if apply_playwright_stealth:
+                    await apply_playwright_stealth(page)
                 await page.route("**/*.{png,jpg,jpeg,svg,gif,webp,woff,woff2,ttf,otf,mp4,webm}", lambda route: route.abort())
 
-                resp = await page.goto(yatra_url, timeout=25000, wait_until="domcontentloaded")
+                # Step 1: Session Warm-up on Homepage
+                try:
+                    await page.goto("https://www.yatra.com/", timeout=8000, wait_until="domcontentloaded")
+                    if simulate_human_interaction:
+                        await simulate_human_interaction(page)
+                    if human_pause:
+                        await human_pause(0.5, 1.2)
+                except Exception:
+                    pass
+
+                # Step 2: Navigate to search URL
+                resp = await page.goto(yatra_url, timeout=20000, wait_until="domcontentloaded")
+                if simulate_human_interaction:
+                    await simulate_human_interaction(page)
                 content = await page.content()
 
                 if proxy_manager and resp:
@@ -1285,7 +1348,10 @@ class RealtimeFlightScraper:
                     await page.wait_for_selector('.flightItem, .tuple, div[class*="flightItem"]', timeout=8000)
                 except Exception:
                     pass
-                await page.wait_for_timeout(2000)
+                if human_pause:
+                    await human_pause(1.0, 2.0)
+                else:
+                    await page.wait_for_timeout(2000)
 
                 cards = await page.query_selector_all('.flightItem, .tuple, div[class*="flightItem"]')
                 flights = []
@@ -1340,19 +1406,27 @@ class RealtimeFlightScraper:
                 "--disable-gpu",
                 "--disable-blink-features=AutomationControlled"
             ]
-            browser = await p.chromium.launch(headless=True, args=launch_args)
+            pw_proxy = proxy_manager.get_playwright_proxy() if proxy_manager else None
+            browser = await p.chromium.launch(headless=True, args=launch_args, proxy=pw_proxy)
             context = await browser.new_context(
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+                user_agent=proxy_manager.get_random_headers()["User-Agent"] if proxy_manager else "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
                 locale="en-IN",
                 timezone_id="Asia/Kolkata",
                 viewport={"width": 1280, "height": 800}
             )
             page = await context.new_page()
+            if apply_playwright_stealth:
+                await apply_playwright_stealth(page)
             await page.route("**/*.{png,jpg,jpeg,svg,gif,webp,woff,woff2,ttf,otf,mp4,webm}", lambda route: route.abort())
 
             try:
                 await page.goto(url, timeout=25000, wait_until="domcontentloaded")
-                await page.wait_for_timeout(4000)
+                if simulate_human_interaction:
+                    await simulate_human_interaction(page)
+                if human_pause:
+                    await human_pause(2.0, 3.5)
+                else:
+                    await page.wait_for_timeout(4000)
 
                 all_divs = await page.query_selector_all("div")
                 flights = []
@@ -1403,18 +1477,27 @@ class RealtimeFlightScraper:
                 "--disable-gpu",
                 "--disable-blink-features=AutomationControlled"
             ]
-            browser = await p.chromium.launch(headless=True, args=launch_args)
+            pw_proxy = proxy_manager.get_playwright_proxy() if proxy_manager else None
+            browser = await p.chromium.launch(headless=True, args=launch_args, proxy=pw_proxy)
             context = await browser.new_context(
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+                user_agent=proxy_manager.get_random_headers()["User-Agent"] if proxy_manager else "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
                 locale="en-IN",
+                timezone_id="Asia/Kolkata",
                 viewport={"width": 1280, "height": 800}
             )
             page = await context.new_page()
+            if apply_playwright_stealth:
+                await apply_playwright_stealth(page)
             await page.route("**/*.{png,jpg,jpeg,svg,gif,webp,woff,woff2,ttf,otf,mp4,webm}", lambda route: route.abort())
 
             try:
                 await page.goto(url, timeout=30000, wait_until="domcontentloaded")
-                await page.wait_for_timeout(6000)
+                if simulate_human_interaction:
+                    await simulate_human_interaction(page)
+                if human_pause:
+                    await human_pause(2.5, 4.0)
+                else:
+                    await page.wait_for_timeout(6000)
 
                 all_divs = await page.query_selector_all("div")
                 flights = []
@@ -1526,34 +1609,26 @@ class RealtimeFlightScraper:
         if (self.PLAYWRIGHT_IN_REQUEST or force_live) and PLAYWRIGHT_AVAILABLE:
             try:
                 print(f"[PLAYWRIGHT SCRAPER] Launching multi-source extractors for {origin} -> {destination} on {travel_date}...")
-                mmt_res, emt_res, gf_res = asyncio.run(self._scrape_multi_source_async(origin, destination, travel_date))
+                multi_res = asyncio.run(self._scrape_multi_source_async(origin, destination, travel_date))
                 all_live_flights = []
                 sources_used = []
                 seen_keys = set()
 
-                if isinstance(emt_res, list) and len(emt_res) >= 5:
-                    sources_used.append("EaseMyTrip")
-                    for f in emt_res:
-                        key = (f["carrier_code"], f["departure_time"], f["arrival_time"])
-                        if key not in seen_keys:
-                            seen_keys.add(key)
-                            all_live_flights.append(f)
+                source_mapping = [
+                    ("Google Flights", multi_res[0] if len(multi_res) > 0 else []),
+                    ("EaseMyTrip", multi_res[1] if len(multi_res) > 1 else []),
+                    ("Cleartrip", multi_res[2] if len(multi_res) > 2 else []),
+                    ("SpiceJet", multi_res[3] if len(multi_res) > 3 else []),
+                ]
 
-                if isinstance(gf_res, list) and len(gf_res) >= 5:
-                    sources_used.append("Google Flights")
-                    for f in gf_res:
-                        key = (f["carrier_code"], f["departure_time"], f["arrival_time"])
-                        if key not in seen_keys:
-                            seen_keys.add(key)
-                            all_live_flights.append(f)
-
-                if isinstance(mmt_res, list) and len(mmt_res) >= 5:
-                    sources_used.append("MakeMyTrip")
-                    for f in mmt_res:
-                        key = (f["carrier_code"], f["departure_time"], f["arrival_time"])
-                        if key not in seen_keys:
-                            seen_keys.add(key)
-                            all_live_flights.append(f)
+                for src_name, res in source_mapping:
+                    if isinstance(res, list) and len(res) >= 2:
+                        sources_used.append(src_name)
+                        for f in res:
+                            key = (f["carrier_code"], f["departure_time"], f["arrival_time"])
+                            if key not in seen_keys:
+                                seen_keys.add(key)
+                                all_live_flights.append(f)
 
                 if all_live_flights and len(all_live_flights) >= 5:
                     all_live_flights, clean_meta = self.clean_and_filter_quotes(all_live_flights, origin, destination)

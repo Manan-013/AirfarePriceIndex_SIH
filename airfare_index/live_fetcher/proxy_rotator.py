@@ -14,7 +14,9 @@ import os
 import re
 import time
 import random
+import asyncio
 import threading
+import urllib.parse
 from typing import Dict, List, Optional, Tuple, Any
 
 # Curated pool of modern desktop User-Agents with matching Sec-CH-UA client hints
@@ -191,6 +193,27 @@ class ProxyManager:
             best["quarantined_until"] = 0.0
             return None if best["url"] == "direct://" else best["url"]
 
+    def get_playwright_proxy(self) -> Optional[Dict[str, str]]:
+        """Returns a Playwright-compatible proxy configuration dictionary, or None for direct egress."""
+        proxy_url = self.get_next_proxy()
+        if not proxy_url or proxy_url == "direct://":
+            return None
+
+        try:
+            parsed = urllib.parse.urlparse(proxy_url)
+            server = f"{parsed.scheme}://{parsed.hostname}"
+            if parsed.port:
+                server += f":{parsed.port}"
+
+            cfg = {"server": server}
+            if parsed.username:
+                cfg["username"] = parsed.username
+            if parsed.password:
+                cfg["password"] = parsed.password
+            return cfg
+        except Exception:
+            return None
+
     def get_random_headers(self, custom_headers: Optional[Dict[str, str]] = None) -> Dict[str, str]:
         with self._lock:
             ua_entry = USER_AGENT_POOL[self._ua_index]
@@ -312,3 +335,49 @@ class ProxyManager:
             }
 
 proxy_manager = ProxyManager()
+
+
+# =============================================================================
+# Automated Stealth Evasions & Human Interaction Emulation
+# =============================================================================
+
+async def apply_playwright_stealth(page_or_context):
+    """
+    Applies stealth evasions to hide headless automation signatures:
+    - Removes navigator.webdriver
+    - Fixes navigator.plugins and mimeTypes
+    - Masks WebGL vendor and renderer hashes
+    - Fixes broken Chrome runtime properties
+    """
+    try:
+        from playwright_stealth import Stealth
+        await Stealth().apply_stealth_async(page_or_context)
+    except Exception as e:
+        # Graceful fallback if stealth scripts fail in specific environments
+        pass
+
+
+async def human_pause(min_sec: float = 1.2, max_sec: float = 2.8):
+    """Adds a randomized human-like reading/reaction delay."""
+    delay = random.uniform(min_sec, max_sec)
+    await asyncio.sleep(delay)
+
+
+async def simulate_human_interaction(page):
+    """
+    Simulates realistic human-like mouse trajectory and viewport scrolling
+    to thwart mechanical timing and behavioral anomaly detectors.
+    """
+    try:
+        # Move mouse across realistic coordinates
+        target_x = random.randint(220, 680)
+        target_y = random.randint(180, 480)
+        await page.mouse.move(target_x, target_y)
+        await human_pause(0.2, 0.5)
+
+        # Gentle page scroll
+        scroll_delta = random.randint(150, 350)
+        await page.mouse.wheel(0, scroll_delta)
+        await human_pause(0.3, 0.7)
+    except Exception:
+        pass
