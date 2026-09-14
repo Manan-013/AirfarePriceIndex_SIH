@@ -21,13 +21,14 @@ if CURRENT_DIR not in sys.path:
     sys.path.insert(0, CURRENT_DIR)
 
 # Import our live scraper, statistical index engine, SQLite database, and AI Situation Engine
-from scraper import RealtimeFlightScraper, AIRPORT_NAMES
+from scraper import RealtimeFlightScraper, AIRPORT_NAMES, DATA_SOURCES_CATALOG
 from index_engine import AirfareIndexEngine
 from database import db
 from ai_engine import AirfareAIEngine
 from forecasting_engine import forecast_engine
 from live_calamity_tracker import live_calamity_tracker
 from robot_guard import robot_guard
+from proxy_rotator import proxy_manager
 
 PORT = int(os.environ.get("PORT", 8000))
 STATIC_DIR = os.path.join(CURRENT_DIR, "static")
@@ -399,6 +400,25 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             data = robot_guard.get_compliance_status() if robot_guard else {"status": "unavailable"}
             self.wfile.write(json.dumps(data, indent=2).encode("utf-8"))
+            return
+
+        # API: Enterprise Anti-Bot, CAPTCHA Interception & Proxy Health Telemetry
+        if parsed.path == "/api/v1/compliance/anti_bot":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            data = proxy_manager.get_telemetry() if proxy_manager else {"status": "unavailable"}
+            self.wfile.write(json.dumps(data, indent=2).encode("utf-8"))
+            return
+
+        # API: Data Sources Coverage & Governance Catalog (11 Sources: 6 OTAs + 5 Airlines)
+        if parsed.path == "/api/v1/compliance/sources":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(json.dumps(DATA_SOURCES_CATALOG, indent=2).encode("utf-8"))
             return
 
         

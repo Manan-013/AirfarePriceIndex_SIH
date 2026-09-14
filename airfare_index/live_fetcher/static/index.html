@@ -158,6 +158,11 @@
 					<span>Engine Online</span>
 				</div>
 				<div class="h-6 w-px bg-[#E2E8F0] hidden sm:block"></div>
+				<!-- Data Sources Matrix Button -->
+				<button onclick="openSourcesModal()" class="px-3 py-1.5 rounded-xl border border-purple-300 bg-purple-50/80 hover:bg-purple-100 text-purple-800 text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer">
+					<span>Sources Matrix (6 OTAs + 5 Airlines)</span>
+				</button>
+				<div class="h-6 w-px bg-[#E2E8F0] hidden sm:block"></div>
 				<!-- Export Data Button -->
 				<button onclick="openExportModal()" class="px-3.5 py-1.5 rounded-xl border border-[#5B8DEF]/40 bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 active:bg-[#5B8DEF]/30 text-[#3064C4] text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -2784,23 +2789,38 @@
               <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#8ED1C7]"></span>Airport: <strong class="text-[#26364A]">₹${f.airport_fees_udf_psf.toLocaleString('en-IN')}</strong></span>
               <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#389B8D]"></span>GST: <strong class="text-[#26364A]">₹${f.gst.toLocaleString('en-IN')}</strong></span>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 flex-wrap">
               ${f.easemytrip_url ? `
               <a href="${f.easemytrip_url}" target="_blank" rel="noopener noreferrer" 
                 class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition font-mono shadow-2xs" title="Verify live fare on EaseMyTrip">
                 EaseMyTrip ↗
               </a>` : ''}
               <a href="${gflightsUrl}" target="_blank" rel="noopener noreferrer" 
-                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 text-[#3064C4] border border-[#5B8DEF]/30 text-xs font-bold transition font-mono shadow-2xs">
+                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 text-[#3064C4] border border-[#5B8DEF]/30 text-xs font-bold transition font-mono shadow-2xs">
                 Google Flights ↗
               </a>
               <a href="${mmtUrl}" target="_blank" rel="noopener noreferrer" 
-                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold transition font-mono shadow-2xs">
+                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold transition font-mono shadow-2xs">
                 MakeMyTrip ↗
               </a>
+              ${f.yatra_url ? `
+              <a href="${f.yatra_url}" target="_blank" rel="noopener noreferrer" 
+                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition font-mono shadow-2xs" title="Verify on Yatra">
+                Yatra ↗
+              </a>` : ''}
+              ${f.cleartrip_url ? `
+              <a href="${f.cleartrip_url}" target="_blank" rel="noopener noreferrer" 
+                class="inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold transition font-mono shadow-2xs" title="Verify on Cleartrip (RFC 9309 Ethically Gated)">
+                Cleartrip ↗
+              </a>` : ''}
+              ${f.ixigo_url ? `
+              <a href="${f.ixigo_url}" target="_blank" rel="noopener noreferrer" 
+                class="inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold transition font-mono shadow-2xs" title="Verify on Ixigo (RFC 9309 Ethically Gated)">
+                Ixigo ↗
+              </a>` : ''}
               <a href="${airlineUrl}" target="_blank" rel="noopener noreferrer" 
-                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] text-xs font-semibold transition font-mono">
-                ${f.carrier_code} ↗
+                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] text-xs font-semibold transition font-mono shadow-2xs" title="Verify directly on carrier portal">
+                ${f.carrier_code} Portal ↗
               </a>
             </div>
           </div>
@@ -3994,7 +4014,7 @@
 
  grid.innerHTML = filtered.map(ev => {
  const daysAwayText = ev.days_away >= 0 ? `${ev.days_away}d away` : `${Math.abs(ev.days_away)}d ago`;
- const multBadge = `${ev.multiplier}x Surge`;
+ const multBadge = `${ev.multiplier}x (Calibrated Heuristic)`;
 
  return `
  <div class="p-3 rounded-xl border border-[#E2E8F0] hover:border-purple-300 hover:shadow-xs bg-white transition flex flex-col justify-between">
@@ -4544,5 +4564,139 @@
  </div>
  </div>
 
+  <!-- Multi-Source Governance & Anti-Bot Status Modal -->
+  <div id="sourcesModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+    <div class="glass-card rounded-2xl p-6 max-w-4xl w-full border border-[#E2E8F0] shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div class="flex items-start justify-between border-b border-[#F1F5F9] pb-4 mb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-100 text-purple-800 border border-purple-200">PS SIH26056 Mandate</span>
+            <span class="text-xs text-[#5E718A] font-mono">11 Sources: 6 OTAs & 5 Airlines</span>
+          </div>
+          <h3 class="text-base font-bold text-[#26364A] mt-1">Multi-Source Governance & Anti-Bot Status Matrix</h3>
+          <p class="text-xs text-[#5E718A]">Statutory provenance, RFC 9309 robots.txt compliance status, and enterprise anti-bot evasion telemetry.</p>
+        </div>
+        <button onclick="closeSourcesModal()" class="text-[#94A3B8] hover:text-[#26364A] text-lg font-bold p-1 cursor-pointer">✕</button>
+      </div>
+
+      <!-- Anti-Bot & Proxy Health Telemetry Ribbon -->
+      <div id="antiBotTelemetryBanner" class="p-4 rounded-xl bg-slate-50 border border-slate-200 mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-[#26364A] uppercase tracking-wider font-mono flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Enterprise Proxy & Anti-Bot Defense Subsystem
+          </span>
+          <span id="proxyModeBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold">Active</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+          <div class="bg-white p-2.5 rounded-lg border border-[#E2E8F0]">
+            <div class="text-[10px] text-[#5E718A]">Egress Mode</div>
+            <div id="telemEgressMode" class="font-bold text-[#26364A] mt-0.5">Rotating Headers</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-[#E2E8F0]">
+            <div class="text-[10px] text-[#5E718A]">UA Desktop Pool</div>
+            <div id="telemUaPool" class="font-bold text-[#3B6DCF] mt-0.5">6 Signatures</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-[#E2E8F0]">
+            <div class="text-[10px] text-[#5E718A]">Total Rotations</div>
+            <div id="telemRotations" class="font-bold text-emerald-700 mt-0.5">0</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-[#E2E8F0]">
+            <div class="text-[10px] text-[#5E718A]">Challenges Handled</div>
+            <div id="telemChallenges" class="font-bold text-purple-700 mt-0.5">0</div>
+          </div>
+        </div>
+        <div class="mt-2 text-[11px] text-[#5E718A] flex items-center gap-1.5 flex-wrap">
+          <strong class="font-semibold text-[#26364A]">Active Defenses:</strong>
+          <span>Chromium --disable-blink-features=AutomationControlled • Sec-CH-UA Client-Hints • Cloudflare & Akamai Signature Detection • Cooldown Quarantine</span>
+        </div>
+      </div>
+
+      <!-- 11 Data Sources Table -->
+      <div class="border border-[#E2E8F0] rounded-xl overflow-hidden mb-4">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[#5E718A] font-mono text-[11px]">
+              <th class="py-2.5 px-3">Data Source</th>
+              <th class="py-2.5 px-3">Type</th>
+              <th class="py-2.5 px-3">Extraction Method</th>
+              <th class="py-2.5 px-3">Robots.txt Status</th>
+              <th class="py-2.5 px-3">Compliance & Legal Basis</th>
+            </tr>
+          </thead>
+          <tbody id="sourcesTableBody" class="divide-y divide-[#F1F5F9]">
+            <tr>
+              <td colspan="5" class="py-4 text-center text-[#94A3B8]">Loading data sources catalog...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-[#F1F5F9] text-xs">
+        <span class="text-[11px] text-[#5E718A]">Compliant with RFC 9309 • MoSPI / RBI Auditable Provenance</span>
+        <button onclick="closeSourcesModal()" class="px-4 py-2 rounded-xl bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] font-semibold transition cursor-pointer">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function openSourcesModal() {
+      const modal = document.getElementById('sourcesModal');
+      if (modal) modal.classList.remove('hidden');
+
+      // Fetch Anti-Bot telemetry
+      try {
+        const antiBotRes = await fetch('/api/v1/compliance/anti_bot');
+        if (antiBotRes.ok) {
+          const telem = await antiBotRes.json();
+          document.getElementById('telemEgressMode').innerText = telem.mode || 'Direct Egress';
+          document.getElementById('telemUaPool').innerText = (telem.user_agent_pool_size || 6) + ' Signatures';
+          document.getElementById('telemRotations').innerText = telem.total_rotations || 0;
+          document.getElementById('telemChallenges').innerText = telem.challenges_intercepted || 0;
+          document.getElementById('proxyModeBadge').innerText = telem.pool_size > 1 ? `${telem.active_egress_count} Active Proxies` : 'Active / Stealth';
+        }
+      } catch (e) {
+        console.warn('Anti-bot telemetry fetch error:', e);
+      }
+
+      // Fetch Sources catalog
+      try {
+        const sourcesRes = await fetch('/api/v1/compliance/sources');
+        if (sourcesRes.ok) {
+          const sources = await sourcesRes.json();
+          const tbody = document.getElementById('sourcesTableBody');
+          tbody.innerHTML = sources.map(s => {
+            const isPermitted = s.robots_status.toLowerCase().includes('permitted');
+            const statusBadge = isPermitted 
+              ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">✅ ${s.robots_status}</span>`
+              : `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-amber-800 border border-amber-200">🛡️ ${s.robots_status}</span>`;
+            
+            const activeBadge = s.active_status.includes('Active')
+              ? `<span class="font-semibold text-emerald-800">${s.name}</span>`
+              : `<span class="font-semibold text-[#26364A]">${s.name}</span>`;
+
+            return `
+              <tr class="hover:bg-[#F8FAFC] transition">
+                <td class="py-2.5 px-3">${activeBadge}</td>
+                <td class="py-2.5 px-3 font-mono text-[11px] text-[#5E718A]">${s.type}</td>
+                <td class="py-2.5 px-3 text-[11px]">${s.scrape_method}</td>
+                <td class="py-2.5 px-3">${statusBadge}</td>
+                <td class="py-2.5 px-3 text-[11px] text-[#5E718A] leading-tight">${s.legal_basis}</td>
+              </tr>
+            `;
+          }).join('');
+        }
+      } catch (e) {
+        console.warn('Sources fetch error:', e);
+      }
+    }
+
+    function closeSourcesModal() {
+      const modal = document.getElementById('sourcesModal');
+      if (modal) modal.classList.add('hidden');
+    }
+  </script>
 </body>
 </html>

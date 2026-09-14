@@ -12,8 +12,9 @@ from unittest.mock import patch, MagicMock
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(REPO_ROOT, "airfare_index", "live_fetcher"))
 
-from scraper import RealtimeFlightScraper
+from scraper import RealtimeFlightScraper, DATA_SOURCES_CATALOG
 from robot_guard import robot_guard
+from proxy_rotator import proxy_manager, ProxyManager
 
 class TestRealtimeScraper(unittest.TestCase):
     def setUp(self):
@@ -97,21 +98,53 @@ class TestRealtimeScraper(unittest.TestCase):
         self.assertLessEqual(max_cleaned_fare, 28000.0)
 
     def test_deeplinks_generation(self):
-        """Verify generation of valid 1-click verification URLs for all OTAs."""
+        """Verify generation of valid 1-click verification URLs for all 6 OTAs and direct airlines."""
         links = self.scraper._generate_deeplinks("DEL", "BOM", "2026-09-20", "6E")
         self.assertIn("easemytrip_url", links)
         self.assertIn("verification_url", links)
         self.assertIn("makemytrip_url", links)
+        self.assertIn("google_flights_url", links)
+        self.assertIn("yatra_url", links)
+        self.assertIn("cleartrip_url", links)
+        self.assertIn("ixigo_url", links)
+        self.assertIn("goibibo_url", links)
         self.assertIn("airline_portal_url", links)
 
         self.assertTrue(links["easemytrip_url"].startswith("https://flight.easemytrip.com/"))
         self.assertTrue(links["verification_url"].startswith("https://www.google.com/travel/flights"))
         self.assertTrue(links["makemytrip_url"].startswith("https://www.makemytrip.com/"))
+        self.assertTrue(links["yatra_url"].startswith("https://flight.yatra.com/"))
+        self.assertTrue(links["cleartrip_url"].startswith("https://www.cleartrip.com/"))
+        self.assertTrue(links["ixigo_url"].startswith("https://www.ixigo.com/"))
+        self.assertTrue(links["goibibo_url"].startswith("https://www.goibibo.com/"))
+        self.assertTrue(links["airline_portal_url"].startswith("https://www.goindigo.in/"))
         self.assertIn("DEL", links["easemytrip_url"])
         self.assertIn("BOM", links["easemytrip_url"])
 
-    def test_robot_guard_compliance(self):
-        """Verify RobotGuard checks robots.txt and tracks domain compliance across all portals."""
+    @patch("urllib.request.urlopen")
+    def test_robot_guard_compliance(self, mock_urlopen):
+        """Verify RobotGuard checks robots.txt and tracks domain compliance deterministically offline."""
+        def fake_urlopen(req, timeout=4.0):
+            url = req.full_url if hasattr(req, "full_url") else str(req)
+            mock_resp = MagicMock()
+            if "flight.easemytrip.com" in url:
+                content = b"User-agent: *\nDisallow: /admin/\nAllow: /FlightList/\n"
+            elif "www.easemytrip.com" in url:
+                content = b"User-agent: *\nDisallow: /flight-search/listing\n"
+            elif "google.com" in url:
+                content = b"User-agent: *\nAllow: /travel/flights\nDisallow: /travel/flights/booking\n"
+            elif "cleartrip.com" in url:
+                content = b"User-agent: *\nDisallow: /flights/search\n"
+            else:
+                content = b"User-agent: *\nDisallow: /private/\n"
+            mock_resp.read.return_value = content
+            mock_resp.__enter__.return_value = mock_resp
+            mock_resp.__exit__.return_value = None
+            return mock_resp
+
+        mock_urlopen.side_effect = fake_urlopen
+        robot_guard.parsers.clear()  # Clear cache for isolated test execution
+
         status = robot_guard.get_compliance_status()
         self.assertIn("user_agent", status)
         self.assertIn("cached_domains", status)
@@ -133,6 +166,56 @@ class TestRealtimeScraper(unittest.TestCase):
 
         disallowed_cleartrip, _ = robot_guard.can_fetch("https://www.cleartrip.com/flights/search?from=DEL")
         self.assertFalse(disallowed_cleartrip, "Cleartrip flight search route must be disallowed under robots.txt")
+
+    def test_proxy_manager_rotation_and_headers(self):
+        """Verify ProxyManager generates modern browser headers and rotates client hints."""
+        headers1 = proxy_manager.get_random_headers()
+        headers2 = proxy_manager.get_random_headers()
+        self.assertIn("User-Agent", headers1)
+        self.assertIn("Accept-Language", headers1)
+        self.assertIn("DNT", headers1)
+
+        # Check telemetry structure
+        telem = proxy_manager.get_telemetry()
+        self.assertTrue(telem["proxy_management_active"])
+        self.assertGreater(telem["user_agent_pool_size"], 2)
+        self.assertIn("evasion_mechanisms", telem)
+
+    def test_proxy_manager_challenge_detection(self):
+        """Verify challenge detector flags Cloudflare Turnstile, Akamai 403, and reCAPTCHA."""
+        # Cloudflare Turnstile
+        cf_html = "<html><head><title>Just a moment...</title></head><body><div class='cf-challenge'>Checking your browser</div></body></html>"
+        is_cf, name_cf = proxy_manager.detect_challenge(403, cf_html)
+        self.assertTrue(is_cf)
+        self.assertIn("cf-challenge", name_cf)
+
+        # Akamai Access Denied
+        akamai_html = "<html><body><h1>Access Denied</h1><p>Reference #18.2b3c4d5e</p></body></html>"
+        is_ak, name_ak = proxy_manager.detect_challenge(403, akamai_html)
+        self.assertTrue(is_ak)
+
+        # Clean 200 HTML
+        clean_html = "<html><body><h1>Flights from Delhi to Mumbai</h1><div>₹5,849</div></body></html>"
+        is_clean, _ = proxy_manager.detect_challenge(200, clean_html)
+        self.assertFalse(is_clean)
+
+    def test_data_sources_catalog_completeness(self):
+        """Verify all 6 OTAs and 5 direct airlines are registered in DATA_SOURCES_CATALOG."""
+        source_ids = [s["id"] for s in DATA_SOURCES_CATALOG]
+        # 6 OTAs
+        self.assertIn("google_flights", source_ids)
+        self.assertIn("easemytrip", source_ids)
+        self.assertIn("makemytrip", source_ids)
+        self.assertIn("yatra", source_ids)
+        self.assertIn("cleartrip", source_ids)
+        self.assertIn("ixigo", source_ids)
+        self.assertIn("goibibo", source_ids)
+        # Direct airlines
+        self.assertIn("indigo", source_ids)
+        self.assertIn("air_india", source_ids)
+        self.assertIn("akasa_air", source_ids)
+        self.assertIn("spicejet", source_ids)
+        self.assertIn("air_india_express", source_ids)
 
     def test_scraper_active_enforcement_gate_http(self):
         """Verify HTTP scraper aborts immediately and returns [] when robots.txt disallows."""
