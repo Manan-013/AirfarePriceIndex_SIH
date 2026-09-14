@@ -106,6 +106,7 @@ class LiveCalamityTracker:
                 'weather_desc': 'Clear / Normal Operations',
                 'disruption_level': 'Normal',
                 'capacity_impact_pct': 0.0,
+                'is_live_metar': False,
                 'timestamp': datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
             }
 
@@ -120,8 +121,19 @@ class LiveCalamityTracker:
                     city = INDIAN_AIRPORT_STATIONS[icao]['city']
                     name = INDIAN_AIRPORT_STATIONS[icao]['name']
 
-                    wspd = m.get('wspd', 0)
-                    visib = m.get('visib', 4.0)
+                    wspd_raw = m.get('wspd', 0)
+                    try:
+                        wspd = float(wspd_raw)
+                    except (ValueError, TypeError):
+                        wspd = 0.0
+
+                    visib_raw = m.get('visib', 4.0)
+                    try:
+                        visib_str = str(visib_raw).replace('+', '').strip()
+                        visib = float(visib_str)
+                    except (ValueError, TypeError):
+                        visib = 4.0
+
                     wx_str = m.get('wxString') or ''
                     temp = m.get('temp', 28)
                     receipt = m.get('receiptTime', '')
@@ -158,6 +170,7 @@ class LiveCalamityTracker:
                         'weather_desc': weather_desc,
                         'disruption_level': disruption_level,
                         'capacity_impact_pct': capacity_cut,
+                        'is_live_metar': True,
                         'timestamp': receipt or datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
                     }
         except Exception as e:
@@ -250,6 +263,55 @@ class LiveCalamityTracker:
             'gdacs_alerts': gdacs,
             'all_stations': list(weather.values())
         }
+
+    def get_airport_severity_score(self, iata: str):
+        """
+        Derives a numeric weather severity score (0.0 to 1.0) for a destination airport.
+        Reuses the existing live METAR fetch. Returns None if the airport isn't covered
+        or if the live METAR fetch fails.
+        """
+        if not iata:
+            return None
+        iata_clean = str(iata).strip().upper()
+        if not self.cached_weather:
+            try:
+                self.fetch_all()
+            except Exception:
+                return None
+
+        st = (self.cached_weather or {}).get(iata_clean)
+        if not st or not st.get('is_live_metar'):
+            return None
+
+        visib = st.get('visibility_sm')
+        wspd = st.get('wind_kts')
+        wx_str = st.get('raw_wx', '')
+
+        # Penalty components
+        vis_penalty = 0.0
+        if visib is not None:
+            if visib < 0.5:
+                vis_penalty = 0.5
+            elif visib < 3.0:
+                vis_penalty = 0.5 * (1.0 - (visib - 0.5) / 2.5)
+
+        wind_penalty = 0.0
+        if wspd is not None:
+            if wspd > 30:
+                wind_penalty = 0.3
+            elif wspd > 10:
+                wind_penalty = 0.3 * ((wspd - 10) / 20.0)
+
+        wx_penalty = 0.0
+        if any(k in wx_str for k in ['+TSRA', 'SQ', 'FZFG']):
+            wx_penalty = 0.2
+        elif any(k in wx_str for k in ['TSRA', 'TS', '+RA', 'FG']):
+            wx_penalty = 0.1
+        elif any(k in wx_str for k in ['RA', 'DZ', 'BR']):
+            wx_penalty = 0.05
+
+        severity = round(min(1.0, max(0.0, vis_penalty + wind_penalty + wx_penalty)), 3)
+        return float(severity)
 
 # Global Singleton
 live_calamity_tracker = LiveCalamityTracker()

@@ -108,11 +108,22 @@ class AirfareDatabase:
                 total_fare REAL,
                 advance_window TEXT,
                 source_portal TEXT,
-                is_live INTEGER DEFAULT 1
+                is_live INTEGER DEFAULT 1,
+                is_festival_window INTEGER DEFAULT 0,
+                weather_severity_score REAL DEFAULT NULL
             )
         """)
         cur.execute("CREATE INDEX IF NOT EXISTS idx_quotes_route_date ON scraped_quotes(origin, destination, departure_date)")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_quotes_is_live ON scraped_quotes(is_live)")
+
+        # Schema Migration: ensure is_festival_window and weather_severity_score exist on scraped_quotes
+        cur.execute("PRAGMA table_info(scraped_quotes)")
+        existing_cols = {col[1] for col in cur.fetchall()}
+        if "is_festival_window" not in existing_cols:
+            cur.execute("ALTER TABLE scraped_quotes ADD COLUMN is_festival_window INTEGER DEFAULT 0")
+        if "weather_severity_score" not in existing_cols:
+            cur.execute("ALTER TABLE scraped_quotes ADD COLUMN weather_severity_score REAL DEFAULT NULL")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_quotes_festival ON scraped_quotes(is_festival_window)")
 
         # 6. Index Calculation Audit Logs (MoSPI & RBI Monetary Policy Feeds)
         cur.execute("""
@@ -225,6 +236,28 @@ class AirfareDatabase:
         if not flights:
             return 0
 
+        # Derive festival window flag from INDIAN_CALENDAR_EVENTS
+        default_is_festival = 0
+        try:
+            from forecasting_engine import INDIAN_CALENDAR_EVENTS
+            if departure_date:
+                for ev in INDIAN_CALENDAR_EVENTS:
+                    s_dt = ev.get("start_date")
+                    e_dt = ev.get("end_date")
+                    if s_dt and e_dt and s_dt <= departure_date <= e_dt:
+                        default_is_festival = 1
+                        break
+        except Exception:
+            default_is_festival = 0
+
+        # Derive destination airport weather severity score from live METAR sensor
+        default_weather_score = None
+        try:
+            from live_calamity_tracker import live_calamity_tracker
+            default_weather_score = live_calamity_tracker.get_airport_severity_score(destination)
+        except Exception:
+            default_weather_score = None
+
         conn = self.get_connection()
         cur = conn.cursor()
         count = 0
@@ -246,19 +279,24 @@ class AirfareDatabase:
             if any(kw in desc for kw in ["sold out", "cancelled", "unavailable"]):
                 continue
 
+            is_fest = int(f.get("is_festival_window", default_is_festival))
+            wx_score = f.get("weather_severity_score") if f.get("weather_severity_score") is not None else default_weather_score
+
             cur.execute("""
                 INSERT INTO scraped_quotes
                 (carrier_name, carrier_code, flight_number, origin, destination, departure_date, 
                  departure_time, arrival_time, duration, stops, base_fare, fuel_surcharge_yq, 
-                 airport_fees_udf_psf, gst, total_fare, advance_window, source_portal)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 airport_fees_udf_psf, gst, total_fare, advance_window, source_portal,
+                 is_festival_window, weather_severity_score)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 f.get("carrier_name"), f.get("carrier_code") or "6E", f.get("flight_number") or "6E-101",
                 origin, destination, departure_date,
                 f.get("departure_time"), f.get("arrival_time"), f.get("duration"),
                 f.get("stops") or "Non-stop", f.get("base_fare"), f.get("fuel_surcharge_yq"),
                 f.get("airport_fees_udf_psf"), f.get("gst"), tf_val,
-                window, source_portal
+                window, source_portal,
+                is_fest, wx_score
             ))
             count += 1
 

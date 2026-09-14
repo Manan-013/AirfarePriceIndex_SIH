@@ -592,6 +592,16 @@ class AirfareForecastingEngine:
         self.db_path = db_path or DB_PATH
         self.model_path = model_path or MODEL_PATH
         self.model = None
+        self.is_festival_learned = False
+        self.festival_samples_count = 0
+        self.validation_metrics = {
+            "festival_clusters_count": 0,
+            "festival_quotes_count": 0,
+            "min_required_samples": 500,
+            "validation_passed": False,
+            "holdout_mae": None,
+            "holdout_mape": None
+        }
         self.routes_weights = {}
         self.base_fares = {}
         self.routes_list = []
@@ -654,31 +664,60 @@ class AirfareForecastingEngine:
 
         if os.path.exists(self.model_path):
             try:
-                self.model = joblib.load(self.model_path)
-                print("[Forecast Engine] Loaded pre-trained Random Forest model from disk.")
-                return
+                loaded = joblib.load(self.model_path)
+                if hasattr(loaded, "n_features_in_") and loaded.n_features_in_ == 9:
+                    self.model = loaded
+                    print("[Forecast Engine] Loaded pre-trained 9-feature Random Forest model from disk.")
+                    return
+                else:
+                    print("[Forecast Engine] Model feature shape mismatch (expected 9 features). Retraining fresh on SQLite quotes...")
             except Exception as e:
-                print(f"[Forecast Engine] Notice: Could not load saved model: {e}")
+                print(f"[Forecast Engine] Notice loading model: {e}")
 
         # Train model
         self.train_model()
 
+    def verify_ml_prediction_readiness(self):
+        """
+        Integrity guard (Step 8): Fails loudly with AssertionError if 'ML-Predicted'
+        status is claimed without sufficient real festival training data and verified validation.
+        """
+        if getattr(self, "is_festival_learned", False):
+            min_req = self.validation_metrics.get("min_required_samples", 500)
+            actual_cnt = self.validation_metrics.get("festival_quotes_count", 0)
+            if actual_cnt < min_req:
+                raise AssertionError(
+                    f"Data Honesty Violation: Model claimed 'ML-Predicted' festival status with only "
+                    f"{actual_cnt} festival quotes in SQLite (minimum {min_req} required)."
+                )
+            if not self.validation_metrics.get("validation_passed", False):
+                raise AssertionError(
+                    "Data Honesty Violation: Model claimed 'ML-Predicted' status but holdout validation failed."
+                )
+        return True
+
     def train_model(self):
         """
         Trains Random Forest Regressor on empirical microdata quotes in SQLite.
+        Pulls actual average total_fare per route/date/advance_window as real training target y.
+        Uses 9 input features: [lead_days, base_p0, dist_km, month, day_of_week, is_weekend, route_hash, is_festival_window, weather_severity_score].
         """
         print("[Forecast Engine] Training machine learning model from SQLite quotes...")
         if not os.path.exists(self.db_path):
-            print(f"[Forecast Engine] DB not found at {self.db_path}. Using synthetic initialization.")
+            print(f"[Forecast Engine] DB not found at {self.db_path}.")
             return
 
         conn = sqlite3.connect(self.db_path)
         cur = conn.cursor()
         cur.execute("""
-            SELECT origin, destination, advance_window, MIN(total_fare) as min_f, AVG(total_fare) as avg_f, COUNT(*) as cnt
+            SELECT origin, destination, departure_date, advance_window, 
+                   AVG(total_fare) as avg_fare, 
+                   MAX(is_festival_window) as is_festival,
+                   AVG(weather_severity_score) as avg_wx_score,
+                   COUNT(*) as cnt
             FROM scraped_quotes
-            WHERE total_fare > 1000 AND total_fare < 65000
-            GROUP BY origin, destination, advance_window
+            WHERE total_fare >= 1500 AND total_fare <= 65000
+            GROUP BY origin, destination, departure_date, advance_window
         """)
         rows = cur.fetchall()
         conn.close()
@@ -687,48 +726,120 @@ class AirfareForecastingEngine:
             print("[Forecast Engine] No quotes found to train on.")
             return
 
-        window_map = {'T+1': 1, 'T+4': 4, 'T+5': 5, 'T+7': 7, 'T+15': 15, 'T+30': 30, 'T+45': 45}
+        window_map = {'T+0': 0, 'T+1': 1, 'T+3': 3, 'T+4': 4, 'T+5': 5, 'T+7': 7, 'T+15': 15, 'T+30': 30, 'T+45': 45}
+        today = date.today()
 
         features = []
         targets = []
+        festival_quote_count = 0
 
         for r in rows:
-            orig, dest, win, min_f, avg_f, cnt = r
+            orig, dest, dep_date_str, win, avg_fare, is_fest, avg_wx, cnt = r
             route = f"{orig}-{dest}"
             base_p0 = self.base_fares.get(route, 4500.0)
-            lead_days = window_map.get(win, 7)
             dist_km = ROUTE_DISTANCES.get(route, 1000)
-
-            # Representative economy fare (MoSPI Laspeyres methodology)
-            rep_fare = (0.65 * float(min_f)) + (0.35 * float(avg_f))
             route_hash = abs(hash(route)) % 100
 
-            # Augment across months & days of week for robust generalization
-            for m in [1, 5, 8, 10, 11, 12]:
-                for dow in [1, 4, 6]: # Tuesday, Friday, Sunday
-                    is_wknd = 1 if dow in [5, 6] else 0
-                    wknd_mult = 1.08 if is_wknd else 1.0
-                    features.append([lead_days, base_p0, dist_km, m, dow, is_wknd, route_hash])
-                    targets.append(rep_fare * wknd_mult)
+            # Derive calendar features from actual departure date
+            lead_days = window_map.get(win)
+            try:
+                dt = datetime.strptime(dep_date_str, "%Y-%m-%d").date()
+                month = dt.month
+                day_of_week = dt.weekday()
+                is_wknd = 1 if day_of_week in [4, 5, 6] else 0  # Fri/Sat/Sun
+                if lead_days is None:
+                    lead_days = max(1, (dt - today).days)
+            except Exception:
+                month = 9
+                day_of_week = 2
+                is_wknd = 0
+                if lead_days is None:
+                    lead_days = 7
+
+            is_festival = 1 if is_fest else 0
+            if is_festival:
+                festival_quote_count += cnt
+
+            # Weather severity score: impute NULL with neutral baseline 0.0 (normal clear weather)
+            # This sensible neutral imputation preserves all empirical clusters without dropping data.
+            wx_score = float(avg_wx) if avg_wx is not None else 0.0
+
+            # Real observed training target y
+            obs_fare = float(avg_fare)
+
+            # 9-dimensional feature vector
+            features.append([lead_days, base_p0, dist_km, month, day_of_week, is_wknd, route_hash, is_festival, wx_score])
+            targets.append(obs_fare)
 
         X = np.array(features)
         y = np.array(targets)
+        self.festival_samples_count = festival_quote_count
 
-        # Train Random Forest Regressor
+        MIN_FESTIVAL_TRAINING_SAMPLES = 500  # Required quote threshold for statistically reliable festival learning
+        festival_cluster_indices = [i for i, f in enumerate(features) if f[7] == 1]
+
+        print(f"[Forecast Engine] Extracted {len(X)} route-date training clusters from SQLite microdata.")
+        print(f"[Forecast Engine] Festival-tagged microdata: {festival_quote_count} quotes across {len(festival_cluster_indices)} clusters.")
+
         rf = RandomForestRegressor(
-            n_estimators=45,
-            max_depth=10,
-            min_samples_split=4,
+            n_estimators=65,
+            max_depth=12,
+            min_samples_split=3,
             random_state=42,
             n_jobs=-1
         )
-        rf.fit(X, y)
+
+        validation_passed = False
+        val_mae = None
+        val_mape = None
+
+        # Step 7: Holdout Validation Check
+        if len(festival_cluster_indices) >= 5 and festival_quote_count >= MIN_FESTIVAL_TRAINING_SAMPLES:
+            holdout_idx = festival_cluster_indices[::3]
+            train_idx = [i for i in range(len(X)) if i not in holdout_idx]
+
+            X_train, y_train = X[train_idx], y[train_idx]
+            X_val, y_val = X[holdout_idx], y[holdout_idx]
+
+            rf.fit(X_train, y_train)
+            val_preds = rf.predict(X_val)
+
+            val_mae = float(np.mean(np.abs(val_preds - y_val)))
+            val_mape = float(np.mean(np.abs((val_preds - y_val) / y_val)) * 100.0)
+
+            print(f"[Forecast Engine Validation] Holdout Festival Clusters: {len(holdout_idx)}")
+            print(f"[Forecast Engine Validation] Holdout MAE: ₹{val_mae:.2f}, MAPE: {val_mape:.2f}%")
+            print("--- Festival Holdout Comparison Table ---")
+            for idx, pred, act in zip(holdout_idx[:5], val_preds[:5], y_val[:5]):
+                err_pct = abs(pred - act) / act * 100.0
+                print(f"Cluster #{idx:03d} | Actual: ₹{act:.0f} | Predicted: ₹{pred:.0f} | Error: {err_pct:.1f}%")
+
+            if val_mape <= 15.0:
+                validation_passed = True
+                rf.fit(X, y)
+            else:
+                print(f"[Forecast Engine Validation] Holdout MAPE {val_mape:.2f}% > 15% tolerance; retaining heuristic fallback.")
+                rf.fit(X, y)
+        else:
+            print(f"[Forecast Engine Validation] Insufficient festival microdata ({festival_quote_count} quotes < {MIN_FESTIVAL_TRAINING_SAMPLES} required).")
+            print("[Forecast Engine Validation] Retaining calibrated econometric heuristic fallback path.")
+            rf.fit(X, y)
+
         self.model = rf
+        self.is_festival_learned = validation_passed
+        self.validation_metrics = {
+            "festival_clusters_count": len(festival_cluster_indices),
+            "festival_quotes_count": festival_quote_count,
+            "min_required_samples": MIN_FESTIVAL_TRAINING_SAMPLES,
+            "validation_passed": validation_passed,
+            "holdout_mae": val_mae,
+            "holdout_mape": val_mape
+        }
 
         # Save artifact
         try:
             joblib.dump(rf, self.model_path)
-            print(f"[Forecast Engine] Trained on {len(X):,} quotes and saved to {self.model_path}")
+            print(f"[Forecast Engine] Trained 9-feature model on {len(X)} clusters and saved to {self.model_path}")
         except Exception as e:
             print(f"[Forecast Engine] Notice saving model: {e}")
 
@@ -846,33 +957,49 @@ class AirfareForecastingEngine:
             dist_km = ROUTE_DISTANCES.get(route, 1000)
             route_hash = abs(hash(route)) % 100
 
-            # Base prediction from ML model or decay equation
+            # Derive festival and weather features for the 9-dimensional vector
+            route_is_festival = 1 if (active_event is not None) else 0
+            dest_code = route.split("-")[1] if "-" in route else "DEL"
+            dest_wx_score = 0.0
+            try:
+                sc = live_calamity_tracker.get_airport_severity_score(dest_code)
+                if sc is not None:
+                    dest_wx_score = float(sc)
+            except Exception:
+                dest_wx_score = 0.0
+
+            # 9-Feature vector: [lead_days, base_p0, dist_km, month, day_of_week, is_weekend, route_hash, is_festival, weather_score]
             if self.model is not None:
-                feat = np.array([[lead_days, base_p0, dist_km, month, day_of_week, is_weekend, route_hash]])
+                feat = np.array([[lead_days, base_p0, dist_km, month, day_of_week, is_weekend, route_hash, route_is_festival, dest_wx_score]])
                 pred_fare = float(self.model.predict(feat)[0])
             else:
                 # Econometric decay curve fallback
                 decay = math.exp(-0.025 * lead_days)
                 pred_fare = base_p0 * (1.15 + (0.55 * decay))
 
-            # Apply route-specific event or calamity shocks
-            route_multiplier = 1.0
+            # Apply scenario logic:
+            # If the model has genuinely learned festival effects from microdata (Tasks 6 & 7 verified),
+            # the model's own direct prediction is used. Otherwise, apply calibrated heuristic fallback multiplier.
+            if self.is_festival_learned and active_event:
+                final_predicted_fare = round(pred_fare)
+            else:
+                route_multiplier = 1.0
+                if active_event:
+                    if route in active_event.get("primary_routes", []):
+                        route_multiplier = scenario_multiplier
+                    else:
+                        route_multiplier = 1.0 + ((scenario_multiplier - 1.0) * 0.45)
 
-            if active_event:
-                if route in active_event.get("primary_routes", []):
-                    route_multiplier = scenario_multiplier
-                else:
-                    route_multiplier = 1.0 + ((scenario_multiplier - 1.0) * 0.45)
+                if active_calamity:
+                    if route in active_calamity.get("affected_routes", []):
+                        route_multiplier = active_calamity["fare_surge_multiplier"]
+                    elif affected_corridor and route == affected_corridor:
+                        route_multiplier = active_calamity["fare_surge_multiplier"] * 1.2
+                    else:
+                        route_multiplier = 1.05  # Slight network spillover
 
-            if active_calamity:
-                if route in active_calamity.get("affected_routes", []):
-                    route_multiplier = active_calamity["fare_surge_multiplier"]
-                elif affected_corridor and route == affected_corridor:
-                    route_multiplier = active_calamity["fare_surge_multiplier"] * 1.2
-                else:
-                    route_multiplier = 1.05  # Slight network spillover
+                final_predicted_fare = round(pred_fare * route_multiplier)
 
-            final_predicted_fare = round(pred_fare * route_multiplier)
             surge_pct = round(((final_predicted_fare - base_p0) / base_p0) * 100.0, 1)
 
             # Route weight
@@ -906,6 +1033,20 @@ class AirfareForecastingEngine:
         route_predictions.sort(key=lambda x: x["surge_pct"], reverse=True)
         breached_count = sum(1 for r in route_predictions if r["dgca_cap_warning"])
 
+        # Step 8 Integrity Guard: verify that no dishonest ML-predicted claim is returned
+        self.verify_ml_prediction_readiness()
+
+        # Multiplier type and methodology note
+        if self.is_festival_learned and active_event:
+            multiplier_type = "ML-Predicted (Random Forest, trained on festival/weather-tagged microdata)"
+            methodology_note = "Festival surge predicted end-to-end by Random Forest model trained on empirical microdata quotes."
+        elif scenario in ["real_live", "real_live_disruption"]:
+            multiplier_type = "Live METAR / GDACS Observed"
+            methodology_note = "Real-time ATC control tower METAR telemetry & GDACS disaster feeds."
+        else:
+            multiplier_type = "Econometric Heuristic Estimate (Calibrated)"
+            methodology_note = "Festival & calamity multipliers represent calibrated heuristic benchmarks based on historical MoSPI seasonality curves (insufficient festival-tagged microdata for end-to-end ML prediction)."
+
         return {
             "target_date": target_date_str,
             "lead_days": lead_days,
@@ -913,8 +1054,9 @@ class AirfareForecastingEngine:
             "scenario_name": scenario_name,
             "scenario_name_hi": scenario_name_hi,
             "scenario_multiplier": round(scenario_multiplier, 2),
-            "multiplier_type": "Econometric Heuristic Estimate (Calibrated)" if scenario not in ["real_live", "real_live_disruption"] else "Live METAR / GDACS Observed",
-            "methodology_note": "Festival & calamity multipliers represent calibrated heuristic benchmarks based on historical MoSPI seasonality curves.",
+            "multiplier_type": multiplier_type,
+            "methodology_note": methodology_note,
+            "is_festival_window": bool(active_event),
             "projected_national_index": projected_national_index,
             "pct_vs_base": pct_vs_base,
             "cpi_impact_bps": cpi_impact_bps,
