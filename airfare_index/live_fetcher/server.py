@@ -567,7 +567,7 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
 
             origin = params.get("origin", "DEL")
             destination = params.get("destination", "BOM")
-            travel_date = params.get("date", datetime.now().strftime("%Y-%m-%d"))
+            travel_date = params.get("date") or params.get("travel_date") or datetime.now().strftime("%Y-%m-%d")
             force_live = params.get("force_live", True)
             if isinstance(force_live, str):
                 force_live = force_live.lower() in ["true", "1", "yes"]
