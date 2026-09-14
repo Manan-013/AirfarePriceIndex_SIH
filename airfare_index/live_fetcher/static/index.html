@@ -116,13 +116,571 @@
 </head>
 <body class="min-h-screen pb-16 bg-[#F7FAFC] text-[#26364A]">
 
+	<!-- ========================================================= -->
+	<!-- GIGW UTILITY RIBBON (GOVERNMENT OF INDIA / भारत सरकार) -->
+	<!-- ========================================================= -->
+	<div id="gigwTopBar" class="bg-[#1B365D] text-white text-[11px] font-medium border-b border-[#0F223D] select-none sticky top-0 z-[60]">
+		<div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-1.5 flex items-center justify-between gap-3">
+			<!-- Left: National Identity -->
+			<div class="flex items-center gap-3">
+				<!-- Tiranga National Flag SVG -->
+				<svg class="w-6 h-4 rounded-xs shadow-xs flex-shrink-0" viewBox="0 0 900 600" aria-label="Flag of India">
+					<rect width="900" height="200" fill="#FF9933"/>
+					<rect y="200" width="900" height="200" fill="#FFFFFF"/>
+					<rect y="400" width="900" height="200" fill="#138808"/>
+					<circle cx="450" cy="300" r="80" fill="none" stroke="#000080" stroke-width="6"/>
+					<circle cx="450" cy="300" r="14" fill="#000080"/>
+					<g stroke="#000080" stroke-width="3.5">
+						<line x1="450" y1="220" x2="450" y2="380" />
+						<line x1="370" y1="300" x2="530" y2="300" />
+						<line x1="393.43" y1="243.43" x2="506.57" y2="356.57" />
+						<line x1="393.43" y1="356.57" x2="506.57" y2="243.43" />
+						<line x1="422.36" y1="223.82" x2="477.64" y2="376.18" />
+						<line x1="477.64" y1="223.82" x2="422.36" y2="376.18" />
+						<line x1="373.82" y1="272.36" x2="526.18" y2="327.64" />
+						<line x1="373.82" y1="327.64" x2="526.18" y2="272.36" />
+						<line x1="409.28" y1="230.72" x2="490.72" y2="369.28" />
+						<line x1="490.72" y1="230.72" x2="409.28" y2="369.28" />
+						<line x1="380.72" y1="259.28" x2="519.28" y2="340.72" />
+						<line x1="380.72" y1="340.72" x2="519.28" y2="259.28" />
+					</g>
+				</svg>
+
+				<div class="flex items-center gap-2">
+					<span class="font-bold tracking-wide">भारत सरकार</span>
+					<span class="text-white/40">|</span>
+					<span class="tracking-wider uppercase font-semibold text-[10px] sm:text-[11px]">Government of India</span>
+				</div>
+
+				<span class="hidden md:inline text-white/40">|</span>
+				<span class="hidden md:inline text-white/80 text-[10px] tracking-tight">
+					Ministry of Statistics &amp; Programme Implementation (MoSPI) &bull; Ministry of Civil Aviation (MoCA)
+				</span>
+			</div>
+
+			<!-- Right: Accessibility & View Switcher -->
+			<div class="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+				<!-- Accessibility Font Controls -->
+				<div class="hidden sm:flex items-center gap-1 border border-white/20 rounded-md px-1.5 py-0.5 bg-white/10 text-[10px] font-mono">
+					<button onclick="adjustPortalFontSize(-1)" class="hover:text-[#FF9933] px-1 transition cursor-pointer" title="Decrease font size">A-</button>
+					<span class="text-white/30">|</span>
+					<button onclick="adjustPortalFontSize(0)" class="hover:text-white px-1 font-bold transition cursor-pointer" title="Reset font size">A</button>
+					<span class="text-white/30">|</span>
+					<button onclick="adjustPortalFontSize(1)" class="hover:text-[#FF9933] px-1 transition cursor-pointer" title="Increase font size">A+</button>
+				</div>
+
+				<span class="hidden sm:inline text-white/30">|</span>
+
+				<!-- Dual-Mode Switcher Button -->
+				<div class="flex items-center bg-black/30 rounded-lg p-0.5 border border-white/20">
+					<button id="navBtnPortal" onclick="setPortalView(true)" 
+						class="px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold transition flex items-center gap-1.5 bg-white text-[#1B365D] shadow-xs cursor-pointer">
+						<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+						<span>National Portal</span>
+					</button>
+					<button id="navBtnDashboard" onclick="setPortalView(false)" 
+						class="px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold text-white/80 hover:text-white transition flex items-center gap-1.5 cursor-pointer">
+						<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+						<span>Live Console</span>
+						<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+					</button>
+				</div>
+			</div>
+		</div>
+		<!-- Tricolor Strip -->
+		<div class="h-[3px] w-full flex">
+			<div class="w-1/3 bg-[#FF9933]"></div>
+			<div class="w-1/3 bg-white"></div>
+			<div class="w-1/3 bg-[#138808]"></div>
+		</div>
+	</div>
+
+
+	<!-- ========================================================= -->
+	<!-- OFFICIAL MINISTRY DEPARTMENT HEADER BAR -->
+	<!-- ========================================================= -->
+	<header id="governmentDepartmentBar" class="border-b border-[#DDE4EE] bg-white shadow-xs select-none">
+		<div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+			<!-- Left: State Emblem + Ministries -->
+			<div class="flex items-center gap-3.5 sm:gap-4.5 min-w-0">
+				
+<svg class="w-12 h-16 sm:w-14 sm:h-18 flex-shrink-0" viewBox="0 0 100 135" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="State Emblem of India">
+	<!-- Ashoka Lion Capital (Stylized Official Government Monogram) -->
+	<g fill="#1B365D">
+		<!-- Central Lion Head & Mane -->
+		<path d="M50 8C43 8 38 13 38 20C38 24 40 27 42 29C39 31 37 35 37 40C37 45 40 49 44 51C43 54 44 58 47 61L50 64L53 61C56 58 57 54 56 51C60 49 63 45 63 40C63 35 61 31 58 29C60 27 62 24 62 20C62 13 57 8 50 8Z"/>
+		<circle cx="46" cy="22" r="1.5" fill="#FFFFFF"/>
+		<circle cx="54" cy="22" r="1.5" fill="#FFFFFF"/>
+		<path d="M47 26C48.5 27.5 51.5 27.5 53 26" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round"/>
+		<path d="M48 30L52 30" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round"/>
+		
+		<!-- Left Lion Profile -->
+		<path d="M36 17C31 18 26 23 26 29C26 34 29 38 33 40C31 43 30 47 31 52C32 56 35 59 39 61C38 64 39 67 42 70L45 68C43 65 42 61 42 58C38 56 36 52 36 48C33 46 32 42 32 38C32 33 35 29 38 27L36 17Z"/>
+		<circle cx="31" cy="29" r="1.3" fill="#FFFFFF"/>
+		
+		<!-- Right Lion Profile -->
+		<path d="M64 17C69 18 74 23 74 29C74 34 71 38 67 40C69 43 70 47 69 52C68 56 65 59 61 61C62 64 61 67 58 70L55 68C57 65 58 61 58 58C62 56 64 52 64 48C67 46 68 42 68 38C68 33 65 29 62 27L64 17Z"/>
+		<circle cx="69" cy="29" r="1.3" fill="#FFFFFF"/>
+
+		<!-- Lion Chests & Pedestal Base -->
+		<path d="M43 64C43 64 40 73 40 76C40 78 42 80 45 80H55C58 80 60 78 60 76C60 73 57 64 57 64H43Z"/>
+
+		<!-- Abacus Platform (Circular Band) -->
+		<rect x="20" y="81" width="60" height="14" rx="2" fill="#1B365D"/>
+		
+		<!-- Dharma Chakra in Center of Abacus -->
+		<circle cx="50" cy="88" r="5.5" fill="#FFFFFF"/>
+		<circle cx="50" cy="88" r="4.2" fill="#1B365D"/>
+		<circle cx="50" cy="88" r="1.2" fill="#FFFFFF"/>
+		<!-- Spokes -->
+		<line x1="50" y1="84" x2="50" y2="92" stroke="#FFFFFF" stroke-width="0.8"/>
+		<line x1="46" y1="88" x2="54" y2="88" stroke="#FFFFFF" stroke-width="0.8"/>
+		<line x1="47.2" y1="85.2" x2="52.8" y2="90.8" stroke="#FFFFFF" stroke-width="0.8"/>
+		<line x1="47.2" y1="90.8" x2="52.8" y2="85.2" stroke="#FFFFFF" stroke-width="0.8"/>
+
+		<!-- Galloping Horse (Left) Stylized -->
+		<path d="M26 89C27 86 30 85 33 87C34 89 33 91 30 91C28 91 27 90 26 89Z" fill="#FFFFFF"/>
+		<path d="M27 88L24 85L27 84L30 86" stroke="#FFFFFF" stroke-width="0.7" stroke-linecap="round"/>
+
+		<!-- Guarding Bull (Right) Stylized -->
+		<path d="M74 89C73 86 70 85 67 87C66 89 67 91 70 91C72 91 73 90 74 89Z" fill="#FFFFFF"/>
+		<path d="M73 88L76 85L73 84L70 86" stroke="#FFFFFF" stroke-width="0.7" stroke-linecap="round"/>
+
+		<!-- Inverted Lotus Base -->
+		<path d="M22 96C25 101 35 104 50 104C65 104 75 101 78 96H22Z" fill="#1B365D"/>
+		<path d="M30 96C32 99 38 101 50 101C62 101 68 99 70 96" stroke="#FFFFFF" stroke-width="0.8"/>
+
+		<!-- Plinth Base Slab -->
+		<rect x="18" y="105" width="64" height="4" rx="1" fill="#1B365D"/>
+	</g>
+	<!-- Satyameva Jayate Inscription (सत्यमेव जयते) -->
+	<text x="50" y="122" font-family="'Inter', 'Noto Sans Devanagari', Arial, sans-serif" font-size="10.5" font-weight="800" text-anchor="middle" fill="#1B365D" letter-spacing="1.2">सत्यमेव जयते</text>
+	<text x="50" y="131" font-family="'Inter', sans-serif" font-size="6" font-weight="700" text-anchor="middle" fill="#5E718A" letter-spacing="0.8">SATYAMEVA JAYATE</text>
+</svg>
+
+				<div class="border-l border-[#CBD5E1] pl-3 sm:pl-4 space-y-0.5">
+					<div class="text-[11px] sm:text-xs font-bold text-[#1B365D] tracking-wide">
+						सांख्यिकी और कार्यक्रम कार्यान्वयन मंत्रालय
+					</div>
+					<div class="text-[11px] sm:text-xs font-bold text-[#26364A] tracking-tight">
+						नागरिक विमानन मंत्रालय | भारत सरकार
+					</div>
+					<div class="text-[10px] sm:text-[11px] text-[#5E718A] font-medium leading-tight">
+						Ministry of Statistics and Programme Implementation &bull; Ministry of Civil Aviation
+					</div>
+					<div class="text-[9px] sm:text-[10px] text-[#1B365D] font-mono font-semibold pt-0.5 flex items-center gap-2">
+						<span>DIRECTORATE GENERAL OF CIVIL AVIATION (DGCA)</span>
+						<span class="text-[#CBD5E1]">&bull;</span>
+						<span class="text-[#0E6251]">ECONOMIC &amp; STATISTICAL AUDIT DIVISION</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- Right: SIH 2026 Badge, Digital India & Launch CTA -->
+			<div class="flex items-center flex-wrap gap-2.5 sm:gap-3.5 justify-start md:justify-end">
+				<!-- SIH 2026 Official Seal Badge -->
+				<div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#1B365D]/5 border border-[#1B365D]/20 text-left">
+					<div class="w-7 h-7 rounded-lg bg-[#1B365D] text-white flex items-center justify-center font-bold text-[10px] font-mono shadow-xs">
+						SIH
+					</div>
+					<div class="leading-tight">
+						<div class="text-[10px] font-bold text-[#1B365D]">Smart India Hackathon 2026</div>
+						<div class="text-[9px] font-mono text-[#5E718A]">Problem Statement SIH26056</div>
+					</div>
+				</div>
+
+				<!-- Digital India Badge -->
+				<div class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-orange-50/70 border border-orange-200/80 text-left">
+					<div class="w-2 h-2 rounded-full bg-[#FF9933]"></div>
+					<div class="leading-tight">
+						<div class="text-[10px] font-bold text-[#C85A17]">Digital India</div>
+						<div class="text-[8px] text-[#8F6600] font-medium">Power To Empower</div>
+					</div>
+				</div>
+
+				<!-- Main Direct Launch CTA Button -->
+				<button onclick="setPortalView(false)" 
+					class="px-4 py-2 rounded-xl bg-[#1B365D] hover:bg-[#142A4A] active:bg-[#0F223D] text-white text-xs font-bold transition flex items-center gap-2 shadow-sm hover:shadow-md cursor-pointer">
+					<span>Launch Live Monitoring Console</span>
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+				</button>
+			</div>
+		</div>
+	</header>
+
+
+	<!-- ========================================================= -->
+	<!-- 5. GOVERNMENT INSTITUTIONAL PORTAL LANDING PAGE VIEW -->
+	<!-- ========================================================= -->
+	<div id="governmentPortalView" class="block w-full">
+		
+		<!-- Gazette Notification Top Banner -->
+		<div class="w-full bg-[#FFF9E6] border-b border-[#F0DF99] text-[#7A5800] text-xs py-2 px-4 sm:px-6 lg:px-8 text-center font-medium flex items-center justify-center gap-2 flex-wrap">
+			<span class="px-2 py-0.5 rounded bg-[#FF9933]/20 border border-[#FF9933]/50 text-[#8F4400] text-[10px] font-mono font-bold uppercase tracking-wider">
+				THE GAZETTE OF INDIA &bull; STATUTORY COMPUTATION
+			</span>
+			<span>
+				Base Year Reset: <strong>2024 = 100</strong> &bull; Laspeyres Price Aggregation across <strong>786 DGCA Corridors</strong> &bull; MoSPI COICOP 07.3.3
+			</span>
+		</div>
+
+		<!-- HERO SECTION -->
+		<section class="relative bg-gradient-to-b from-[#F0F4F9] via-[#F7FAFC] to-white border-b border-[#DCE4EC] py-10 sm:py-16 px-4 sm:px-6 lg:px-8 xl:px-10 overflow-hidden">
+			<div class="max-w-6xl mx-auto text-center space-y-5">
+				
+				<!-- Badge: Problem Statement & Gazette -->
+				<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1B365D]/10 border border-[#1B365D]/25 text-[#1B365D] text-xs font-semibold">
+					<svg class="w-3.5 h-3.5 text-[#1B365D]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" clip-rule="evenodd"/></svg>
+					<span class="font-mono font-bold">SMART INDIA HACKATHON 2026 &bull; PS SIH26056</span>
+					<span class="text-[#CBD5E1]">&bull;</span>
+					<span>Statutory Real-Time Index</span>
+				</div>
+
+				<!-- Bilingual Main Headings -->
+				<div class="space-y-1">
+					<h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#1B365D] tracking-tight">
+						राष्ट्रीय हवाई किराया मूल्य सूचकांक
+					</h1>
+					<h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-[#26364A] tracking-tight">
+						AeroDex: National Airfare Price Index
+					</h2>
+				</div>
+
+				<!-- Official Mandate Description -->
+				<p class="max-w-3xl mx-auto text-sm sm:text-base text-[#5E718A] leading-relaxed">
+					An autonomous, high-frequency statutory aviation econometric system computing Laspeyres basket aggregates across 786 DGCA-notified domestic air corridors. Developed for the Ministry of Statistics and Programme Implementation (MoSPI) and Ministry of Civil Aviation (MoCA) to provide unmanipulated real-time inflation tracking and price surge surveillance.
+				</p>
+
+				<!-- Action Buttons -->
+				<div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+					<button onclick="setPortalView(false)" 
+						class="px-6 py-3 rounded-xl bg-[#1B365D] hover:bg-[#142A4A] active:bg-[#0F223D] text-white text-sm font-bold transition flex items-center gap-2.5 shadow-md hover:shadow-lg cursor-pointer">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+						<span>Launch Live Monitoring Console</span>
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+					</button>
+
+					<a href="/api/v1/export/daily" download
+						class="px-5 py-3 rounded-xl border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] active:bg-[#F1F5F9] text-[#26364A] text-sm font-semibold transition flex items-center gap-2 shadow-xs cursor-pointer">
+						<svg class="w-4 h-4 text-[#1B365D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+						<span>Download Daily MoSPI Bulletin (.csv)</span>
+					</a>
+
+					<a href="#statutoryMethodologySection" 
+						class="px-4 py-3 rounded-xl text-xs font-semibold text-[#1B365D] hover:underline flex items-center gap-1 cursor-pointer">
+						<span>Statutory Methodology</span>
+						<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+					</a>
+				</div>
+
+				<!-- 4 Live Metric KPI Badges -->
+				<div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto pt-6 text-left">
+					<!-- KPI 1 -->
+					<div class="p-4 rounded-xl bg-white border border-[#E2E8F0] shadow-xs hover:border-[#1B365D]/40 transition">
+						<div class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5E718A]">Monitored Network</div>
+						<div class="text-2xl font-extrabold text-[#1B365D] font-mono mt-1">786</div>
+						<div class="text-[11px] text-[#5E718A] mt-0.5">DGCA Schedule II Corridors</div>
+					</div>
+
+					<!-- KPI 2 -->
+					<div class="p-4 rounded-xl bg-white border border-[#E2E8F0] shadow-xs hover:border-[#1B365D]/40 transition">
+						<div class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5E718A]">Microdata Ingestion</div>
+						<div class="text-2xl font-extrabold text-[#0E6251] font-mono mt-1" id="portalQuotesHero">1,82,000+</div>
+						<div class="text-[11px] text-[#5E718A] mt-0.5">Continuous Quotes Ingested</div>
+					</div>
+
+					<!-- KPI 3 -->
+					<div class="p-4 rounded-xl bg-white border border-[#E2E8F0] shadow-xs hover:border-[#1B365D]/40 transition">
+						<div class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5E718A]">Statutory Base Year</div>
+						<div class="text-2xl font-extrabold text-[#26364A] font-mono mt-1">2024 = 100</div>
+						<div class="text-[11px] text-[#5E718A] mt-0.5">Fixed-Base Basket Model</div>
+					</div>
+
+					<!-- KPI 4 -->
+					<div class="p-4 rounded-xl bg-white border border-[#E2E8F0] shadow-xs hover:border-[#1B365D]/40 transition">
+						<div class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5E718A]">Laspeyres Composite</div>
+						<div class="text-2xl font-extrabold text-[#3B6DCF] font-mono mt-1" id="portalIndexHero">138.12</div>
+						<div class="text-[11px] text-emerald-700 font-semibold mt-0.5">Live Weighted Aggregate</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- SECTION 2: FOUR CORE STATUTORY PILLARS -->
+		<section id="statutoryMethodologySection" class="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 xl:px-10 bg-white border-b border-[#E2E8F0]">
+			<div class="max-w-6xl mx-auto space-y-10">
+				<div class="text-center max-w-3xl mx-auto space-y-2">
+					<div class="text-xs font-mono font-bold uppercase tracking-wider text-[#1B365D]">Statutory Architectural Framework</div>
+					<h2 class="text-2xl sm:text-3xl font-bold text-[#26364A]">Four Pillars of National Aviation Price Surveillance</h2>
+					<p class="text-sm text-[#5E718A]">
+						Engineered in strict compliance with the Ministry of Statistics &amp; Programme Implementation guidelines, IMF CPI Manual 2020, and DGCA Air Transport Regulations.
+					</p>
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+					
+					<!-- Pillar 1 -->
+					<div class="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3 hover:shadow-sm transition">
+						<div class="w-10 h-10 rounded-xl bg-[#1B365D]/10 text-[#1B365D] flex items-center justify-center font-bold">
+							<!-- Server Ingestion SVG -->
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>
+						</div>
+						<div class="text-[11px] font-mono font-bold text-[#1B365D] uppercase tracking-wider">Pillar 01</div>
+						<h3 class="text-base font-bold text-[#26364A]">Multi-Source RFC 9309 Ingestion</h3>
+						<p class="text-xs text-[#5E718A] leading-relaxed">
+							Decentralized high-throughput crawlers spanning 4 active live scrapers and 7 statutory validation portals. Compliant with RFC 9309 robots.txt standards with zero bot-blocking.
+						</p>
+						<div class="pt-2 text-[10px] font-mono text-[#1B365D] font-semibold border-t border-[#E2E8F0]">
+							Auditable Data Provenance
+						</div>
+					</div>
+
+					<!-- Pillar 2 -->
+					<div class="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3 hover:shadow-sm transition">
+						<div class="w-10 h-10 rounded-xl bg-[#0E6251]/10 text-[#0E6251] flex items-center justify-center font-bold">
+							<!-- Laspeyres Sigma Scale SVG -->
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+						</div>
+						<div class="text-[11px] font-mono font-bold text-[#0E6251] uppercase tracking-wider">Pillar 02</div>
+						<h3 class="text-base font-bold text-[#26364A]">Laspeyres Index Mathematics</h3>
+						<p class="text-xs text-[#5E718A] leading-relaxed">
+							Rigorous econometric formulation weighting city-pairs by annual passenger traffic (Wr). Mathematically isolates pure price inflation from volume distortions.
+						</p>
+						<div class="pt-2 text-[10px] font-mono text-[#0E6251] font-semibold border-t border-[#E2E8F0]">
+							It = (Sum Pt*Q0 / Sum P0*Q0) * 100
+						</div>
+					</div>
+
+					<!-- Pillar 3 -->
+					<div class="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3 hover:shadow-sm transition">
+						<div class="w-10 h-10 rounded-xl bg-[#8F4400]/10 text-[#8F4400] flex items-center justify-center font-bold">
+							<!-- 4-Part Decomposition SVG -->
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+						</div>
+						<div class="text-[11px] font-mono font-bold text-[#8F4400] uppercase tracking-wider">Pillar 03</div>
+						<h3 class="text-base font-bold text-[#26364A]">4-Part Fare Decomposition</h3>
+						<p class="text-xs text-[#5E718A] leading-relaxed">
+							Deconstructs aggregate ticket prices into Base Fare, Fuel Surcharge (YQ/YR), Airport UDF/PSF/DF, and statutory GST (5% Economy / 12% Business).
+						</p>
+						<div class="pt-2 text-[10px] font-mono text-[#8F4400] font-semibold border-t border-[#E2E8F0]">
+							Total = Base + Fuel + Airport + GST
+						</div>
+					</div>
+
+					<!-- Pillar 4 -->
+					<div class="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3 hover:shadow-sm transition">
+						<div class="w-10 h-10 rounded-xl bg-[#3B6DCF]/10 text-[#3B6DCF] flex items-center justify-center font-bold">
+							<!-- Nowcast Radar SVG -->
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+						</div>
+						<div class="text-[11px] font-mono font-bold text-[#3B6DCF] uppercase tracking-wider">Pillar 04</div>
+						<h3 class="text-base font-bold text-[#26364A]">ML Nowcast &amp; Calamity Alerts</h3>
+						<p class="text-xs text-[#5E718A] leading-relaxed">
+							Ensemble XGBoost and LightGBM forward models projecting 7-day to 30-day index trajectories. Automated alert triggers detect route price-gouging during climatic emergencies.
+						</p>
+						<div class="pt-2 text-[10px] font-mono text-[#3B6DCF] font-semibold border-t border-[#E2E8F0]">
+							Trained on 1,82,000+ Records
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</section>
+
+		<!-- SECTION 3: 786-CORRIDOR ROUTE BASKET SAMPLE -->
+		<section class="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 xl:px-10 bg-[#F8FAFC] border-b border-[#E2E8F0]">
+			<div class="max-w-6xl mx-auto space-y-6">
+				<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+					<div>
+						<div class="text-xs font-mono font-bold uppercase tracking-wider text-[#1B365D]">DGCA Domestic Flight Basket</div>
+						<h2 class="text-2xl font-bold text-[#26364A]">High-Frequency Corridor Coverage</h2>
+						<p class="text-xs text-[#5E718A] mt-1">
+							Continuous multi-frequency sampling across Metro Trunk, Regional Connectivity Scheme (UDAN), and Special Category corridors.
+						</p>
+					</div>
+					<button onclick="setPortalView(false); switchMainTab('weights');" 
+						class="px-3.5 py-2 rounded-xl border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] text-[#1B365D] text-xs font-bold transition flex items-center gap-1.5 self-start md:self-auto cursor-pointer">
+						<span>View Full 786 Route Directory</span>
+						<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+					</button>
+				</div>
+
+				<!-- Corridor Table -->
+				<div class="border border-[#E2E8F0] rounded-xl overflow-x-auto bg-white shadow-xs">
+					<table class="w-full text-left text-xs border-collapse">
+						<thead>
+							<tr class="bg-[#F1F5F9] border-b border-[#E2E8F0] text-[#5E718A] font-mono text-[11px]">
+								<th class="py-3 px-4 font-bold">Route Code</th>
+								<th class="py-3 px-4 font-bold">City Pair</th>
+								<th class="py-3 px-4 font-bold">Distance</th>
+								<th class="py-3 px-4 font-bold">Category</th>
+								<th class="py-3 px-4 font-bold">Basket Weight (Wr)</th>
+								<th class="py-3 px-4 font-bold">Base Price (P0)</th>
+								<th class="py-3 px-4 font-bold">Surveillance Status</th>
+							</tr>
+						</thead>
+						<tbody class="divide-y divide-[#F1F5F9] text-[#26364A]">
+							<tr class="hover:bg-[#F8FAFC]">
+								<td class="py-2.5 px-4 font-mono font-bold text-[#1B365D]">DEL-BOM</td>
+								<td class="py-2.5 px-4 font-semibold">Delhi Indira Gandhi &harr; Mumbai Chhatrapati Shivaji</td>
+								<td class="py-2.5 px-4 font-mono text-[#5E718A]">1,148 km</td>
+								<td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">Category I (Trunk)</span></td>
+								<td class="py-2.5 px-4 font-mono font-bold">0.1420 (14.2%)</td>
+								<td class="py-2.5 px-4 font-mono text-[#5E718A]">Rs. 4,850</td>
+								<td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Active Live</span></td>
+							</tr>
+							<tr class="hover:bg-[#F8FAFC]">
+								<td class="py-2.5 px-4 font-mono font-bold text-[#1B365D]">BOM-BLR</td>
+								<td class="py-2.5 px-4 font-semibold">Mumbai &harr; Bengaluru Kempegowda</td>
+								<td class="py-2.5 px-4 font-mono text-[#5E718A]">842 km</td>
+								<td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">Category I (Trunk)</span></td>
+								<td class="py-2.5 px-4 font-mono font-bold">0.1180 (11.8%)</td>
+								<td class="py-2.5 px-4 font-mono text-[#5E718A]">Rs. 3,920</td>
+								<td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Active Live</span></td>
+							</tr>
+							<tr class="hover:bg-[#F8FAFC]">
+								<td class="py-2.5 px-4 font-mono font-bold text-[#1B365D]">DEL-BLR</td>
+								<td class="py-2.5 px-4 font-semibold">Delhi &harr; Bengaluru Kempegowda</td>
+								<td class="py-2.5 px-4 font-mono text-[#5E718A]">1,740 km</td>
+								<td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">Category I (Trunk)</span></td>
+								<td class="py-2.5 px-4 font-mono font-bold">0.1050 (10.5%)</td>
+								<td class="py-2.5 px-4 font-mono text-[#5E718A]">Rs. 5,420</td>
+								<td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Active Live</span></td>
+							</tr>
+							<tr class="hover:bg-[#F8FAFC]">
+								<td class="py-2.5 px-4 font-mono font-bold text-[#1B365D]">DEL-CCU</td>
+								<td class="py-2.5 px-4 font-semibold">Delhi &harr; Kolkata Netaji Subhash Chandra Bose</td>
+								<td class="py-2.5 px-4 font-mono text-[#5E718A]">1,305 km</td>
+								<td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">Category I (Trunk)</span></td>
+								<td class="py-2.5 px-4 font-mono font-bold">0.0890 (8.9%)</td>
+								<td class="py-2.5 px-4 font-mono text-[#5E718A]">Rs. 4,680</td>
+								<td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Active Live</span></td>
+							</tr>
+							<tr class="hover:bg-[#F8FAFC]">
+								<td class="py-2.5 px-4 font-mono font-bold text-[#1B365D]">DEL-GAU</td>
+								<td class="py-2.5 px-4 font-semibold">Delhi &harr; Guwahati Lokpriya Gopinath Bordoloi</td>
+								<td class="py-2.5 px-4 font-mono text-[#5E718A]">1,460 km</td>
+								<td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-800 border border-purple-200">Category II (North East)</span></td>
+								<td class="py-2.5 px-4 font-mono font-bold">0.0480 (4.8%)</td>
+								<td class="py-2.5 px-4 font-mono text-[#5E718A]">Rs. 5,100</td>
+								<td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Active Live</span></td>
+							</tr>
+							<tr class="hover:bg-[#F8FAFC]">
+								<td class="py-2.5 px-4 font-mono font-bold text-[#1B365D]">DEL-SXR</td>
+								<td class="py-2.5 px-4 font-semibold">Delhi &harr; Srinagar Sheikh ul-Alam</td>
+								<td class="py-2.5 px-4 font-mono text-[#5E718A]">645 km</td>
+								<td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-800 border border-purple-200">Category II (Jammu &amp; Kashmir)</span></td>
+								<td class="py-2.5 px-4 font-mono font-bold">0.0410 (4.1%)</td>
+								<td class="py-2.5 px-4 font-mono text-[#5E718A]">Rs. 3,650</td>
+								<td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Active Live</span></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</section>
+
+		<!-- SECTION 4: INSTITUTIONAL GOVERNANCE & INTER-AGENCY COORDINATION -->
+		<section class="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 xl:px-10 bg-white border-b border-[#E2E8F0]">
+			<div class="max-w-6xl mx-auto space-y-8">
+				<div class="text-center max-w-3xl mx-auto space-y-2">
+					<div class="text-xs font-mono font-bold uppercase tracking-wider text-[#1B365D]">Institutional Governance</div>
+					<h2 class="text-2xl sm:text-3xl font-bold text-[#26364A]">Statutory Alignment &amp; National Coordination</h2>
+					<p class="text-sm text-[#5E718A]">
+						Seamlessly feeding official macroeconomic indicators to regulatory authorities and apex statistical bodies across India.
+					</p>
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+					<div class="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2">
+						<div class="font-bold text-[#1B365D] text-sm flex items-center gap-2">
+							<svg class="w-4 h-4 text-[#1B365D]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+							<span>Ministry of Statistics (MoSPI)</span>
+						</div>
+						<p class="text-xs text-[#5E718A] leading-relaxed">
+							Direct integration with National Statistical Office (NSO) Consumer Price Index releases under COICOP Group 07.3.3. Replaces manual monthly surveys with auditable high-frequency feeds.
+						</p>
+					</div>
+
+					<div class="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2">
+						<div class="font-bold text-[#1B365D] text-sm flex items-center gap-2">
+							<svg class="w-4 h-4 text-[#1B365D]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+							<span>Directorate General of Civil Aviation</span>
+						</div>
+						<p class="text-xs text-[#5E718A] leading-relaxed">
+							Powers the DGCA Tariff Monitoring Unit with real-time surge triggers and price-band ceiling compliance across all commercial scheduled operators in Indian airspace.
+						</p>
+					</div>
+
+					<div class="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2">
+						<div class="font-bold text-[#1B365D] text-sm flex items-center gap-2">
+							<svg class="w-4 h-4 text-[#1B365D]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+							<span>Reserve Bank of India (RBI)</span>
+						</div>
+						<p class="text-xs text-[#5E718A] leading-relaxed">
+							Feeds the Monetary Policy Committee (MPC) with daily provisional transportation nowcasts and ATF price-transmission elasticity metrics for precision inflation targeting.
+						</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- OFFICIAL GOVERNMENT FOOTER -->
+		<footer class="bg-[#10243E] text-white/80 py-10 px-4 sm:px-6 lg:px-8 xl:px-10 border-t border-[#0A182B] text-xs">
+			<div class="max-w-6xl mx-auto space-y-8">
+				<div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/10">
+					<div class="flex items-center gap-3">
+						<div class="w-8 h-8 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center font-mono font-bold text-white text-xs">
+							GOI
+						</div>
+						<div>
+							<div class="text-sm font-bold text-white">राष्ट्रीय हवाई किराया मूल्य सूचकांक पोर्टल</div>
+							<div class="text-[11px] text-white/60">National Airfare Price Index Directorate &bull; Problem Statement SIH26056</div>
+						</div>
+					</div>
+
+					<div class="flex items-center gap-4 text-xs">
+						<button onclick="setPortalView(false)" class="text-white hover:text-[#FF9933] transition cursor-pointer">Live Monitoring Console</button>
+						<span class="text-white/20">|</span>
+						<a href="/api/v1/export/daily" download class="text-white hover:text-[#FF9933] transition">Download MoSPI Data</a>
+						<span class="text-white/20">|</span>
+						<button onclick="openSourcesModal()" class="text-white hover:text-[#FF9933] transition cursor-pointer">Data Sources Matrix</button>
+					</div>
+				</div>
+
+				<div class="space-y-2 text-[11px] text-white/60 leading-relaxed">
+					<p>
+						Designed and developed for Smart India Hackathon 2026 under the aegis of the Ministry of Statistics and Programme Implementation (MoSPI) and Ministry of Civil Aviation (MoCA), Government of India.
+					</p>
+					<p>
+						All algorithmic calculations follow the Laspeyres index methodology and RFC 9309 ethical scraping standards. Contents are compliant with Guidelines for Indian Government Websites (GIGW) and Web Content Accessibility Guidelines (WCAG 2.1 AA).
+					</p>
+					<p class="pt-2 text-white/40">
+						&copy; 2026 Government of India &bull; Ministry of Statistics &amp; Programme Implementation. All rights reserved.
+					</p>
+				</div>
+			</div>
+		</footer>
+
+	</div>
+
+	<!-- ==================== LIVE DASHBOARD VIEW WRAPPER ==================== -->
+	<div id="liveDashboardView" class="hidden">
+
+
 	<!-- Top Navigation Header -->
-	<header class="border-b border-[#E2E8F0] bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-xs">
+	<header id="dashboardHeader" class="hidden border-b border-[#E2E8F0] bg-white/95 backdrop-blur-md sticky top-[34px] z-50 shadow-xs">
 		<div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
 			<div class="flex items-center justify-between w-full lg:w-auto gap-2 sm:gap-3.5">
 				<div class="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
 					<img src="/logo.png" alt="AeroDex Logo" class="w-10 h-10 sm:w-13 sm:h-13 rounded-xl object-contain bg-white border border-[#CBD5E1] shadow-sm flex-shrink-0 p-1 hover:scale-105 transition-transform">
 					<div class="min-w-0">
+						<div class="flex items-center gap-2">
+							<button onclick="setPortalView(true)" class="text-[10px] px-2 py-0.5 rounded-md bg-[#1B365D]/10 hover:bg-[#1B365D]/20 text-[#1B365D] font-bold border border-[#1B365D]/25 transition flex items-center gap-1 cursor-pointer">
+								<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+								<span>National Portal</span>
+							</button>
+						</div>
 						<h1 class="text-sm sm:text-xl font-bold tracking-tight text-[#26364A] flex flex-wrap items-center gap-1.5 sm:gap-2">
 							<span class="truncate">AeroDex</span>
 							<span class="text-[9px] sm:text-[11px] px-2 py-0.5 rounded-full bg-[#8ED1C7]/25 text-[#1A6357] border border-[#8ED1C7]/60 font-mono font-semibold whitespace-nowrap inline-flex items-center">LIVE NSO</span>
@@ -166,7 +724,7 @@
 				<div class="h-6 w-px bg-[#E2E8F0] hidden sm:block"></div>
 				<!-- Historical Shock Replay Studio Button -->
 				<button onclick="openShockReplayModal()" class="px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer" title="Replay Historical Supply & Fuel Shocks (Go First, Jet Airways, ATF)">
-					<span>⚡ Shock Replay Studio</span>
+					<span><svg class="w-3.5 h-3.5 inline-block text-amber-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg> Shock Replay Studio</span>
 				</button>
 				<div class="h-6 w-px bg-[#E2E8F0] hidden sm:block"></div>
 				<!-- Browser Fingerprint & Header Rotation Button -->
@@ -393,6 +951,16 @@
                     <span>Navigation Modules</span>
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 </div>
+
+                <!-- Return to National Portal -->
+                <button onclick="setPortalView(true)" 
+                        class="w-full px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-between text-[#1B365D] bg-[#1B365D]/10 hover:bg-[#1B365D]/20 border border-[#1B365D]/20 cursor-pointer text-left mb-2">
+                    <span class="font-bold flex items-center gap-2">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                        <span>National Portal View</span>
+                    </span>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-white text-[#1B365D] font-mono font-bold">GOV.IN</span>
+                </button>
 
                 <!-- 0. Main Dashboard Overview -->
                 <button onclick="switchMainTab('dashboard')" id="tabBtn-dashboard" 
@@ -657,7 +1225,7 @@
  <span> AI Answer</span>
  <span id="aiQuerySourceBadge" class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">Grounded in Live Quotes</span>
  </div>
- <button type="button" onclick="closeAIResponse()" class="text-[#94A3B8] hover:text-[#26364A] font-bold cursor-pointer">✕</button>
+ <button type="button" onclick="closeAIResponse()" class="text-[#94A3B8] hover:text-[#26364A] font-bold cursor-pointer">&times;</button>
  </div>
  <p id="aiQueryAnswerText" class="text-[#334155] leading-relaxed mt-1"></p>
  </div>
@@ -818,7 +1386,7 @@
 
     <!-- Fallback / Simulated Notice Banner (Hidden when data is live) -->
     <div id="fallbackNoticeBanner" class="hidden mb-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-3 shadow-xs">
-      <span class="text-lg flex-shrink-0">⚠️</span>
+      <span class="text-lg flex-shrink-0"><svg class="w-3.5 h-3.5 inline-block text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></span>
       <div>
         <div class="font-bold text-amber-950 flex items-center gap-2">
           <span>Calibrated Market Benchmark Active</span>
@@ -832,7 +1400,7 @@
     <div class="glass-card rounded-2xl p-3.5 border border-[#E2E8F0] mb-4 shadow-xs">
       <div class="flex items-center justify-between mb-2.5 px-1">
         <span class="text-xs font-bold font-mono text-[#5E718A] uppercase tracking-wider flex items-center gap-1.5">
-          <span>📅 Flexible Travel Dates (±3 Days)</span>
+          <span>Flexible Travel Dates (±3 Days)</span>
         </span>
         <span class="text-[11px] text-[#5E718A] font-mono hidden sm:inline">Select any day to instantly reload fares</span>
       </div>
@@ -856,12 +1424,12 @@
           </button>
           <button type="button" onclick="setFlightCategoryFilter('cheapest')" id="tabFlight-cheapest"
             class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] cursor-pointer">
-            <span>💰 Cheapest Available</span>
+            <span>Cheapest Available</span>
             <span id="badgeCount-cheapest" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-mono font-bold">--</span>
           </button>
           <button type="button" onclick="setFlightCategoryFilter('nonstop')" id="tabFlight-nonstop"
             class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] cursor-pointer">
-            <span>⚡ Non-Stop Only</span>
+            <span>Non-Stop Only</span>
             <span id="badgeCount-nonstop" class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-800 text-[11px] font-mono">--</span>
           </button>
         </div>
@@ -1372,7 +1940,7 @@
         </button>
         <button type="button" onclick="setStreamWindow('all')" id="btnStream-all"
           class="px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition text-[#5E718A] hover:text-[#26364A] cursor-pointer">
-          📜 Full History (<span id="streamTickTotalBadge">8</span>)
+          Full History (<span id="streamTickTotalBadge">8</span>)
         </button>
       </div>
 
@@ -1384,7 +1952,7 @@
         </button>
         <button type="button" onclick="setTimelineRange('all_scroll')" id="btnTimeline-all_scroll"
           class="px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition text-[#5E718A] hover:text-[#26364A] cursor-pointer">
-          📜 All (Scrollable)
+          All (Scrollable)
         </button>
         <button type="button" onclick="setTimelineRange('1y')" id="btnTimeline-1y"
           class="px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition text-[#5E718A] hover:text-[#26364A] cursor-pointer">
@@ -1400,11 +1968,11 @@
     <!-- Right: Live status & Jump to live button -->
     <div class="flex items-center gap-2.5">
       <span id="chartScrollHint" class="text-[11px] font-mono text-[#5E718A] hidden sm:inline">
-        💡 Tip: Scroll or swipe horizontally to inspect history
+        Tip: Scroll or swipe horizontally to inspect history
       </span>
       <button id="btnJumpToLive" type="button" onclick="jumpToLiveStream()" 
         class="hidden px-2.5 py-1 rounded-lg bg-[#5B8DEF] hover:bg-[#4A7DE0] text-white text-xs font-mono font-bold shadow-xs transition cursor-pointer flex items-center gap-1">
-        <span>⚡ Jump to Latest</span>
+        <span>Jump to Latest</span>
       </button>
     </div>
   </div>
@@ -1473,6 +2041,8 @@
 
  </main>
  </div> <!-- End Main Layout Container -->
+	</div> <!-- End #liveDashboardView -->
+
 
  <script>
  let currentPayload = null;
@@ -2316,11 +2886,11 @@
   const isLive = data.is_live === true || (data.data_authenticity && data.data_authenticity.toLowerCase().includes('live'));
 
   if (isLive) {
-    sourceEl.innerText = `🟢 ${data.data_authenticity || 'Live Web Scraped'}`;
+    sourceEl.innerText = `<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1"></span> ${data.data_authenticity || 'Live Web Scraped'}`;
     sourceEl.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 font-mono font-bold shadow-2xs";
     if (noticeBanner) noticeBanner.classList.add('hidden');
   } else {
-    sourceEl.innerText = `⚠️ Simulated / Benchmark Estimate (Fallback)`;
+    sourceEl.innerText = `<svg class="w-3.5 h-3.5 inline-block text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg> Simulated / Benchmark Estimate (Fallback)`;
     sourceEl.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-300 font-mono font-bold shadow-2xs";
     if (noticeBanner) noticeBanner.classList.remove('hidden');
   }
@@ -2699,7 +3269,7 @@
     if (filtered.length === 0) {
       container.innerHTML = `
         <div class="glass-card rounded-2xl p-8 text-center text-[#5E718A] border border-[#E2E8F0]">
-          <div class="text-3xl mb-2">✈️</div>
+          <div class="text-3xl mb-2"><svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg></div>
           <div class="text-base font-bold text-[#26364A] mb-1">No flights match the selected filters</div>
           <div class="text-xs">Try switching tabs or resetting the airline and departure time filters.</div>
           <button type="button" onclick="resetFlightFilters()" class="mt-4 px-4 py-2 rounded-xl bg-[#5B8DEF] text-white text-xs font-semibold cursor-pointer">Reset All Filters</button>
@@ -2749,7 +3319,7 @@
       if (f.is_top_flight) {
         specialTag = `<span class="text-xs px-2.5 py-0.5 rounded-lg bg-blue-100 text-blue-800 border border-blue-300 font-bold flex items-center gap-1 font-mono">⭐ Top Pick</span>`;
       } else if (f.is_cheapest) {
-        specialTag = `<span class="text-xs px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold flex items-center gap-1 font-mono">💰 Lowest Fare</span>`;
+        specialTag = `<span class="text-xs px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold flex items-center gap-1 font-mono"> Lowest Fare</span>`;
       }
 
       // Aircraft Type Identification
@@ -2774,8 +3344,8 @@
       const gstPct = Math.max(1, 100 - basePct - fuelPct - udfPct);
 
       const provenancePill = f.is_live === false
-        ? `<span class="text-[10px] px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold" title="Calibrated DGCA benchmark estimate">⚠️ Benchmark</span>`
-        : `<span class="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono font-bold" title="Verified live web scraped quote from ${f.source_portal || 'OTA'}">🟢 ${f.source_portal || 'Live'}</span>`;
+        ? `<span class="text-[10px] px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold" title="Calibrated DGCA benchmark estimate"><svg class="w-3.5 h-3.5 inline-block text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg> Benchmark</span>`
+        : `<span class="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono font-bold" title="Verified live web scraped quote from ${f.source_portal || 'OTA'}"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1"></span> ${f.source_portal || 'Live'}</span>`;
 
       // Sanitize Arrival Time: ensure it never duplicates departure time
       let sanitizedArrTime = f.arrival_time;
@@ -2794,7 +3364,7 @@
               <div class="flex items-center gap-2 flex-wrap">
                 <h4 class="text-base font-bold text-[#26364A]">${f.carrier_name}</h4>
                 <span class="text-xs px-2 py-0.5 rounded border ${badgeClass} font-mono font-bold">${f.flight_number}</span>
-                <span class="text-[11px] px-2 py-0.5 rounded bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0] font-mono font-semibold">✈ ${aircraft}</span>
+                <span class="text-[11px] px-2 py-0.5 rounded bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0] font-mono font-semibold"> ${aircraft}</span>
                 ${provenancePill}
                 ${specialTag}
               </div>
@@ -3736,7 +4306,7 @@
  const copyText = document.getElementById('copyText');
  const copyIcon = document.getElementById('copyIcon');
  if (copyText) copyText.innerText = 'Copied!';
- if (copyIcon) copyIcon.innerText = '✓';
+ if (copyIcon) copyIcon.innerText = 'Done';
  setTimeout(() => {
  if (copyText) copyText.innerText = 'Copy Brief';
  if (copyIcon) copyIcon.innerText = '';
@@ -3855,7 +4425,7 @@
  const data = await res.json();
  if (res.ok && data.success) {
  statusEl.className = 'p-2.5 rounded-xl text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200';
- statusEl.innerText = '✓ ' + (data.message || 'Gemini Connected!');
+ statusEl.innerText = ' ' + (data.message || 'Gemini Connected!');
  statusEl.classList.remove('hidden');
  
  // Update key button badge
@@ -3869,12 +4439,12 @@
  }, 1200);
  } else {
  statusEl.className = 'p-2.5 rounded-xl text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200';
- statusEl.innerText = '✕ ' + (data.message || 'Failed to connect.');
+ statusEl.innerText = '&times; ' + (data.message || 'Failed to connect.');
  statusEl.classList.remove('hidden');
  }
  } catch (err) {
  statusEl.className = 'p-2.5 rounded-xl text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200';
- statusEl.innerText = '✕ Network error: ' + err.message;
+ statusEl.innerText = 'Network error: ' + err.message;
  statusEl.classList.remove('hidden');
  } finally {
  submitBtn.disabled = false;
@@ -4161,14 +4731,14 @@
  if (!container || !events) return;
 
  const chips = [
- { id: 'real_live', name: '⚡ Real-Time Sensors (Active Now)', date: new Date().toISOString().split('T')[0], badge: 'Live Radar', color: 'bg-sky-50 hover:bg-sky-100 text-sky-950 border-sky-300' },
+ { id: 'real_live', name: 'Real-Time Sensors (Active Now)', date: new Date().toISOString().split('T')[0], badge: 'Live Radar', color: 'bg-sky-50 hover:bg-sky-100 text-sky-950 border-sky-300' },
  { id: 'diwali_rush', name: '🪔 Diwali Peak Rush', date: '2026-11-09', badge: 'Est. +80% (Heuristic)', color: 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200' },
- { id: 'chhath_puja', name: '🌅 Chhath Puja Mahaparv', date: '2026-11-16', badge: 'Est. +90% (Heuristic)', color: 'bg-orange-50 hover:bg-orange-100 text-orange-900 border-orange-200' },
- { id: 'cyclone_coastal', name: '🌀 Cyclone Michaung Benchmark', date: '2026-11-09', badge: 'Est. -45% (Heuristic)', color: 'bg-rose-50 hover:bg-rose-100 text-rose-900 border-rose-200' },
- { id: 'delhi_winter_fog', name: '🌫️ Delhi Fog CAT-III Benchmark', date: '2027-01-10', badge: 'Est. -35% (Heuristic)', color: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border-slate-200' },
- { id: 'holi_festival', name: '🎨 Holi Festival of Colours', date: '2026-03-04', badge: 'Est. +70% (Heuristic)', color: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200' },
- { id: 'onam_harvest', name: '🌾 Onam Kerala Harvest', date: '2026-09-06', badge: 'Est. +70% (Heuristic)', color: 'bg-yellow-50 hover:bg-yellow-100 text-yellow-900 border-yellow-200' },
- { id: 'christmas_newyear', name: '🎉 Year-End Leisure Peak', date: '2026-12-30', badge: 'Est. +75% (Heuristic)', color: 'bg-purple-50 hover:bg-purple-100 text-purple-900 border-purple-200' }
+ { id: 'chhath_puja', name: 'Chhath Puja Mahaparv', date: '2026-11-16', badge: 'Est. +90% (Heuristic)', color: 'bg-orange-50 hover:bg-orange-100 text-orange-900 border-orange-200' },
+ { id: 'cyclone_coastal', name: 'Cyclone Michaung Benchmark', date: '2026-11-09', badge: 'Est. -45% (Heuristic)', color: 'bg-rose-50 hover:bg-rose-100 text-rose-900 border-rose-200' },
+ { id: 'delhi_winter_fog', name: 'Delhi Fog CAT-III Benchmark', date: '2027-01-10', badge: 'Est. -35% (Heuristic)', color: 'bg-slate-50 hover:bg-slate-100 text-slate-900 border-slate-200' },
+ { id: 'holi_festival', name: 'Holi Festival of Colours', date: '2026-03-04', badge: 'Est. +70% (Heuristic)', color: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200' },
+ { id: 'onam_harvest', name: 'Onam Kerala Harvest', date: '2026-09-06', badge: 'Est. +70% (Heuristic)', color: 'bg-yellow-50 hover:bg-yellow-100 text-yellow-900 border-yellow-200' },
+ { id: 'christmas_newyear', name: 'Year-End Leisure Peak', date: '2026-12-30', badge: 'Est. +75% (Heuristic)', color: 'bg-purple-50 hover:bg-purple-100 text-purple-900 border-purple-200' }
  ];
 
  container.innerHTML = chips.map(c => `
@@ -4393,7 +4963,7 @@
  
  const capWarningBadge = r.dgca_cap_warning 
  ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse"> BREACH (>100%)</span>` 
- : `<span class="px-2 py-0.5 rounded-full text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200">✓ Within Band</span>`;
+ : `<span class="px-2 py-0.5 rounded-full text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200">Within Band</span>`;
 
  return `
  <tr class="hover:bg-purple-50/40 transition">
@@ -4515,7 +5085,7 @@
  <h3 class="text-base font-bold text-[#26364A] mt-1">Download Airfare Index Datasets</h3>
  <p class="text-xs text-[#5E718A]">Official statistical formats with audit headers, provisional nowcasts, and microdata</p>
  </div>
- <button onclick="closeExportModal()" class="text-[#94A3B8] hover:text-[#26364A] text-lg font-bold p-1 cursor-pointer">✕</button>
+ <button onclick="closeExportModal()" class="text-[#94A3B8] hover:text-[#26364A] text-lg font-bold p-1 cursor-pointer">&times;</button>
  </div>
 
  <div class="space-y-3">
@@ -4585,7 +5155,7 @@
  <h3 class="text-base font-bold text-[#26364A] mt-1">Connect Gemini 3.7 Flash</h3>
  <p class="text-xs text-[#5E718A]">Set your Gemini API key to activate natural language executive briefings & conversational Q&A.</p>
  </div>
- <button onclick="closeApiKeyModal()" class="text-[#94A3B8] hover:text-[#26364A] text-lg font-bold p-1 cursor-pointer">✕</button>
+ <button onclick="closeApiKeyModal()" class="text-[#94A3B8] hover:text-[#26364A] text-lg font-bold p-1 cursor-pointer">&times;</button>
  </div>
 
  <form id="geminiKeyForm" onsubmit="saveApiKey(event)" class="space-y-4">
@@ -4643,7 +5213,7 @@
           <h3 class="text-base font-bold text-[#26364A] mt-1">Multi-Source Governance & Anti-Bot Status Matrix</h3>
           <p class="text-xs text-[#5E718A]">Statutory provenance, RFC 9309 robots.txt compliance status, and enterprise anti-bot evasion telemetry.</p>
         </div>
-        <button onclick="closeSourcesModal()" class="text-[#94A3B8] hover:text-[#26364A] text-lg font-bold p-1 cursor-pointer">✕</button>
+        <button onclick="closeSourcesModal()" class="text-[#94A3B8] hover:text-[#26364A] text-lg font-bold p-1 cursor-pointer">&times;</button>
       </div>
 
       <!-- Anti-Bot & Proxy Health Telemetry Ribbon -->
@@ -4738,24 +5308,24 @@
           tbody.innerHTML = sources.map(s => {
             const isPermitted = s.robots_status.toLowerCase().includes('permitted');
             const statusBadge = isPermitted 
-              ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">✅ ${s.robots_status}</span>`
+              ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"><span class="text-emerald-700 font-bold mr-1">PASS</span> ${s.robots_status}</span>`
               : (s.robots_status.includes('Disallowed')
-                  ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-50 text-rose-700 border border-rose-200">🛑 ${s.robots_status}</span>`
+                  ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-50 text-rose-700 border border-rose-200"><span class="text-rose-700 font-bold mr-1">BLOCK</span> ${s.robots_status}</span>`
                   : `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-slate-100 text-slate-600 border border-slate-200">${s.robots_status}</span>`);
             
             let integrationBadge = '';
             if (s.active_status.includes('Active Live Scrape')) {
-              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">🟢 Active Live Scrape</span>`;
+              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1"></span> Active Live Scrape</span>`;
             } else if (s.active_status.includes('Ethically Gated')) {
-              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-amber-800 border border-amber-300">🛡️ RFC 9309 Gated</span>`;
+              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-amber-800 border border-amber-300"><svg class="w-3 h-3 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944z" clip-rule="evenodd"/></svg> RFC 9309 Gated</span>`;
             } else if (s.active_status.includes('Anti-Bot Shielded')) {
-              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-50 text-purple-800 border border-purple-200">🛡️ Anti-Bot Shielded</span>`;
+              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-50 text-purple-800 border border-purple-200"><svg class="w-3 h-3 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944z" clip-rule="evenodd"/></svg> Anti-Bot Shielded</span>`;
             } else if (s.active_status.includes('Aggregator Ingested')) {
-              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200">📡 Aggregator Ingested</span>`;
+              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200"><svg class="w-3 h-3 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2"/></svg> Aggregator Ingested</span>`;
             } else if (s.active_status.includes('Parser Pending')) {
-              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200">🔧 Parser Pending</span>`;
+              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200"><svg class="w-3 h-3 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg> Parser Pending</span>`;
             } else {
-              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-slate-100 text-slate-600 border border-slate-200">🔗 Deeplink Only</span>`;
+              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-slate-100 text-slate-600 border border-slate-200"><svg class="w-3 h-3 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg> Deeplink Only</span>`;
             }
 
             return `
@@ -4787,7 +5357,7 @@
       <div class="flex items-center justify-between border-b border-[#F1F5F9] pb-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 font-bold text-lg">
-            ✓
+            
           </div>
           <div>
             <h3 class="text-lg font-bold text-[#26364A] flex items-center gap-2">
@@ -4884,7 +5454,7 @@
       <div class="flex items-center justify-between border-b border-[#F1F5F9] pb-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 font-bold text-lg">
-            ⚡
+            
           </div>
           <div>
             <h3 class="text-lg font-bold text-[#26364A] flex items-center gap-2">
@@ -4966,7 +5536,7 @@
       <!-- Autonomous Policy Briefing Box -->
       <div class="p-3.5 rounded-xl bg-sky-50/70 border border-sky-200 space-y-1">
         <div class="text-xs font-bold text-sky-900 flex items-center gap-1.5">
-          <span>🏛️ MoSPI DIID & RBI MPC Macroeconomic Assessment</span>
+          <span>️ MoSPI DIID & RBI MPC Macroeconomic Assessment</span>
         </div>
         <p id="shockPolicyBrief" class="text-xs text-sky-950 leading-relaxed font-sans"></p>
       </div>
@@ -4985,7 +5555,7 @@
       <div class="flex items-center justify-between border-b border-[#F1F5F9] pb-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 font-bold text-lg">
-            🌐
+            
           </div>
           <div>
             <h3 class="text-lg font-bold text-[#26364A]">Browser Fingerprint & Header Rotation Engine</h3>
