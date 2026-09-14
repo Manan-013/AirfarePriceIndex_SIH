@@ -44,9 +44,10 @@ In India, the **Ministry of Statistics and Programme Implementation (MoSPI)** pu
 - **Fare Deconstruction**: Breaks down total tariffs into Base Fare, Fuel Surcharge (YQ), Airport Fees (UDF/PSF), and GST (5%).
 - **MoSPI CPI Integration**: Quantifies exact basis point impact on India's Headline Consumer Price Index (COICOP Sub-class 07.3.3, 0.077% basket weight).
 
-### 5. AI Econometric Situation Room
-- Autonomous executive briefings in English and formal Hindi (**शुद्ध हिन्दी**) powered by **Gemini 3.6 Flash** (`gemini-3.6-flash`).
-- Built-in zero-latency local fallback that computes deterministic econometric summaries directly from SQLite microdata without external API calls.
+### 5. AI Econometric Situation Room & Differentiating Features
+- **Data Integrity Governance Engine** (`integrity_engine.py`): Calculates real-time composite data quality scores (0–100%, Grade A+) evaluating mathematical fare reconciliation ($Base + YQ + Fees + GST = Total$), Tukey 1.5× IQR outlier trimming, source diversity, and temporal freshness.
+- **Historical Aviation Shock Replay Studio** (`shock_replay.py`): Interactive macroeconomic scenario simulator modeling famous supply shocks (May 2023 Go First Grounding, April 2019 Jet Airways Collapse, June 2022 ATF Fuel Spike) showing Laspeyres overstatement vs Superlative Fisher index trajectories.
+- **Autonomous Executive Briefings**: AI policy memos in English and formal Hindi (**शुद्ध हिन्दी**) powered by **Gemini 3.6 Flash** (`gemini-3.6-flash`) with deterministic offline fallback.
 
 ---
 
@@ -60,6 +61,9 @@ SIH/
 │   │   ├── server.py                    # REST API backend & static file server
 │   │   ├── scraper.py                   # Multi-source concurrent Playwright scraper
 │   │   ├── robot_guard.py               # Ethical robots.txt checker & rate limiter
+│   │   ├── proxy_rotator.py             # Multi-node rotating proxy & anti-bot manager
+│   │   ├── integrity_engine.py          # Real-time econometric data integrity engine
+│   │   ├── shock_replay.py              # Historical aviation shock replay simulator
 │   │   ├── worker_scraper.py            # Decoupled background ingestion worker
 │   │   ├── index_engine.py              # Laspeyres & Paasche index calculation engine
 │   │   ├── forecasting_engine.py        # ML Nowcasting engine & METAR telemetry
@@ -149,7 +153,7 @@ Run the test suite out-of-the-box:
 ```bash
 python -m unittest discover tests -v
 ```
-*Result: 23 unit & integration tests passing with 100% success.*
+*Result: 31 unit & integration tests passing with 100% success.*
 
 ---
 
@@ -158,6 +162,10 @@ python -m unittest discover tests -v
 | Endpoint | Method | Description |
 | :--- | :---: | :--- |
 | `/api/v1/search` | `POST` | Live flight search & tariff deconstruction across OTAs |
+| `/api/v1/integrity/score` | `GET` | Real-time Econometric Data Integrity Score (4D composite, SHA-256 seal) |
+| `/api/v1/shocks/list` | `GET` | Historical aviation shock replay scenario catalog |
+| `/api/v1/shocks/replay` | `GET` | Historical shock replay engine (Fisher vs Laspeyres, early detection) |
+| `/api/v1/compliance/proxies` | `GET` | Multi-node proxy pool status, regional latency & challenge telemetry |
 | `/api/v1/compliance/robots` | `GET` | Live robots.txt compliance status and audit log |
 | `/api/v1/live/pulse` | `GET` | High-frequency live pulse of national airfare index |
 | `/api/v1/index/national` | `GET` | Current National Airfare Price Index and CPI impact |

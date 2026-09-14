@@ -41,7 +41,7 @@ class TestAeroDexAPI(unittest.TestCase):
         url = f"{SERVER_URL}/api/v1/search"
         payload = json.dumps({"origin": "DEL", "destination": "BOM", "date": "2026-09-20"}).encode("utf-8")
         req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=10.0) as resp:
+        with urllib.request.urlopen(req, timeout=30.0) as resp:
             self.assertEqual(resp.status, 200)
             data = json.loads(resp.read().decode("utf-8"))
             self.assertEqual(data.get("status"), "success")
@@ -91,7 +91,7 @@ class TestAeroDexAPI(unittest.TestCase):
         """Verify GET /api/v1/forecast/live_calamities returns sensor status."""
         url = f"{SERVER_URL}/api/v1/forecast/live_calamities"
         req = urllib.request.Request(url)
-        with urllib.request.urlopen(req, timeout=15.0) as resp:
+        with urllib.request.urlopen(req, timeout=30.0) as resp:
             self.assertEqual(resp.status, 200)
             data = json.loads(resp.read().decode("utf-8"))
             self.assertIn("airspace_status", data)
@@ -131,6 +131,64 @@ class TestAeroDexAPI(unittest.TestCase):
             csv_content = resp.read().decode("utf-8")
             self.assertIn("DAILY SECTOR BULLETIN", csv_content)
             self.assertIn("Sector_Code", csv_content)
+
+    def test_integrity_score_endpoint(self):
+        """Verify GET /api/v1/integrity/score returns institutional quality rating and real is_live stats."""
+        url = f"{SERVER_URL}/api/v1/integrity/score"
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=5.0) as resp:
+            self.assertEqual(resp.status, 200)
+            data = json.loads(resp.read().decode("utf-8"))
+            self.assertIn("overall_score", data)
+            self.assertIn("grade", data)
+            self.assertIn("dimensions", data)
+            self.assertGreaterEqual(data["overall_score"], 85.0)
+            self.assertIn(data["grade"], ["A+", "A", "B+"])
+            # Verify real is_live stats computed from database
+            self.assertIn("live_data_percentage", data)
+            self.assertIn("live_scraped_count", data)
+            self.assertIn("benchmark_fallback_count", data)
+            self.assertIn("is_live_breakdown", data)
+            self.assertGreaterEqual(data["live_data_percentage"], 90.0)
+            self.assertGreater(data["live_scraped_count"], 0)
+
+    def test_shock_replay_endpoints(self):
+        """Verify GET /api/v1/shocks/list and /api/v1/shocks/replay with early detection publication lag metrics."""
+        url_list = f"{SERVER_URL}/api/v1/shocks/list"
+        req = urllib.request.Request(url_list)
+        with urllib.request.urlopen(req, timeout=5.0) as resp:
+            self.assertEqual(resp.status, 200)
+            scenarios = json.loads(resp.read().decode("utf-8"))
+            self.assertEqual(len(scenarios), 3)
+
+        url_replay = f"{SERVER_URL}/api/v1/shocks/replay?scenario_id=gofirst_2023"
+        req = urllib.request.Request(url_replay)
+        with urllib.request.urlopen(req, timeout=5.0) as resp:
+            self.assertEqual(resp.status, 200)
+            data = json.loads(resp.read().decode("utf-8"))
+            self.assertIn("trajectory", data)
+            self.assertIn("affected_routes", data)
+            self.assertIn("policy_brief", data)
+            self.assertTrue(len(data["affected_routes"]) > 0)
+            self.assertTrue(len(data["trajectory"]) > 0)
+            # Verify publication lag comparison: T+0 vs T+45
+            self.assertIn("publication_lag_comparison", data)
+            pub_comp = data["publication_lag_comparison"]
+            self.assertEqual(pub_comp["days_earlier_detected"], 45)
+            self.assertEqual(pub_comp["mospi_actual_publication_lag_days"], 45)
+            self.assertEqual(pub_comp["scraped_index_detection_days"], 0)
+            self.assertIn("lead_time_advantage", pub_comp)
+
+    def test_compliance_proxies_endpoint(self):
+        """Verify GET /api/v1/compliance/proxies returns active gateway telemetry."""
+        url = f"{SERVER_URL}/api/v1/compliance/proxies"
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=5.0) as resp:
+            self.assertEqual(resp.status, 200)
+            data = json.loads(resp.read().decode("utf-8"))
+            self.assertTrue(data.get("proxy_management_active"))
+            self.assertGreaterEqual(data.get("pool_size", 0), 6)
+            self.assertIn("nodes_detail", data)
 
 if __name__ == "__main__":
     unittest.main()

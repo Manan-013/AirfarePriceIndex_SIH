@@ -158,6 +158,23 @@
 					<span>Engine Online</span>
 				</div>
 				<div class="h-6 w-px bg-[#E2E8F0] hidden sm:block"></div>
+				<!-- Data Integrity Score Trust Pill -->
+				<button onclick="openIntegrityModal()" class="px-3 py-1.5 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer" title="Real-time Econometric Data Integrity Score">
+					<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+					<span>Trust Score: <strong id="headerIntegrityScore" class="text-emerald-700 font-bold">97.7% (A+)</strong></span>
+				</button>
+				<div class="h-6 w-px bg-[#E2E8F0] hidden sm:block"></div>
+				<!-- Historical Shock Replay Studio Button -->
+				<button onclick="openShockReplayModal()" class="px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer" title="Replay Historical Supply & Fuel Shocks (Go First, Jet Airways, ATF)">
+					<span>⚡ Shock Replay Studio</span>
+				</button>
+				<div class="h-6 w-px bg-[#E2E8F0] hidden sm:block"></div>
+				<!-- Rotating Proxies Monitor Button -->
+				<button onclick="openProxyModal()" class="px-3 py-1.5 rounded-xl border border-sky-300 bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer" title="Rotating Proxy & Egress Infrastructure">
+					<span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+					<span>Proxies: <strong id="headerProxyCount" class="text-sky-700 font-bold">6 Nodes</strong></span>
+				</button>
+				<div class="h-6 w-px bg-[#E2E8F0] hidden sm:block"></div>
 				<!-- Data Sources Matrix Button -->
 				<button onclick="openSourcesModal()" class="px-3 py-1.5 rounded-xl border border-purple-300 bg-purple-50/80 hover:bg-purple-100 text-purple-800 text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer">
 					<span>Sources Matrix (6 OTAs + 5 Airlines)</span>
@@ -4714,5 +4731,463 @@
       if (modal) modal.classList.add('hidden');
     }
   </script>
+
+  <!-- ==================== 1. DATA INTEGRITY AUDIT MODAL ==================== -->
+  <div id="integrityModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-[#CBD5E1] space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[#F1F5F9] pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 font-bold text-lg">
+            ✓
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-[#26364A] flex items-center gap-2">
+              Econometric Data Integrity & Quality Audit
+              <span id="modalIntegrityGrade" class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Grade A+</span>
+            </h3>
+            <p class="text-xs text-[#5E718A]">Real-time microdata validation according to MoSPI & IMF CPI Manuals</p>
+          </div>
+        </div>
+        <button onclick="closeIntegrityModal()" class="text-[#5E718A] hover:text-[#26364A] text-xl font-bold p-1">&times;</button>
+      </div>
+
+      <!-- Trust Score Banner -->
+      <div class="p-4 rounded-xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 flex items-center justify-between">
+        <div>
+          <div class="text-xs font-semibold text-emerald-800 uppercase tracking-wider">Composite Integrity Score</div>
+          <div class="text-3xl font-extrabold text-emerald-700 font-mono flex items-baseline gap-1 mt-0.5">
+            <span id="modalIntegrityScore">97.7</span>
+            <span class="text-lg font-normal text-emerald-600">/ 100</span>
+          </div>
+          <div id="modalIntegrityStatus" class="text-xs text-emerald-700 font-medium mt-1">Verified Institutional MoSPI Compliance Grade</div>
+        </div>
+        <div class="text-right font-mono text-xs text-[#5E718A] space-y-1">
+          <div>Evaluated Quotes: <strong id="modalEvalCount" class="text-[#26364A]">300</strong></div>
+          <div>Reconciliation Rate: <strong id="modalReconcileRate" class="text-emerald-700">100.0%</strong></div>
+          <div>Max Fare Residual: <strong id="modalMaxResidual" class="text-[#26364A]">₹0.00</strong></div>
+        </div>
+      </div>
+
+      <!-- 4 Core Dimensions -->
+      <div class="space-y-3">
+        <h4 class="text-xs font-bold text-[#26364A] uppercase tracking-wider">Evaluation Dimensions (Weights & Scores)</h4>
+        
+        <div class="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
+          <div class="flex justify-between text-xs font-semibold">
+            <span class="text-[#26364A]">1. Fare Deconstruction Fidelity (Weight: 35%)</span>
+            <span id="dimScoreFidelity" class="font-mono text-emerald-700 font-bold">100.0%</span>
+          </div>
+          <div class="w-full bg-[#E2E8F0] rounded-full h-2">
+            <div id="dimBarFidelity" class="bg-emerald-500 h-2 rounded-full" style="width: 100%"></div>
+          </div>
+          <p class="text-[11px] text-[#5E718A]">Statutory components reconcile to total published fare: Base + YQ + Fees + GST = Total</p>
+        </div>
+
+        <div class="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
+          <div class="flex justify-between text-xs font-semibold">
+            <span class="text-[#26364A]">2. Statistical Cleanliness / Tukey IQR (Weight: 25%)</span>
+            <span id="dimScoreOutliers" class="font-mono text-emerald-700 font-bold">94.7%</span>
+          </div>
+          <div class="w-full bg-[#E2E8F0] rounded-full h-2">
+            <div id="dimBarOutliers" class="bg-emerald-500 h-2 rounded-full" style="width: 95%"></div>
+          </div>
+          <p class="text-[11px] text-[#5E718A]">Passed Tukey 1.5× IQR interquartile bounds; erratic spot price spikes and scraper artifacts scrubbed</p>
+        </div>
+
+        <div class="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
+          <div class="flex justify-between text-xs font-semibold">
+            <span class="text-[#26364A]">3. Multi-Source Corroboration (Weight: 20%)</span>
+            <span id="dimScoreSources" class="font-mono text-emerald-700 font-bold">95.0%</span>
+          </div>
+          <div class="w-full bg-[#E2E8F0] rounded-full h-2">
+            <div id="dimBarSources" class="bg-emerald-500 h-2 rounded-full" style="width: 95%"></div>
+          </div>
+          <p class="text-[11px] text-[#5E718A]">Multi-channel validation active across aggregators and direct carrier booking portals</p>
+        </div>
+
+        <div class="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
+          <div class="flex justify-between text-xs font-semibold">
+            <span class="text-[#26364A]">4. Temporal Freshness & Cadence (Weight: 20%)</span>
+            <span id="dimScoreFreshness" class="font-mono text-emerald-700 font-bold">100.0%</span>
+          </div>
+          <div class="w-full bg-[#E2E8F0] rounded-full h-2">
+            <div id="dimBarFreshness" class="bg-emerald-500 h-2 rounded-full" style="width: 100%"></div>
+          </div>
+          <p class="text-[11px] text-[#5E718A]">Continuous background nowcasting recency verified (<180m current reporting cycle)</p>
+        </div>
+      </div>
+
+      <!-- Governance Audit Hash -->
+      <div class="pt-2 border-t border-[#F1F5F9] flex items-center justify-between text-[11px] text-[#5E718A]">
+        <div>
+          Audit Seal: <span id="modalAuditHash" class="font-mono font-bold text-[#26364A]">AERODEX-VERIFIED</span>
+        </div>
+        <button onclick="closeIntegrityModal()" class="px-4 py-1.5 rounded-xl bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] font-semibold transition cursor-pointer">
+          Close Audit
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 2. HISTORICAL SHOCK REPLAY STUDIO MODAL ==================== -->
+  <div id="shockReplayModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl border border-[#CBD5E1] space-y-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[#F1F5F9] pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 font-bold text-lg">
+            ⚡
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-[#26364A]">
+              Historical Aviation Shock Replay Studio
+            </h3>
+            <p class="text-xs text-[#5E718A]">Simulate national capacity collapses & fuel price surges to test CPI index resilience</p>
+          </div>
+        </div>
+        <button onclick="closeShockReplayModal()" class="text-[#5E718A] hover:text-[#26364A] text-xl font-bold p-1">&times;</button>
+      </div>
+
+      <!-- Scenario Selector Controls -->
+      <div class="flex items-center justify-between gap-3 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex-wrap">
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-bold text-[#26364A]">Select Shock Scenario:</label>
+          <select id="shockScenarioSelect" onchange="runShockReplay()" class="px-3 py-1.5 rounded-lg border border-[#CBD5E1] text-xs font-semibold text-[#26364A] bg-white cursor-pointer">
+            <option value="gofirst_2023">Go First Fleet Grounding (May 2023)</option>
+            <option value="jet_airways_2019">Jet Airways Collapse (April 2019)</option>
+            <option value="atf_fuel_spike_2022">Global ATF Fuel Surcharge Surge (June 2022)</option>
+          </select>
+        </div>
+        <button onclick="runShockReplay()" class="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition shadow-xs cursor-pointer flex items-center gap-1.5">
+          <span>▶ Re-Simulate Shock</span>
+        </button>
+      </div>
+
+      <!-- Key Shock Metrics -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-center">
+        <div class="p-3 rounded-xl bg-rose-50 border border-rose-200">
+          <div class="text-[10px] text-rose-700 uppercase font-bold">Capacity Shock</div>
+          <div id="shockSupplyDrop" class="text-xl font-extrabold text-rose-800 mt-0.5">-7.8%</div>
+          <div class="text-[9px] text-rose-600">National Seat Contraction</div>
+        </div>
+        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200">
+          <div class="text-[10px] text-amber-700 uppercase font-bold">Peak Fare Surge</div>
+          <div id="shockPeakSurge" class="text-xl font-extrabold text-amber-800 mt-0.5">+88.4%</div>
+          <div class="text-[9px] text-amber-600">Affected Trunk Spot Prices</div>
+        </div>
+        <div class="p-3 rounded-xl bg-blue-50 border border-blue-200">
+          <div class="text-[10px] text-blue-700 uppercase font-bold">CPI Impact</div>
+          <div id="shockCpiImpact" class="text-xl font-extrabold text-blue-800 mt-0.5">+38.2 bps</div>
+          <div class="text-[9px] text-blue-600">Transport Sub-class 07.3.3</div>
+        </div>
+        <div class="p-3 rounded-xl bg-purple-50 border border-purple-200">
+          <div class="text-[10px] text-purple-700 uppercase font-bold">Laspeyres Bias</div>
+          <div id="shockLaspeyresBias" class="text-xl font-extrabold text-purple-800 mt-0.5">+11.2 pts</div>
+          <div class="text-[9px] text-purple-600">Overstated vs Superlative Fisher</div>
+        </div>
+      </div>
+
+      <!-- Shock Simulation Chart Canvas -->
+      <div class="p-4 rounded-xl bg-white border border-[#E2E8F0]">
+        <h4 class="text-xs font-bold text-[#26364A] uppercase tracking-wider mb-2">Index Trajectory: Laspeyres vs Superlative Fisher vs Baseline</h4>
+        <div class="h-56 relative">
+          <canvas id="shockChartCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Affected Routes Table -->
+      <div class="space-y-2">
+        <h4 class="text-xs font-bold text-[#26364A] uppercase tracking-wider">Empirical Microdata: Most Impacted Corridors</h4>
+        <div class="overflow-x-auto rounded-xl border border-[#E2E8F0]">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#F8FAFC] border-b border-[#E2E8F0] font-semibold text-[#5E718A]">
+              <tr>
+                <th class="py-2 px-3">Route Corridor</th>
+                <th class="py-2 px-3">Pre-Shock Fare</th>
+                <th class="py-2 px-3">Peak Fare</th>
+                <th class="py-2 px-3">Fare Surge</th>
+                <th class="py-2 px-3">Supply Contraction Mechanism</th>
+              </tr>
+            </thead>
+            <tbody id="shockRoutesTableBody" class="divide-y divide-[#F1F5F9]"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Autonomous Policy Briefing Box -->
+      <div class="p-3.5 rounded-xl bg-sky-50/70 border border-sky-200 space-y-1">
+        <div class="text-xs font-bold text-sky-900 flex items-center gap-1.5">
+          <span>🏛️ MoSPI DIID & RBI MPC Macroeconomic Assessment</span>
+        </div>
+        <p id="shockPolicyBrief" class="text-xs text-sky-950 leading-relaxed font-sans"></p>
+      </div>
+
+      <div class="pt-2 border-t border-[#F1F5F9] flex justify-end">
+        <button onclick="closeShockReplayModal()" class="px-4 py-1.5 rounded-xl bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] font-semibold transition cursor-pointer text-xs">
+          Close Studio
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 3. ROTATING PROXY POOL MODAL ==================== -->
+  <div id="proxyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-[#CBD5E1] space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[#F1F5F9] pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 font-bold text-lg">
+            🌐
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-[#26364A]">Rotating Proxy & Anti-Bot Infrastructure</h3>
+            <p class="text-xs text-[#5E718A]">Multi-gateway domestic IP rotation and challenge failover telemetry</p>
+          </div>
+        </div>
+        <button onclick="closeProxyModal()" class="text-[#5E718A] hover:text-[#26364A] text-xl font-bold p-1">&times;</button>
+      </div>
+
+      <!-- Proxy Telemetry Summary -->
+      <div class="grid grid-cols-3 gap-3 font-mono text-center">
+        <div class="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+          <div class="text-[10px] text-[#5E718A] uppercase font-bold">Active Nodes</div>
+          <div id="proxyActiveCount" class="text-xl font-extrabold text-sky-700 mt-0.5">6 / 6</div>
+          <div class="text-[9px] text-emerald-600 font-semibold">100% Operational</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+          <div class="text-[10px] text-[#5E718A] uppercase font-bold">Total Rotations</div>
+          <div id="proxyRotationsCount" class="text-xl font-extrabold text-[#26364A] mt-0.5">142</div>
+          <div class="text-[9px] text-[#5E718A]">Round-Robin Balancing</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+          <div class="text-[10px] text-[#5E718A] uppercase font-bold">Bot Interceptions</div>
+          <div id="proxyChallengesCount" class="text-xl font-extrabold text-amber-700 mt-0.5">0</div>
+          <div class="text-[9px] text-emerald-600 font-semibold">Clean Egress</div>
+        </div>
+      </div>
+
+      <!-- Nodes Table -->
+      <div class="space-y-2">
+        <h4 class="text-xs font-bold text-[#26364A] uppercase tracking-wider">Gateway Nodes Status & Latency</h4>
+        <div class="overflow-x-auto rounded-xl border border-[#E2E8F0]">
+          <table class="w-full text-left text-xs font-mono">
+            <thead class="bg-[#F8FAFC] border-b border-[#E2E8F0] font-semibold text-[#5E718A]">
+              <tr>
+                <th class="py-2 px-3">Node ID</th>
+                <th class="py-2 px-3">Region / Gateway</th>
+                <th class="py-2 px-3">Protocol</th>
+                <th class="py-2 px-3">Latency</th>
+                <th class="py-2 px-3">Status</th>
+              </tr>
+            </thead>
+            <tbody id="proxyNodesTableBody" class="divide-y divide-[#F1F5F9]"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-[#F1F5F9] flex justify-end">
+        <button onclick="closeProxyModal()" class="px-4 py-1.5 rounded-xl bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] font-semibold transition cursor-pointer text-xs">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global Shock Chart reference
+    let shockChart = null;
+
+    async function updateIntegrityBadge() {
+      try {
+        const res = await fetch('/api/v1/integrity/score');
+        if (res.ok) {
+          const data = await res.json();
+          const scoreEl = document.getElementById('headerIntegrityScore');
+          if (scoreEl) scoreEl.innerText = `${data.overall_score}% (${data.grade})`;
+        }
+      } catch (e) {
+        console.warn('Integrity badge update error:', e);
+      }
+    }
+
+    async function openIntegrityModal() {
+      const modal = document.getElementById('integrityModal');
+      if (modal) modal.classList.remove('hidden');
+      try {
+        const res = await fetch('/api/v1/integrity/score');
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('modalIntegrityScore').innerText = data.overall_score;
+          document.getElementById('modalIntegrityGrade').innerText = `Grade ${data.grade}`;
+          document.getElementById('modalIntegrityStatus').innerText = data.status;
+          document.getElementById('modalEvalCount').innerText = data.evaluated_quotes_count || 300;
+          document.getElementById('modalReconcileRate').innerText = `${data.math_reconciliation.reconciliation_rate_pct}%`;
+          document.getElementById('modalMaxResidual').innerText = `₹${data.math_reconciliation.max_residual_inr.toFixed(2)}`;
+          
+          const dims = data.dimensions;
+          document.getElementById('dimScoreFidelity').innerText = `${dims.fare_split_fidelity.score}%`;
+          document.getElementById('dimBarFidelity').style.width = `${dims.fare_split_fidelity.score}%`;
+
+          document.getElementById('dimScoreOutliers').innerText = `${dims.outlier_cleanliness.score}%`;
+          document.getElementById('dimBarOutliers').style.width = `${dims.outlier_cleanliness.score}%`;
+
+          document.getElementById('dimScoreSources').innerText = `${dims.source_multiplicity.score}%`;
+          document.getElementById('dimBarSources').style.width = `${dims.source_multiplicity.score}%`;
+
+          document.getElementById('dimScoreFreshness').innerText = `${dims.temporal_freshness.score}%`;
+          document.getElementById('dimBarFreshness').style.width = `${dims.temporal_freshness.score}%`;
+
+          document.getElementById('modalAuditHash').innerText = data.governance_stamp.audit_hash;
+        }
+      } catch (e) {
+        console.warn('Error opening integrity modal:', e);
+      }
+    }
+
+    function closeIntegrityModal() {
+      const modal = document.getElementById('integrityModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function openShockReplayModal() {
+      const modal = document.getElementById('shockReplayModal');
+      if (modal) modal.classList.remove('hidden');
+      await runShockReplay();
+    }
+
+    function closeShockReplayModal() {
+      const modal = document.getElementById('shockReplayModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function runShockReplay() {
+      const select = document.getElementById('shockScenarioSelect');
+      const scenarioId = select ? select.value : 'gofirst_2023';
+      try {
+        const res = await fetch(`/api/v1/shocks/replay?scenario_id=${scenarioId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const s = data.scenario;
+          document.getElementById('shockSupplyDrop').innerText = `${s.supply_drop_pct}%`;
+          document.getElementById('shockPeakSurge').innerText = `+${s.peak_fare_surge_pct}%`;
+          document.getElementById('shockCpiImpact').innerText = `+${s.cpi_impact_bps} bps`;
+          document.getElementById('shockLaspeyresBias').innerText = `+${s.substitution_bias_pts} pts`;
+          document.getElementById('shockPolicyBrief').innerText = data.policy_brief;
+
+          // Populate Affected Routes Table
+          const tbody = document.getElementById('shockRoutesTableBody');
+          tbody.innerHTML = data.affected_routes.map(r => `
+            <tr class="hover:bg-[#F8FAFC]">
+              <td class="py-2 px-3 font-semibold text-[#26364A]">${r.route}</td>
+              <td class="py-2 px-3 font-mono">₹${r.pre_fare.toLocaleString('en-IN')}</td>
+              <td class="py-2 px-3 font-mono font-bold text-rose-700">₹${r.peak_fare.toLocaleString('en-IN')}</td>
+              <td class="py-2 px-3 font-mono font-bold text-rose-600">+${r.surge_pct}%</td>
+              <td class="py-2 px-3 text-[#5E718A]">${r.carrier_loss}</td>
+            </tr>
+          `).join('');
+
+          // Render Chart
+          renderShockChart(data.trajectory);
+        }
+      } catch (e) {
+        console.warn('Error running shock replay:', e);
+      }
+    }
+
+    function renderShockChart(trajectory) {
+      const ctx = document.getElementById('shockChartCanvas');
+      if (!ctx) return;
+      
+      const labels = trajectory.map(t => t.day);
+      const laspeyresData = trajectory.map(t => t.laspeyres);
+      const fisherData = trajectory.map(t => t.fisher);
+      const baselineData = trajectory.map(t => t.baseline);
+
+      if (shockChart) shockChart.destroy();
+
+      shockChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Laspeyres Fixed Basket (Overstated)',
+              data: laspeyresData,
+              borderColor: '#ED1B24',
+              backgroundColor: 'rgba(237, 27, 36, 0.08)',
+              borderWidth: 2.5,
+              fill: false,
+              tension: 0.3
+            },
+            {
+              label: 'Superlative Fisher Index (Substitution Corrected)',
+              data: fisherData,
+              borderColor: '#107848',
+              backgroundColor: 'rgba(16, 120, 72, 0.08)',
+              borderWidth: 2.5,
+              fill: false,
+              tension: 0.3
+            },
+            {
+              label: 'Pre-Shock Normal Baseline',
+              data: baselineData,
+              borderColor: '#94A3B8',
+              borderDash: [5, 5],
+              borderWidth: 1.5,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, font: { family: 'Inter', size: 11 } } },
+            tooltip: { mode: 'index', intersect: false }
+          },
+          scales: {
+            y: { title: { display: true, text: 'Airfare Price Index (Base 2012=100)' } }
+          }
+        }
+      });
+    }
+
+    async function openProxyModal() {
+      const modal = document.getElementById('proxyModal');
+      if (modal) modal.classList.remove('hidden');
+      try {
+        const res = await fetch('/api/v1/compliance/proxies');
+        if (res.ok) {
+          const telem = await res.json();
+          document.getElementById('proxyActiveCount').innerText = `${telem.active_egress_count} / ${telem.pool_size}`;
+          document.getElementById('proxyRotationsCount').innerText = telem.total_rotations || 0;
+          document.getElementById('proxyChallengesCount').innerText = telem.challenges_intercepted || 0;
+          
+          const tbody = document.getElementById('proxyNodesTableBody');
+          tbody.innerHTML = (telem.nodes_detail || []).map(n => `
+            <tr class="hover:bg-[#F8FAFC]">
+              <td class="py-2 px-3 font-bold text-[#26364A]">${n.node_id}</td>
+              <td class="py-2 px-3">${n.region}</td>
+              <td class="py-2 px-3 text-[#5E718A]">${n.protocol}</td>
+              <td class="py-2 px-3 text-emerald-700 font-bold">${n.latency_ms} ms</td>
+              <td class="py-2 px-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${n.is_quarantined ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">${n.status}</span></td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {
+        console.warn('Error opening proxy modal:', e);
+      }
+    }
+
+    function closeProxyModal() {
+      const modal = document.getElementById('proxyModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    // Call on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      updateIntegrityBadge();
+      setInterval(updateIntegrityBadge, 30000);
+    });
+  </script>
+
 </body>
 </html>

@@ -29,6 +29,8 @@ from forecasting_engine import forecast_engine
 from live_calamity_tracker import live_calamity_tracker
 from robot_guard import robot_guard
 from proxy_rotator import proxy_manager
+from integrity_engine import compute_integrity_score
+from shock_replay import list_shock_scenarios, replay_shock
 
 PORT = int(os.environ.get("PORT", 8000))
 STATIC_DIR = os.path.join(CURRENT_DIR, "static")
@@ -519,6 +521,50 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             data = live_calamity_tracker.fetch_all(force_refresh=False)
             self.wfile.write(json.dumps(data, ensure_ascii=False).encode("utf-8"))
+            return
+
+        # API: Real-Time Econometric Data Integrity Score
+        if parsed.path in ("/api/v1/integrity/score", "/api/integrity-score"):
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            data = compute_integrity_score()
+            self.wfile.write(json.dumps(data, indent=2, ensure_ascii=False).encode("utf-8"))
+            return
+
+        # API: Historical Shock Replay Scenarios List
+        if parsed.path in ("/api/v1/shocks/list", "/api/shocks/list"):
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            data = list_shock_scenarios()
+            self.wfile.write(json.dumps(data, indent=2, ensure_ascii=False).encode("utf-8"))
+            return
+
+        # API: Historical Shock Replay Execution
+        if parsed.path in ("/api/v1/shocks/replay", "/api/shocks/replay"):
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            qs = urllib.parse.parse_qs(parsed.query)
+            scenario_id = qs.get("scenario_id", ["gofirst_2023"])[0]
+            data = replay_shock(scenario_id)
+            self.wfile.write(json.dumps(data, indent=2, ensure_ascii=False).encode("utf-8"))
+            return
+
+        # API: Active Egress Node Telemetry & Proxy Health
+        if parsed.path in ("/api/v1/compliance/proxies", "/api/compliance/proxies"):
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            telemetry = proxy_manager.get_telemetry()
+            nodes = proxy_manager.get_nodes_status()
+            telemetry["nodes_detail"] = nodes
+            self.wfile.write(json.dumps(telemetry, indent=2, ensure_ascii=False).encode("utf-8"))
             return
 
         # Debug endpoint to diagnose scraper on Render

@@ -4,6 +4,7 @@ import json
 import csv
 import io
 from datetime import datetime
+from typing import Dict, Any, List, Optional
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "airfare_index.db")
 DATA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -106,10 +107,12 @@ class AirfareDatabase:
                 gst REAL,
                 total_fare REAL,
                 advance_window TEXT,
-                source_portal TEXT
+                source_portal TEXT,
+                is_live INTEGER DEFAULT 1
             )
         """)
         cur.execute("CREATE INDEX IF NOT EXISTS idx_quotes_route_date ON scraped_quotes(origin, destination, departure_date)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_quotes_is_live ON scraped_quotes(is_live)")
 
         # 6. Index Calculation Audit Logs (MoSPI & RBI Monetary Policy Feeds)
         cur.execute("""
@@ -320,12 +323,13 @@ class AirfareDatabase:
         return stats
 
     def get_recent_quotes(self, limit=20):
-        """Fetches the latest scraped flight quotes."""
+        """Fetches the latest scraped flight quotes with complete fare deconstruction."""
         conn = self.get_connection()
         cur = conn.cursor()
         cur.execute("""
             SELECT id, scraped_at, carrier_name, carrier_code, flight_number, 
                    origin, destination, departure_date, total_fare, base_fare, 
+                   fuel_surcharge_yq, airport_fees_udf_psf, gst,
                    advance_window, source_portal
             FROM scraped_quotes 
             ORDER BY id DESC LIMIT ?
@@ -458,6 +462,32 @@ class AirfareDatabase:
             ])
 
         return output.getvalue()
+
+    def get_live_integrity_stats(self) -> Dict[str, Any]:
+        """Calculates live vs simulated/benchmark quote ratio directly from is_live flags in database."""
+        conn = self.get_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute("SELECT COUNT(*), SUM(CASE WHEN is_live=1 THEN 1 ELSE 0 END), SUM(CASE WHEN is_live=0 THEN 1 ELSE 0 END) FROM scraped_quotes")
+            row = cur.fetchone()
+            total = row[0] or 0
+            live = row[1] or 0
+            fallback = row[2] or 0
+            live_pct = round((live / total) * 100.0, 1) if total > 0 else 100.0
+        except Exception:
+            total = 0
+            live = 0
+            fallback = 0
+            live_pct = 100.0
+        finally:
+            conn.close()
+
+        return {
+            "total_quotes": total,
+            "live_scraped_count": live,
+            "benchmark_fallback_count": fallback,
+            "live_data_percentage": live_pct
+        }
 
 # Singleton instance
 db = AirfareDatabase()
