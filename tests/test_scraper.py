@@ -109,6 +109,7 @@ class TestRealtimeScraper(unittest.TestCase):
         self.assertIn("ixigo_url", links)
         self.assertIn("goibibo_url", links)
         self.assertIn("airline_portal_url", links)
+        self.assertIn("carrier_verified_url", links)
 
         self.assertTrue(links["easemytrip_url"].startswith("https://flight.easemytrip.com/"))
         self.assertTrue(links["verification_url"].startswith("https://www.google.com/travel/flights"))
@@ -118,6 +119,11 @@ class TestRealtimeScraper(unittest.TestCase):
         self.assertTrue(links["ixigo_url"].startswith("https://www.ixigo.com/"))
         self.assertTrue(links["goibibo_url"].startswith("https://www.goibibo.com/"))
         self.assertTrue(links["airline_portal_url"].startswith("https://www.goindigo.in/"))
+        self.assertTrue(links["carrier_verified_url"].startswith("https://www.google.com/travel/flights"))
+
+        # Verify correct date formatting to prevent "Invalid Date" or misparsed months
+        self.assertIn("20/09/2026", links["cleartrip_url"])
+        self.assertIn("date=20092026", links["ixigo_url"])
         self.assertIn("DEL", links["easemytrip_url"])
         self.assertIn("BOM", links["easemytrip_url"])
 

@@ -2686,7 +2686,8 @@
 
       const gflightsUrl = f.verification_url || `https://www.google.com/travel/flights?q=Flights%20to%20${f.destination}%20from%20${f.origin}%20on%20${currentSearchPayload?.travel_date}%20oneway&hl=en-IN&gl=in`;
       const mmtUrl = f.makemytrip_url || `https://www.makemytrip.com/flight/search?itinerary=${f.origin}-${f.destination}-${currentSearchPayload?.travel_date}&tripType=O&paxType=A-1_C-0_I-0&intl=false&cabinClass=E`;
-      const airlineUrl = f.airline_portal_url || 'https://www.google.com/travel/flights';
+      const carrierVerifiedUrl = f.carrier_verified_url || `https://www.google.com/travel/flights?q=Flights%20to%20${f.destination}%20from%20${f.origin}%20on%20${currentSearchPayload?.travel_date}%20with%20${encodeURIComponent(f.carrier_name)}&hl=en-IN&gl=in`;
+      const airlinePortalUrl = f.airline_portal_url || 'https://www.goindigo.in/';
 
       let specialTag = '';
       if (f.is_top_flight) {
@@ -2818,9 +2819,13 @@
                 class="inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold transition font-mono shadow-2xs" title="Verify on Ixigo (RFC 9309 Ethically Gated)">
                 Ixigo ↗
               </a>` : ''}
-              <a href="${airlineUrl}" target="_blank" rel="noopener noreferrer" 
-                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] text-xs font-semibold transition font-mono shadow-2xs" title="Verify directly on carrier portal">
-                ${f.carrier_code} Portal ↗
+              <a href="${carrierVerifiedUrl}" target="_blank" rel="noopener noreferrer" 
+                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-xs font-semibold transition font-mono shadow-2xs" title="Verify ${f.carrier_name} flights directly with carrier filter">
+                ${f.carrier_code} Verified ↗
+              </a>
+              <a href="${airlinePortalUrl}" target="_blank" rel="noopener noreferrer" 
+                class="inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] border border-[#D8E2EC] text-[11px] font-medium transition font-mono" title="Open official ${f.carrier_name} website">
+                Official Site ↗
               </a>
             </div>
           </div>

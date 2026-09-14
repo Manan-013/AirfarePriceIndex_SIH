@@ -15,6 +15,7 @@ import time
 
 import os
 import sys
+import urllib.parse
 
 try:
     from robot_guard import robot_guard
@@ -265,16 +266,19 @@ class RealtimeFlightScraper:
         }
 
     def _generate_deeplinks(self, origin: str, dest: str, date: str, carrier_code: str):
-        # Format DD/MM/YYYY and YYYYMMDD for various Indian OTAs
+        # Format DD/MM/YYYY and DDMMYYYY for various Indian OTAs
         try:
             dt = datetime.strptime(date, "%Y-%m-%d")
             mmt_date = dt.strftime("%d/%m/%Y")
             dd_dash_mm_dash_yyyy = dt.strftime("%d-%m-%Y")
+            ddmmyyyy = dt.strftime("%d%m%Y")
+            date_nodash = dt.strftime("%Y%m%d")
         except Exception:
             mmt_date = date
             dd_dash_mm_dash_yyyy = date
+            ddmmyyyy = date.replace("-", "")
+            date_nodash = date.replace("-", "")
 
-        date_nodash = date.replace("-", "")
         orig_city = CITY_NAMES.get(origin, origin)
         dest_city = CITY_NAMES.get(dest, dest)
 
@@ -282,23 +286,16 @@ class RealtimeFlightScraper:
         google_flights_url = f"https://www.google.com/travel/flights?q=Flights%20to%20{dest}%20from%20{origin}%20on%20{date}%20oneway&hl=en-IN&gl=in"
         makemytrip_url = f"https://www.makemytrip.com/flight/search?itinerary={origin}-{dest}-{mmt_date}&tripType=O&paxType=A-1_C-0_I-0&intl=false&cabinClass=E"
         yatra_url = f"https://flight.yatra.com/air-search/dom2/trigger?type=O&viewName=normal&flexi=0&noOfSegments=1&origin={origin}&originCode={origin}&destination={dest}&destinationCode={dest}&flight_depart_date={mmt_date}&ADT=1&CHD=0&INF=0&class=Economy"
-        cleartrip_url = f"https://www.cleartrip.com/flights/results?from={origin}&to={dest}&depart_date={date}&adults=1&childs=0&infants=0&class=Economy"
-        ixigo_url = f"https://www.ixigo.com/search/result/flight?from={origin}&to={dest}&date={date_nodash}&adults=1&children=0&infants=0&class=e"
+        # Cleartrip requires depart_date in DD/MM/YYYY format to prevent 'Invalid Date' errors
+        cleartrip_url = f"https://www.cleartrip.com/flights/results?from={origin}&to={dest}&depart_date={mmt_date}&adults=1&childs=0&infants=0&class=Economy"
+        # Ixigo requires date in DDMMYYYY format to prevent month misparsing (e.g. 20092026 vs 20260920)
+        ixigo_url = f"https://www.ixigo.com/search/result/flight?from={origin}&to={dest}&date={ddmmyyyy}&adults=1&children=0&infants=0&class=e"
         goibibo_url = f"https://www.goibibo.com/flights/air-{origin}-{dest}-{date_nodash}-1-0-0-E-D/"
 
-        # Dedicated direct airline carrier search URLs
-        if carrier_code == "6E":
-            carrier_portal = f"https://www.goindigo.in/flight-booking.html?origin={origin}&destination={dest}&date={date_nodash}"
-        elif carrier_code == "AI":
-            carrier_portal = f"https://www.airindia.com/in/en/book/flight-search.html?tripType=OW&origin={origin}&destination={dest}&departureDate={dd_dash_mm_dash_yyyy}"
-        elif carrier_code == "QP":
-            carrier_portal = f"https://www.akasaair.com/booking?origin={origin}&destination={dest}&departureDate={date}"
-        elif carrier_code == "SG":
-            carrier_portal = f"https://www.spicejet.com/search?from={origin}&to={dest}&tripType=1&departure={date}"
-        elif carrier_code == "IX":
-            carrier_portal = "https://www.airindiaexpress.com/"
-        else:
-            carrier_portal = AIRLINES_INFO.get(carrier_code, {}).get("portal", "https://www.google.com/travel/flights")
+        carrier_name = AIRLINES_INFO.get(carrier_code, {}).get("name", carrier_code)
+        carrier_portal = AIRLINES_INFO.get(carrier_code, {}).get("portal", "https://www.google.com/travel/flights")
+        # Direct carrier-filtered live flight search: opens actual flight details directly for that carrier
+        carrier_verified_url = f"https://www.google.com/travel/flights?q=Flights%20to%20{dest}%20from%20{origin}%20on%20{date}%20with%20{urllib.parse.quote(carrier_name)}&hl=en-IN&gl=in"
 
         return {
             "verification_url": google_flights_url,
@@ -310,6 +307,7 @@ class RealtimeFlightScraper:
             "ixigo_url": ixigo_url,
             "goibibo_url": goibibo_url,
             "airline_portal_url": carrier_portal,
+            "carrier_verified_url": carrier_verified_url,
         }
 
     def _format_db_flight(self, row, origin: str, dest: str, date: str):
