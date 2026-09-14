@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
  <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
  	<title>AeroDex - Real-Time Airfare Price Index | SIH 26056</title>
 	<link rel="icon" type="image/png" href="/logo.png">
 	<!-- Progressive Web App Meta & Manifest -->
 	<link rel="manifest" href="/manifest.json">
-	<meta name="theme-color" content="#26364A">
+	<meta name="theme-color" content="#1B365D">
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -26,6 +26,22 @@
  letter-spacing: -0.011em;
  -webkit-font-smoothing: antialiased;
  -moz-osx-font-smoothing: grayscale;
+ -webkit-tap-highlight-color: transparent;
+ }
+ /* PWA Safe Areas & Touch Ergonomics */
+ .safe-pb {
+   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+ }
+ .no-scrollbar {
+   -ms-overflow-style: none;
+   scrollbar-width: none;
+ }
+ .no-scrollbar::-webkit-scrollbar {
+   display: none;
+ }
+ .touch-scroll {
+   -webkit-overflow-scrolling: touch;
+   scroll-behavior: smooth;
  }
  .font-mono {
  font-family: 'JetBrains Mono', monospace;
@@ -118,6 +134,23 @@
     // GOVERNMENT PORTAL & DUAL-MODE VIEW CONTROLLER
     // =========================================================
     let isPortalViewActive = true;
+    let currentMainTabKey = 'dashboard';
+
+    function updateMobileBottomNav(activeKey) {
+      const keys = ['portal', 'dashboard', 'live', 'forecast', 'menu'];
+      keys.forEach(k => {
+        const btn = document.getElementById(`bottomNav-${k}`);
+        if (!btn) return;
+        const dot = btn.querySelector('.nav-dot');
+        if (k === activeKey) {
+          btn.className = 'flex flex-col items-center justify-center flex-1 py-1 text-center transition cursor-pointer text-[#1B365D] font-bold';
+          if (dot) dot.classList.remove('opacity-0');
+        } else {
+          btn.className = 'flex flex-col items-center justify-center flex-1 py-1 text-center transition cursor-pointer text-[#64748B] hover:text-[#26364A]';
+          if (dot) dot.classList.add('opacity-0');
+        }
+      });
+    }
 
     function setPortalView(showPortal) {
       isPortalViewActive = showPortal;
@@ -147,11 +180,12 @@
         }
 
         if (navBtnPortal) {
-          navBtnPortal.className = "px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold transition flex items-center gap-1.5 bg-white text-[#1B365D] shadow-xs cursor-pointer";
+          navBtnPortal.className = "px-2 sm:px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold transition flex items-center gap-1 sm:gap-1.5 bg-white text-[#1B365D] shadow-xs cursor-pointer";
         }
         if (navBtnDashboard) {
-          navBtnDashboard.className = "px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold text-white/80 hover:text-white transition flex items-center gap-1.5 cursor-pointer";
+          navBtnDashboard.className = "px-2 sm:px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold text-white/80 hover:text-white transition flex items-center gap-1 sm:gap-1.5 cursor-pointer";
         }
+        updateMobileBottomNav('portal');
         try { history.replaceState(null, '', '#portal'); } catch(e) {}
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
@@ -173,11 +207,12 @@
         }
 
         if (navBtnPortal) {
-          navBtnPortal.className = "px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold text-white/80 hover:text-white transition flex items-center gap-1.5 cursor-pointer";
+          navBtnPortal.className = "px-2 sm:px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold text-white/80 hover:text-white transition flex items-center gap-1 sm:gap-1.5 cursor-pointer";
         }
         if (navBtnDashboard) {
-          navBtnDashboard.className = "px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold transition flex items-center gap-1.5 bg-white text-[#1B365D] shadow-xs cursor-pointer";
+          navBtnDashboard.className = "px-2 sm:px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold transition flex items-center gap-1 sm:gap-1.5 bg-white text-[#1B365D] shadow-xs cursor-pointer";
         }
+        updateMobileBottomNav(currentMainTabKey || 'dashboard');
         try { history.replaceState(null, '', '#console'); } catch(e) {}
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -234,11 +269,11 @@
 	<!-- GIGW UTILITY RIBBON (GOVERNMENT OF INDIA / भारत सरकार) -->
 	<!-- ========================================================= -->
 	<div id="gigwTopBar" class="bg-[#1B365D] text-white text-[11px] font-medium border-b border-[#0F223D] select-none sticky top-0 z-[60]">
-		<div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-1.5 flex items-center justify-between gap-3">
+		<div class="w-full px-3 sm:px-6 lg:px-8 xl:px-10 py-1 sm:py-1.5 flex items-center justify-between gap-2 sm:gap-3">
 			<!-- Left: National Identity -->
-			<div class="flex items-center gap-3">
+			<div class="flex items-center gap-2 sm:gap-3 min-w-0">
 				<!-- Tiranga National Flag SVG -->
-				<svg class="w-6 h-4 rounded-xs shadow-xs flex-shrink-0" viewBox="0 0 900 600" aria-label="Flag of India">
+				<svg class="w-5 h-3.5 sm:w-6 sm:h-4 rounded-xs shadow-xs flex-shrink-0" viewBox="0 0 900 600" aria-label="Flag of India">
 					<rect width="900" height="200" fill="#FF9933"/>
 					<rect y="200" width="900" height="200" fill="#FFFFFF"/>
 					<rect y="400" width="900" height="200" fill="#138808"/>
@@ -260,20 +295,20 @@
 					</g>
 				</svg>
 
-				<div class="flex items-center gap-2">
-					<span class="font-bold tracking-wide">भारत सरकार</span>
-					<span class="text-white/40">|</span>
-					<span class="tracking-wider uppercase font-semibold text-[10px] sm:text-[11px]">Government of India</span>
+				<div class="flex items-center gap-1.5 sm:gap-2 truncate">
+					<span class="font-bold tracking-wide text-[10px] sm:text-[11px] whitespace-nowrap">भारत सरकार</span>
+					<span class="text-white/40 hidden xs:inline">|</span>
+					<span class="tracking-wider uppercase font-semibold text-[9px] sm:text-[11px] truncate hidden sm:inline">Government of India</span>
 				</div>
 
 				<span class="hidden md:inline text-white/40">|</span>
-				<span class="hidden md:inline text-white/80 text-[10px] tracking-tight">
-					Ministry of Statistics &amp; Programme Implementation (MoSPI) &bull; Ministry of Civil Aviation (MoCA)
+				<span class="hidden md:inline text-white/80 text-[10px] tracking-tight truncate">
+					Ministry of Statistics &amp; Programme Implementation &bull; Ministry of Civil Aviation
 				</span>
 			</div>
 
 			<!-- Right: Accessibility & View Switcher -->
-			<div class="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+			<div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
 				<!-- Accessibility Font Controls -->
 				<div class="hidden sm:flex items-center gap-1 border border-white/20 rounded-md px-1.5 py-0.5 bg-white/10 text-[10px] font-mono">
 					<button onclick="adjustPortalFontSize(-1)" class="hover:text-[#FF9933] px-1 transition cursor-pointer" title="Decrease font size">A-</button>
@@ -288,15 +323,15 @@
 				<!-- Dual-Mode Switcher Button -->
 				<div class="flex items-center bg-black/30 rounded-lg p-0.5 border border-white/20">
 					<button id="navBtnPortal" onclick="setPortalView(true)" 
-						class="px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold transition flex items-center gap-1.5 bg-white text-[#1B365D] shadow-xs cursor-pointer">
+						class="px-2 sm:px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold transition flex items-center gap-1 sm:gap-1.5 bg-white text-[#1B365D] shadow-xs cursor-pointer">
 						<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-						<span>National Portal</span>
+						<span>Portal</span>
 					</button>
 					<button id="navBtnDashboard" onclick="setPortalView(false)" 
-						class="px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold text-white/80 hover:text-white transition flex items-center gap-1.5 cursor-pointer">
+						class="px-2 sm:px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold text-white/80 hover:text-white transition flex items-center gap-1 sm:gap-1.5 cursor-pointer">
 						<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-						<span>Live Console</span>
-						<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+						<span>Console</span>
+						<svg class="w-3 h-3 hidden sm:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
 					</button>
 				</div>
 			</div>
@@ -314,46 +349,43 @@
 	<!-- OFFICIAL MINISTRY DEPARTMENT HEADER BAR -->
 	<!-- ========================================================= -->
 	<header id="governmentDepartmentBar" class="border-b border-[#DDE4EE] bg-white shadow-xs select-none">
-		<div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-2.5 sm:py-3 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+		<div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-2 sm:py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
 			
 			<!-- Left: Official Ministry Logos (MoSPI & MoCA) -->
-			<div class="flex items-center flex-wrap sm:flex-nowrap gap-4 sm:gap-6 min-w-0">
+			<div class="flex items-center justify-between sm:justify-start gap-3 sm:gap-6 min-w-0">
 				<!-- Official MoSPI Logo (Government of India / Ministry of Statistics and Programme Implementation) -->
 				<a href="https://www.mospi.gov.in" target="_blank" rel="noopener noreferrer" class="hover:opacity-90 transition flex-shrink-0" title="Ministry of Statistics and Programme Implementation, Government of India">
-					<img src="/logo_mospi.png" alt="Government of India - Ministry of Statistics and Programme Implementation" class="h-11 sm:h-13 w-auto object-contain">
+					<img src="/logo_mospi.png" alt="Government of India - Ministry of Statistics and Programme Implementation" class="h-8 sm:h-12 w-auto object-contain">
 				</a>
 
 				<!-- Vertical Divider -->
-				<div class="h-10 w-px bg-[#CBD5E1] hidden sm:block flex-shrink-0"></div>
+				<div class="h-8 w-px bg-[#CBD5E1] flex-shrink-0"></div>
 
 				<!-- Official MoCA Logo (नागर विमानन मंत्रालय / MINISTRY OF CIVIL AVIATION) -->
 				<a href="https://www.civilaviation.gov.in" target="_blank" rel="noopener noreferrer" class="hover:opacity-90 transition flex-shrink-0" title="Ministry of Civil Aviation, Government of India">
-					<img src="/logo_moca.png" alt="नागर विमानन मंत्रालय - Ministry of Civil Aviation" class="h-10 sm:h-12 w-auto object-contain">
+					<img src="/logo_moca.png" alt="नागर विमानन मंत्रालय - Ministry of Civil Aviation" class="h-7 sm:h-11 w-auto object-contain">
 				</a>
 			</div>
 
 			<!-- Center/Right: Official Government Campaign Emblems & CTA -->
-			<div class="flex items-center flex-wrap gap-3 sm:gap-4 justify-start xl:justify-end">
+			<div class="flex items-center flex-wrap gap-2.5 sm:gap-4 justify-between md:justify-end">
 				<!-- MoSPI Data for Development Emblem -->
 				<div class="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-50 transition" title="Data for Development - MoSPI">
-					<img src="/logo_data_dev.png" alt="Data for Development" class="h-9 sm:h-11 w-auto object-contain">
+					<img src="/logo_data_dev.png" alt="Data for Development" class="h-7 sm:h-10 w-auto object-contain">
 				</div>
 
 				<!-- Swachh Bharat Emblem -->
 				<div class="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-50 transition" title="Swachh Bharat - एक कदम स्वच्छता की ओर">
-					<img src="/logo_swachh_bharat.png" alt="Swachh Bharat" class="h-8 sm:h-9 w-auto object-contain">
+					<img src="/logo_swachh_bharat.png" alt="Swachh Bharat" class="h-7 sm:h-9 w-auto object-contain">
 				</div>
 
 				<!-- Stay Safe Online Emblem -->
 				<div class="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-50 transition" title="Stay Safe Online - ऑनलाइन सुरक्षा कवच">
-					<img src="/logo_stay_safe.png" alt="Stay Safe Online" class="h-8 sm:h-9 w-auto object-contain">
+					<img src="/logo_stay_safe.png" alt="Stay Safe Online" class="h-7 sm:h-9 w-auto object-contain">
 				</div>
 
-				<!-- Vertical Divider -->
-				<div class="h-8 w-px bg-[#CBD5E1] hidden sm:block"></div>
-
 				<!-- SIH 2026 Official Seal Badge -->
-				<div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#1B365D]/5 border border-[#1B365D]/20 text-left">
+				<div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#1B365D]/5 border border-[#1B365D]/20 text-left">
 					<div class="w-7 h-7 rounded-lg bg-[#1B365D] text-white flex items-center justify-center font-bold text-[10px] font-mono shadow-xs">
 						SIH
 					</div>
@@ -365,7 +397,7 @@
 
 				<!-- Main Direct Launch CTA Button -->
 				<button onclick="setPortalView(false)" 
-					class="px-4 py-2 rounded-xl bg-[#1B365D] hover:bg-[#142A4A] active:bg-[#0F223D] text-white text-xs font-bold transition flex items-center gap-2 shadow-sm hover:shadow-md cursor-pointer flex-shrink-0">
+					class="w-full sm:w-auto px-4 py-2 sm:py-2 rounded-xl bg-[#1B365D] hover:bg-[#142A4A] active:bg-[#0F223D] text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-xs hover:shadow-sm cursor-pointer flex-shrink-0">
 					<span>Launch Live Monitoring Console</span>
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
 				</button>
@@ -390,43 +422,43 @@
 		</div>
 
 		<!-- HERO SECTION -->
-		<section class="relative bg-gradient-to-b from-[#F0F4F9] via-[#F7FAFC] to-white border-b border-[#DCE4EC] py-12 sm:py-18 px-4 sm:px-6 lg:px-8 xl:px-10 overflow-hidden">
-			<div class="max-w-5xl mx-auto text-center space-y-6">
+		<section class="relative bg-gradient-to-b from-[#F0F4F9] via-[#F7FAFC] to-white border-b border-[#DCE4EC] py-8 sm:py-16 px-4 sm:px-6 lg:px-8 xl:px-10 overflow-hidden">
+			<div class="max-w-5xl mx-auto text-center space-y-4 sm:space-y-6">
 				
 				<!-- Badge: Problem Statement & Gazette -->
-				<div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#1B365D]/10 border border-[#1B365D]/25 text-[#1B365D] text-xs font-semibold">
-					<svg class="w-3.5 h-3.5 text-[#1B365D]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" clip-rule="evenodd"/></svg>
-					<span class="font-mono font-bold">SMART INDIA HACKATHON 2026 &bull; PS SIH26056</span>
+				<div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-[#1B365D]/10 border border-[#1B365D]/25 text-[#1B365D] text-[11px] sm:text-xs font-semibold">
+					<svg class="w-3.5 h-3.5 text-[#1B365D] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" clip-rule="evenodd"/></svg>
+					<span class="font-mono font-bold">SIH 2026 &bull; PS 26056</span>
 					<span class="text-[#CBD5E1]">&bull;</span>
-					<span>National Aviation Econometrics</span>
+					<span>Aviation Econometrics</span>
 				</div>
 
 				<!-- Bilingual Main Headings -->
-				<div class="space-y-1.5">
-					<h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#1B365D] tracking-tight">
+				<div class="space-y-1">
+					<h1 class="text-2xl sm:text-4xl md:text-5xl font-extrabold text-[#1B365D] tracking-tight">
 						राष्ट्रीय हवाई किराया मूल्य सूचकांक
 					</h1>
-					<h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-[#26364A] tracking-tight">
+					<h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-[#26364A] tracking-tight">
 						AeroDex: National Airfare Price Index
 					</h2>
 				</div>
 
 				<!-- Official Mandate Description -->
-				<p class="max-w-3xl mx-auto text-sm sm:text-base text-[#5E718A] leading-relaxed">
+				<p class="max-w-3xl mx-auto text-xs sm:text-base text-[#5E718A] leading-relaxed">
 					An autonomous, high-frequency statutory aviation econometric system computing Laspeyres basket aggregates across DGCA-notified domestic air corridors. Developed for the Ministry of Statistics and Programme Implementation (MoSPI) and Ministry of Civil Aviation (MoCA) to provide unmanipulated real-time inflation tracking and price surge surveillance.
 				</p>
 
-				<!-- Action Buttons (No CSV downloads on landing page) -->
-				<div class="flex flex-wrap items-center justify-center gap-3.5 pt-3">
+				<!-- Action Buttons (Responsive on mobile) -->
+				<div class="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3.5 pt-2 sm:pt-3">
 					<button onclick="setPortalView(false)" 
-						class="px-7 py-3.5 rounded-xl bg-[#1B365D] hover:bg-[#142A4A] active:bg-[#0F223D] text-white text-sm font-bold transition flex items-center gap-2.5 shadow-md hover:shadow-lg cursor-pointer">
+						class="w-full sm:w-auto px-6 py-3 sm:py-3.5 rounded-xl bg-[#1B365D] hover:bg-[#142A4A] active:bg-[#0F223D] text-white text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 shadow-md hover:shadow-lg cursor-pointer">
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
 						<span>Launch National Monitoring Console</span>
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
 					</button>
 
 					<a href="#statutoryMethodologySection" 
-						class="px-6 py-3.5 rounded-xl border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] active:bg-[#F1F5F9] text-[#1B365D] text-sm font-semibold transition flex items-center gap-2 shadow-xs cursor-pointer">
+						class="w-full sm:w-auto px-5 py-3 sm:py-3.5 rounded-xl border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] active:bg-[#F1F5F9] text-[#1B365D] text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 shadow-xs cursor-pointer">
 						<svg class="w-4 h-4 text-[#1B365D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
 						<span>System Architecture &amp; Methodology</span>
 					</a>
@@ -1125,74 +1157,108 @@
  <span id="aiConfigKeyText">API Key</span>
  </button>
  </div>
- </div>
+				<!-- Actions: Language Switcher & Copy Bulletin -->
+				<div class="flex flex-wrap items-center gap-1.5 sm:gap-2 self-start sm:self-center">
+					<!-- Multilingual Switcher -->
+					<div class="inline-flex items-center p-0.5 rounded-xl bg-[#E2E8F0]/70 border border-[#CBD5E1]">
+						<button id="aiLangBtn-en" onclick="switchAILanguage('en')" 
+							class="px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition bg-white text-[#26364A] shadow-xs cursor-pointer">
+							English
+						</button>
+						<button id="aiLangBtn-hi" onclick="switchAILanguage('hi')" 
+							class="px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition text-[#5E718A] hover:text-[#26364A] cursor-pointer">
+							हिन्दी (Hindi)
+						</button>
+					</div>
 
- <!-- Executive Headline Stance -->
- <div class="p-3.5 rounded-xl bg-white border border-[#E2E8F0] shadow-2xs mb-4">
- <div class="flex items-center justify-between mb-1">
- <span class="text-[11px] font-mono font-bold text-[#3B6DCF] uppercase tracking-wider flex items-center gap-1.5">
- <span> Executive Flash Takeaway</span>
- </span>
- <span id="aiUpdatedTime" class="text-[10px] font-mono text-[#94A3B8]">Synced just now</span>
- </div>
- <p id="aiHeadlineText" class="text-sm font-semibold text-[#1E293B] leading-relaxed">
- National Airfare Index is pre-loading...
- </p>
- </div>
+					<!-- Jump to Forward Calamity Simulator -->
+					<button onclick="switchMainTab('forecast')" 
+						class="px-2.5 py-1 rounded-xl border border-purple-200 bg-purple-50/80 hover:bg-purple-100 text-xs font-semibold text-purple-800 flex items-center gap-1.5 transition shadow-2xs cursor-pointer">
+						<span class="hidden md:inline">Forward Simulator</span>
+					</button>
 
- <!-- 4 Executive Pillar Cards (Responsive Grid) -->
- <div id="aiBulletsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
- <!-- Populated dynamically by JS -->
- </div>
+					<!-- Copy Bulletin -->
+					<button onclick="copyAIBulletin()" id="copyAIBtn" 
+						class="px-2.5 py-1 rounded-xl border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] text-xs font-semibold text-[#26364A] flex items-center gap-1.5 transition shadow-2xs cursor-pointer">
+						<span id="copyIcon"></span>
+						<span id="copyText" class="hidden sm:inline">Copy Brief</span>
+					</button>
 
- <!-- Interactive Multilingual Drill-Down Q&A ("Ask AI") -->
- <div class="p-3.5 rounded-xl bg-white/80 border border-[#E2E8F0] shadow-2xs">
- <div class="flex items-center justify-between mb-2">
- <span class="text-[11px] font-bold text-[#26364A] flex items-center gap-1.5">
- <span> Ask AI Econometrician</span>
- <span class="text-[10px] text-[#5E718A] font-normal font-sans">(English, हिन्दी, Hinglish)</span>
- </span>
- <span class="text-[10px] font-mono text-[#5E718A]">Grounded in 10,700+ SQLite Quotes</span>
- </div>
+					<!-- Set Gemini API Key Button -->
+					<button onclick="openApiKeyModal()" id="aiConfigBtn" 
+						class="px-2.5 py-1 rounded-xl border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-xs font-semibold text-[#26364A] flex items-center gap-1.5 transition shadow-2xs cursor-pointer">
+						<span id="aiConfigKeyIcon"></span>
+						<span id="aiConfigKeyText">API Key</span>
+					</button>
+				</div>
+			</div>
 
- <!-- Fast Suggestion Chips -->
- <div class="flex flex-wrap items-center gap-1.5 mb-2.5">
- <span class="text-[10px] font-mono text-[#94A3B8]">Quick prompts:</span>
- <button type="button" onclick="askAISuggestion('Why is Goa expensive today?')" 
- class="px-2 py-0.5 rounded-md bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[11px] font-medium text-[#26364A] transition border border-[#E2E8F0] cursor-pointer">
- Why is Goa surging?
- </button>
- <button type="button" onclick="askAISuggestion('Which routes are cheapest today?')" 
- class="px-2 py-0.5 rounded-md bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[11px] font-medium text-[#26364A] transition border border-[#E2E8F0] cursor-pointer">
- Cheapest routes today
- </button>
- <button type="button" onclick="askAISuggestion('आज सबसे सस्ती उड़ानें कौन सी हैं?')" 
- class="px-2 py-0.5 rounded-md bg-emerald-50 hover:bg-emerald-100 text-[11px] font-medium text-emerald-800 transition border border-emerald-200 cursor-pointer">
- आज सबसे सस्ती उड़ानें?
- </button>
- <button type="button" onclick="askAISuggestion('How does this airfare index impact CPI inflation?')" 
- class="px-2 py-0.5 rounded-md bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 text-[11px] font-medium text-[#3064C4] transition border border-[#5B8DEF]/30 cursor-pointer">
- CPI Impact (+bps)
- </button>
- </div>
+			<!-- Executive Headline Stance -->
+			<div class="p-3.5 rounded-xl bg-white border border-[#E2E8F0] shadow-2xs mb-4">
+				<div class="flex items-center justify-between mb-1">
+					<span class="text-[11px] font-mono font-bold text-[#3B6DCF] uppercase tracking-wider flex items-center gap-1.5">
+						<span>Executive Flash Takeaway</span>
+					</span>
+					<span id="aiUpdatedTime" class="text-[10px] font-mono text-[#94A3B8]">Synced just now</span>
+				</div>
+				<p id="aiHeadlineText" class="text-xs sm:text-sm font-semibold text-[#1E293B] leading-relaxed">
+					National Airfare Index is pre-loading...
+				</p>
+			</div>
 
- <!-- Conversational Input Form -->
- <form id="aiQueryForm" onsubmit="handleAIQuerySubmit(event)" class="flex items-center gap-2">
- <div class="relative flex-1">
- <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#94A3B8]">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
- </span>
- <input type="text" id="aiQueryInput" 
- class="input-cloud w-full pl-9 pr-3 py-2 rounded-xl text-xs font-medium focus:ring-2 focus:ring-[#5B8DEF]/30 transition"
- placeholder="Ask anything about current prices, route surges, lead-time or CPI impact (English or हिन्दी)..."
- autocomplete="off" spellcheck="false">
- </div>
- <button type="submit" id="aiQuerySubmitBtn" 
- class="px-4 py-2 rounded-xl bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer flex-shrink-0">
- <span>Ask AI</span>
- <span>→</span>
- </button>
- </form>
+			<!-- 4 Executive Pillar Cards (Responsive Grid) -->
+			<div id="aiBulletsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+				<!-- Populated dynamically by JS -->
+			</div>
+
+			<!-- Interactive Multilingual Drill-Down Q&A ("Ask AI") -->
+			<div class="p-3.5 rounded-xl bg-white/80 border border-[#E2E8F0] shadow-2xs">
+				<div class="flex items-center justify-between mb-2">
+					<span class="text-[11px] font-bold text-[#26364A] flex items-center gap-1.5">
+						<span>Ask AI Econometrician</span>
+						<span class="text-[10px] text-[#5E718A] font-normal font-sans hidden xs:inline">(English, हिन्दी, Hinglish)</span>
+					</span>
+					<span class="text-[10px] font-mono text-[#5E718A] truncate max-w-[160px] sm:max-w-none">10,700+ SQLite Quotes</span>
+				</div>
+
+				<!-- Fast Suggestion Chips (Swipeable on mobile) -->
+				<div class="flex items-center gap-1.5 mb-2.5 overflow-x-auto no-scrollbar py-0.5 touch-scroll">
+					<span class="text-[10px] font-mono text-[#94A3B8] flex-shrink-0">Prompts:</span>
+					<button type="button" onclick="askAISuggestion('Why is Goa expensive today?')" 
+						class="flex-shrink-0 px-2 py-0.5 rounded-md bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[11px] font-medium text-[#26364A] transition border border-[#E2E8F0] cursor-pointer whitespace-nowrap">
+						Why is Goa surging?
+					</button>
+					<button type="button" onclick="askAISuggestion('Which routes are cheapest today?')" 
+						class="flex-shrink-0 px-2 py-0.5 rounded-md bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[11px] font-medium text-[#26364A] transition border border-[#E2E8F0] cursor-pointer whitespace-nowrap">
+						Cheapest routes today
+					</button>
+					<button type="button" onclick="askAISuggestion('आज सबसे सस्ती उड़ानें कौन सी हैं?')" 
+						class="flex-shrink-0 px-2 py-0.5 rounded-md bg-emerald-50 hover:bg-emerald-100 text-[11px] font-medium text-emerald-800 transition border border-emerald-200 cursor-pointer whitespace-nowrap">
+						आज सबसे सस्ती उड़ानें?
+					</button>
+					<button type="button" onclick="askAISuggestion('How does this airfare index impact CPI inflation?')" 
+						class="flex-shrink-0 px-2 py-0.5 rounded-md bg-[#5B8DEF]/10 hover:bg-[#5B8DEF]/20 text-[11px] font-medium text-[#3064C4] transition border border-[#5B8DEF]/30 cursor-pointer whitespace-nowrap">
+						CPI Impact (+bps)
+					</button>
+				</div>
+
+				<!-- Conversational Input Form -->
+				<form id="aiQueryForm" onsubmit="handleAIQuerySubmit(event)" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+					<div class="relative flex-1">
+						<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#94A3B8]">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+						</span>
+						<input type="text" id="aiQueryInput" 
+							class="input-cloud w-full pl-9 pr-3 py-2 rounded-xl text-xs font-medium focus:ring-2 focus:ring-[#5B8DEF]/30 transition"
+							placeholder="Ask anything about current prices, route surges, lead-time or CPI impact (English or हिन्दी)..."
+							autocomplete="off" spellcheck="false">
+					</div>
+					<button type="submit" id="aiQuerySubmitBtn" 
+						class="w-full sm:w-auto px-4 py-2 rounded-xl bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer flex-shrink-0">
+						<span>Ask AI</span>
+						<span>&rarr;</span>
+					</button>
+				</form>
 
  <!-- Conversational Output Bubble (Hidden until query submitted) -->
  <div id="aiQueryResponseBox" class="hidden mt-3 p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs">
@@ -1385,26 +1451,26 @@
 
     <!-- Google Flights Style Segmented Navigation Bar -->
     <div class="glass-card rounded-2xl p-4 border border-[#E2E8F0] mb-5 shadow-xs">
-      <!-- Tabs: All Flights | Top/Best Picks | Cheapest | Non-Stop -->
+      <!-- Tabs: All Flights | Top Picks | Cheapest | Non-Stop (Touch-scrollable on mobile) -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-[#F1F5F9]">
-        <div class="flex flex-wrap items-center gap-2" id="flightCategoryTabs">
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 touch-scroll" id="flightCategoryTabs">
           <button type="button" onclick="setFlightCategoryFilter('all')" id="tabFlight-all"
-            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#26364A] text-white shadow-xs cursor-pointer">
+            class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-[#26364A] text-white shadow-xs cursor-pointer whitespace-nowrap">
             <span>All Flights</span>
             <span id="badgeCount-all" class="px-2 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-mono">--</span>
           </button>
           <button type="button" onclick="setFlightCategoryFilter('best')" id="tabFlight-best"
-            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] cursor-pointer">
-            <span>⭐ Best / Top Picks</span>
+            class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] cursor-pointer whitespace-nowrap">
+            <span>Top Picks</span>
             <span id="badgeCount-best" class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[11px] font-mono font-bold">--</span>
           </button>
           <button type="button" onclick="setFlightCategoryFilter('cheapest')" id="tabFlight-cheapest"
-            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] cursor-pointer">
-            <span>Cheapest Available</span>
+            class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] cursor-pointer whitespace-nowrap">
+            <span>Cheapest</span>
             <span id="badgeCount-cheapest" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-mono font-bold">--</span>
           </button>
           <button type="button" onclick="setFlightCategoryFilter('nonstop')" id="tabFlight-nonstop"
-            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] cursor-pointer">
+            class="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#26364A] border border-[#D8E2EC] cursor-pointer whitespace-nowrap">
             <span>Non-Stop Only</span>
             <span id="badgeCount-nonstop" class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-800 text-[11px] font-mono">--</span>
           </button>
@@ -2018,6 +2084,56 @@
  </main>
  </div> <!-- End Main Layout Container -->
 	</div> <!-- End #liveDashboardView -->
+
+	<!-- ========================================================= -->
+	<!-- PWA MOBILE BOTTOM NAVIGATION BAR (Visible on < lg) -->
+	<!-- ========================================================= -->
+	<nav id="mobileBottomNav" class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E2E8F0] shadow-lg flex items-center justify-around py-1 px-1 safe-pb" aria-label="Mobile Bottom Navigation">
+		<!-- 1. National Portal Button -->
+		<button type="button" onclick="setPortalView(true)" id="bottomNav-portal" class="flex flex-col items-center justify-center flex-1 py-1 text-center transition cursor-pointer text-[#1B365D] font-bold">
+			<svg class="w-5 h-5 nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+			</svg>
+			<span class="text-[10px] tracking-tight nav-label">Portal</span>
+			<span class="w-1 h-1 rounded-full bg-[#1B365D] mt-0.5 nav-dot"></span>
+		</button>
+
+		<!-- 2. Dashboard Overview Button -->
+		<button type="button" onclick="setPortalView(false); switchMainTab('dashboard')" id="bottomNav-dashboard" class="flex flex-col items-center justify-center flex-1 py-1 text-center transition cursor-pointer text-[#64748B]">
+			<svg class="w-5 h-5 nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+			</svg>
+			<span class="text-[10px] tracking-tight nav-label">Overview</span>
+			<span class="w-1 h-1 rounded-full bg-[#1B365D] mt-0.5 nav-dot opacity-0"></span>
+		</button>
+
+		<!-- 3. Live Fares Button -->
+		<button type="button" onclick="setPortalView(false); switchMainTab('live')" id="bottomNav-live" class="flex flex-col items-center justify-center flex-1 py-1 text-center transition cursor-pointer text-[#64748B]">
+			<svg class="w-5 h-5 nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+			</svg>
+			<span class="text-[10px] tracking-tight nav-label">Live Fares</span>
+			<span class="w-1 h-1 rounded-full bg-[#1B365D] mt-0.5 nav-dot opacity-0"></span>
+		</button>
+
+		<!-- 4. Forward Forecast Button -->
+		<button type="button" onclick="setPortalView(false); switchMainTab('forecast')" id="bottomNav-forecast" class="flex flex-col items-center justify-center flex-1 py-1 text-center transition cursor-pointer text-[#64748B]">
+			<svg class="w-5 h-5 nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+			</svg>
+			<span class="text-[10px] tracking-tight nav-label">Forecast</span>
+			<span class="w-1 h-1 rounded-full bg-[#1B365D] mt-0.5 nav-dot opacity-0"></span>
+		</button>
+
+		<!-- 5. More Modules Button -->
+		<button type="button" onclick="toggleMobileNav(true)" id="bottomNav-menu" class="flex flex-col items-center justify-center flex-1 py-1 text-center transition cursor-pointer text-[#64748B]">
+			<svg class="w-5 h-5 nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+			</svg>
+			<span class="text-[10px] tracking-tight nav-label">Menu</span>
+			<span class="w-1 h-1 rounded-full bg-[#1B365D] mt-0.5 nav-dot opacity-0"></span>
+		</button>
+	</nav>
 
 
  <script>
@@ -3293,9 +3409,9 @@
 
       let specialTag = '';
       if (f.is_top_flight) {
-        specialTag = `<span class="text-xs px-2.5 py-0.5 rounded-lg bg-blue-100 text-blue-800 border border-blue-300 font-bold flex items-center gap-1 font-mono">⭐ Top Pick</span>`;
+        specialTag = `<span class="text-xs px-2.5 py-0.5 rounded-lg bg-blue-100 text-blue-800 border border-blue-300 font-bold flex items-center gap-1 font-mono">Top Pick</span>`;
       } else if (f.is_cheapest) {
-        specialTag = `<span class="text-xs px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold flex items-center gap-1 font-mono"> Lowest Fare</span>`;
+        specialTag = `<span class="text-xs px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold flex items-center gap-1 font-mono">Lowest Fare</span>`;
       }
 
       // Aircraft Type Identification
@@ -3480,6 +3596,10 @@
  }
 
 	function switchMainTab(tabKey) {
+		currentMainTabKey = tabKey;
+		if (!isPortalViewActive && typeof updateMobileBottomNav === 'function') {
+			updateMobileBottomNav(tabKey);
+		}
 		const tabs = ['dashboard', 'live', 'forecast', 'heatmaps', 'macro', 'weights'];
 		tabs.forEach(t => {
 			const btn = document.getElementById(`tabBtn-${t}`);
@@ -4068,7 +4188,7 @@
 				statusText.innerText = 'STREAM PAUSED';
 				statusText.className = 'text-[#B34B19]';
 				if (beacon) beacon.classList.add('opacity-30', 'grayscale');
-				btnIcon.innerText = '▶';
+				btnIcon.innerText = '>';
 				btnText.innerText = 'Resume Feed';
 				if (rollIntervalTimer) {
 					clearInterval(rollIntervalTimer);
@@ -5476,7 +5596,8 @@
           </select>
         </div>
         <button onclick="runShockReplay()" class="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition shadow-xs cursor-pointer flex items-center gap-1.5">
-          <span>▶ Re-Simulate Shock</span>
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
+          <span>Re-Simulate Shock</span>
         </button>
       </div>
 
