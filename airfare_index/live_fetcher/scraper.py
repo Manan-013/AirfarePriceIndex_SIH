@@ -139,7 +139,7 @@ DATA_SOURCES_CATALOG = [
         "scrape_method": "Real-time HTTP SSR & Headless DOM",
         "robots_status": "Permitted",
         "legal_basis": "Compliant with robots.txt; no personal/auth data accessed",
-        "active_status": "Active Scrape"
+        "active_status": "Active Live Scrape"
     },
     {
         "id": "easemytrip",
@@ -148,7 +148,7 @@ DATA_SOURCES_CATALOG = [
         "scrape_method": "Playwright Headless Browser Extraction",
         "robots_status": "Permitted (/FlightList/Index)",
         "legal_basis": "RFC 9309 compliant path traversal; polite 3.0s crawl delay",
-        "active_status": "Active Scrape"
+        "active_status": "Active Live Scrape"
     },
     {
         "id": "makemytrip",
@@ -157,88 +157,88 @@ DATA_SOURCES_CATALOG = [
         "scrape_method": "Playwright Headless Browser Extraction",
         "robots_status": "Permitted with Rate Limits",
         "legal_basis": "Polite crawler rate limiting, anti-bot backoff enabled",
-        "active_status": "Active Scrape"
+        "active_status": "Active Live Scrape"
     },
     {
         "id": "yatra",
         "name": "Yatra",
         "type": "Indian Domestic OTA",
-        "scrape_method": "Direct Query Adapter & 1-Click Verification Deeplink",
+        "scrape_method": "HTTP Network & Anti-Bot Egress Tested (Returns Empty Stub); 1-Click Deeplink Active",
         "robots_status": "Permitted",
-        "legal_basis": "Public fare search routing with polite rate limiting",
-        "active_status": "Active Scrape & Verification"
+        "legal_basis": "Robots.txt compliant path traversal verified; parser in development, returns empty dataset",
+        "active_status": "HTTP Egress Tested (Parser Pending — Returns Empty)"
     },
     {
         "id": "goibibo",
         "name": "Goibibo",
         "type": "Indian Domestic OTA",
-        "scrape_method": "1-Click Direct Verification Deeplink (MMT Group Engine)",
-        "robots_status": "Rate Limited",
-        "legal_basis": "Real-time deep query link integration",
-        "active_status": "Live Verification Portal"
+        "scrape_method": "1-Click Direct Verification Deeplink (MakeMyTrip Group Engine)",
+        "robots_status": "N/A (Deeplink Only)",
+        "legal_basis": "Direct pre-filled search URL generation for live auditor cross-check; no automated scrape",
+        "active_status": "Deeplink Verification Only — No Live Scrape Implemented"
     },
     {
         "id": "cleartrip",
         "name": "Cleartrip",
         "type": "Indian Domestic OTA",
-        "scrape_method": "1-Click Verification Deeplink (Ethically Gated)",
+        "scrape_method": "1-Click Verification Deeplink (Live Scraping Blocked by Robots.txt)",
         "robots_status": "Disallowed (/flights/search)",
-        "legal_basis": "RFC 9309 RobotGuard strictly respects Disallow; pre-filled verification link provided",
-        "active_status": "RFC 9309 Ethically Gated"
+        "legal_basis": "RFC 9309 RobotGuard strictly respects Disallow directives; automated scraping aborted, pre-filled verification link provided for human auditor cross-check",
+        "active_status": "RFC 9309 Ethically Gated (Deeplink Only)"
     },
     {
         "id": "ixigo",
         "name": "Ixigo",
         "type": "Indian Domestic OTA",
-        "scrape_method": "1-Click Verification Deeplink (Ethically Gated)",
+        "scrape_method": "1-Click Verification Deeplink (Live Scraping Blocked by Robots.txt)",
         "robots_status": "Disallowed (/search*)",
-        "legal_basis": "RFC 9309 RobotGuard strictly respects Disallow; pre-filled verification link provided",
-        "active_status": "RFC 9309 Ethically Gated"
+        "legal_basis": "RFC 9309 RobotGuard strictly respects Disallow directives; automated scraping aborted, pre-filled verification link provided for human auditor cross-check",
+        "active_status": "RFC 9309 Ethically Gated (Deeplink Only)"
     },
     {
         "id": "indigo",
         "name": "IndiGo (6E)",
         "type": "Direct Airline Portal",
-        "scrape_method": "Carrier Booking Search Engine & Direct Schedule Verification",
-        "robots_status": "Permitted with polite delay",
-        "legal_basis": "DGCA census market leader (62% domestic share); direct booking deep-link",
-        "active_status": "Direct Carrier Portal"
+        "scrape_method": "1-Click Direct Carrier Booking Deeplink (No automated scrape)",
+        "robots_status": "N/A (Deeplink Only)",
+        "legal_basis": "DGCA market leader (62% share); direct carrier query URL generation for live auditor cross-check",
+        "active_status": "Deeplink Verification Only — No Live Scrape Implemented"
     },
     {
         "id": "air_india",
         "name": "Air India (AI)",
         "type": "Direct Airline Portal",
-        "scrape_method": "Carrier Booking Search Engine & Direct Schedule Verification",
-        "robots_status": "Permitted with polite delay",
-        "legal_basis": "Full-service national carrier; direct booking deep-link",
-        "active_status": "Direct Carrier Portal"
+        "scrape_method": "1-Click Direct Carrier Booking Deeplink (No automated scrape)",
+        "robots_status": "N/A (Deeplink Only)",
+        "legal_basis": "National full-service carrier; direct carrier query URL generation for live auditor cross-check",
+        "active_status": "Deeplink Verification Only — No Live Scrape Implemented"
     },
     {
         "id": "akasa_air",
         "name": "Akasa Air (QP)",
         "type": "Direct Airline Portal",
-        "scrape_method": "Carrier Booking Search Engine & Direct Schedule Verification",
-        "robots_status": "Permitted with polite delay",
-        "legal_basis": "Ultra-low-cost domestic carrier; direct booking deep-link",
-        "active_status": "Direct Carrier Portal"
+        "scrape_method": "1-Click Direct Carrier Booking Deeplink (No automated scrape)",
+        "robots_status": "N/A (Deeplink Only)",
+        "legal_basis": "Ultra-low-cost domestic carrier; direct carrier query URL generation for live auditor cross-check",
+        "active_status": "Deeplink Verification Only — No Live Scrape Implemented"
     },
     {
         "id": "spicejet",
         "name": "SpiceJet (SG)",
         "type": "Direct Airline Portal",
-        "scrape_method": "Carrier Booking Search Engine & Direct Schedule Verification",
-        "robots_status": "Permitted with polite delay",
-        "legal_basis": "Regional connectivity & UDAN carrier; direct booking deep-link",
-        "active_status": "Direct Carrier Portal"
+        "scrape_method": "1-Click Direct Carrier Booking Deeplink (No automated scrape)",
+        "robots_status": "N/A (Deeplink Only)",
+        "legal_basis": "Regional connectivity & UDAN carrier; direct carrier query URL generation for live auditor cross-check",
+        "active_status": "Deeplink Verification Only — No Live Scrape Implemented"
     },
     {
         "id": "air_india_express",
         "name": "Air India Express (IX)",
         "type": "Direct Airline Portal",
-        "scrape_method": "Carrier Booking Search Engine & Direct Schedule Verification",
-        "robots_status": "Permitted with polite delay",
-        "legal_basis": "Low-cost subsidiary; direct booking deep-link",
-        "active_status": "Direct Carrier Portal"
+        "scrape_method": "1-Click Direct Carrier Booking Deeplink (No automated scrape)",
+        "robots_status": "N/A (Deeplink Only)",
+        "legal_basis": "Low-cost subsidiary; direct carrier query URL generation for live auditor cross-check",
+        "active_status": "Deeplink Verification Only — No Live Scrape Implemented"
     }
 ]
 
@@ -1062,6 +1062,7 @@ class RealtimeFlightScraper:
                     proxy_manager.record_failure(proxy_url, sig_reason)
                     return []
                 proxy_manager.record_success(proxy_url)
+            print(f"[YATRA SCRAPER] Egress test complete for {origin}-{dest}. Domestic DOM/JSON parser is in development; returning empty dataset.")
             return []
         except Exception as e:
             print(f"[YATRA SCRAPER] Note: {e}")

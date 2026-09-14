@@ -217,6 +217,24 @@ class TestRealtimeScraper(unittest.TestCase):
         self.assertIn("spicejet", source_ids)
         self.assertIn("air_india_express", source_ids)
 
+        # Rigorous Honesty & Governance Verification:
+        catalog_map = {s["id"]: s for s in DATA_SOURCES_CATALOG}
+        # Only 3 sources are genuine live scrapers
+        self.assertEqual(catalog_map["google_flights"]["active_status"], "Active Live Scrape")
+        self.assertEqual(catalog_map["easemytrip"]["active_status"], "Active Live Scrape")
+        self.assertEqual(catalog_map["makemytrip"]["active_status"], "Active Live Scrape")
+
+        # Yatra is honestly labeled as egress-tested stub (parser pending)
+        self.assertEqual(catalog_map["yatra"]["active_status"], "HTTP Egress Tested (Parser Pending — Returns Empty)")
+
+        # Cleartrip and Ixigo are ethically gated by RFC 9309 robots.txt
+        self.assertEqual(catalog_map["cleartrip"]["active_status"], "RFC 9309 Ethically Gated (Deeplink Only)")
+        self.assertEqual(catalog_map["ixigo"]["active_status"], "RFC 9309 Ethically Gated (Deeplink Only)")
+
+        # Airlines and Goibibo are deeplink only
+        for carrier in ["indigo", "air_india", "akasa_air", "spicejet", "air_india_express", "goibibo"]:
+            self.assertEqual(catalog_map[carrier]["active_status"], "Deeplink Verification Only — No Live Scrape Implemented")
+
     def test_scraper_active_enforcement_gate_http(self):
         """Verify HTTP scraper aborts immediately and returns [] when robots.txt disallows."""
         with patch.object(robot_guard, "can_fetch", return_value=(False, "Disallowed by robots.txt")):

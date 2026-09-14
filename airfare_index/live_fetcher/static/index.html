@@ -4619,14 +4619,15 @@
             <tr class="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[#5E718A] font-mono text-[11px]">
               <th class="py-2.5 px-3">Data Source</th>
               <th class="py-2.5 px-3">Type</th>
-              <th class="py-2.5 px-3">Extraction Method</th>
+              <th class="py-2.5 px-3">System Status</th>
+              <th class="py-2.5 px-3">Extraction / Integration Detail</th>
               <th class="py-2.5 px-3">Robots.txt Status</th>
-              <th class="py-2.5 px-3">Compliance & Legal Basis</th>
+              <th class="py-2.5 px-3">Compliance & Legal Governance</th>
             </tr>
           </thead>
           <tbody id="sourcesTableBody" class="divide-y divide-[#F1F5F9]">
             <tr>
-              <td colspan="5" class="py-4 text-center text-[#94A3B8]">Loading data sources catalog...</td>
+              <td colspan="6" class="py-4 text-center text-[#94A3B8]">Loading data sources catalog...</td>
             </tr>
           </tbody>
         </table>
@@ -4671,18 +4672,28 @@
             const isPermitted = s.robots_status.toLowerCase().includes('permitted');
             const statusBadge = isPermitted 
               ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">✅ ${s.robots_status}</span>`
-              : `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-amber-800 border border-amber-200">🛡️ ${s.robots_status}</span>`;
+              : (s.robots_status.includes('Disallowed')
+                  ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-50 text-rose-700 border border-rose-200">🛑 ${s.robots_status}</span>`
+                  : `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-slate-100 text-slate-600 border border-slate-200">${s.robots_status}</span>`);
             
-            const activeBadge = s.active_status.includes('Active')
-              ? `<span class="font-semibold text-emerald-800">${s.name}</span>`
-              : `<span class="font-semibold text-[#26364A]">${s.name}</span>`;
+            let integrationBadge = '';
+            if (s.active_status.includes('Active Live Scrape')) {
+              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">🟢 Active Live Scrape</span>`;
+            } else if (s.active_status.includes('Ethically Gated')) {
+              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-amber-800 border border-amber-300">🛡️ RFC 9309 Gated</span>`;
+            } else if (s.active_status.includes('Parser Pending')) {
+              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200">🔧 Parser Pending</span>`;
+            } else {
+              integrationBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-slate-100 text-slate-600 border border-slate-200">🔗 Deeplink Only</span>`;
+            }
 
             return `
               <tr class="hover:bg-[#F8FAFC] transition">
-                <td class="py-2.5 px-3">${activeBadge}</td>
+                <td class="py-2.5 px-3 font-semibold text-[#26364A]">${s.name}</td>
                 <td class="py-2.5 px-3 font-mono text-[11px] text-[#5E718A]">${s.type}</td>
+                <td class="py-2.5 px-3 whitespace-nowrap">${integrationBadge}</td>
                 <td class="py-2.5 px-3 text-[11px]">${s.scrape_method}</td>
-                <td class="py-2.5 px-3">${statusBadge}</td>
+                <td class="py-2.5 px-3 whitespace-nowrap">${statusBadge}</td>
                 <td class="py-2.5 px-3 text-[11px] text-[#5E718A] leading-tight">${s.legal_basis}</td>
               </tr>
             `;
