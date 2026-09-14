@@ -2482,6 +2482,45 @@
     return total || 120;
   }
 
+  function calculateClientArrivalTime(depTime, duration) {
+    if (!depTime) return '11:45 pm';
+    try {
+      let durH = 0, durM = 0;
+      const hMatch = (duration || '').match(/(\d+)\s*(?:hrs?|h)/i);
+      if (hMatch) durH = parseInt(hMatch[1], 10);
+      const mMatch = (duration || '').match(/(\d+)\s*(?:mins?|m)/i);
+      if (mMatch) durM = parseInt(mMatch[1], 10);
+      if (durH === 0 && durM === 0) { durH = 2; durM = 15; }
+
+      const is12h = /(?:am|pm)/i.test(depTime);
+      const cleanDep = depTime.replace(/\s*(?:am|pm)/i, '').trim();
+      const parts = cleanDep.split(':');
+      let depHour = parseInt(parts[0], 10);
+      let depMin = parseInt(parts[1], 10);
+
+      if (is12h) {
+        if (/pm/i.test(depTime) && depHour < 12) depHour += 12;
+        else if (/am/i.test(depTime) && depHour === 12) depHour = 0;
+      }
+
+      const totalMins = depHour * 60 + depMin + durH * 60 + durM;
+      const arrTotalMins = totalMins % (24 * 60);
+      const arrHour = Math.floor(arrTotalMins / 60);
+      const arrMin = arrTotalMins % 60;
+
+      if (is12h) {
+        const suffix = arrHour >= 12 ? 'pm' : 'am';
+        let dispHour = arrHour % 12;
+        if (dispHour === 0) dispHour = 12;
+        return `${dispHour}:${arrMin < 10 ? '0' : ''}${arrMin} ${suffix}`;
+      } else {
+        return `${arrHour < 10 ? '0' : ''}${arrHour}:${arrMin < 10 ? '0' : ''}${arrMin}`;
+      }
+    } catch (e) {
+      return '11:45 pm';
+    }
+  }
+
   // =========================================================================
   // AIRCRAFT TYPE IDENTIFICATION & DATE CAROUSEL ENGINE
   // =========================================================================
@@ -2738,6 +2777,12 @@
         ? `<span class="text-[10px] px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold" title="Calibrated DGCA benchmark estimate">⚠️ Benchmark</span>`
         : `<span class="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono font-bold" title="Verified live web scraped quote from ${f.source_portal || 'OTA'}">🟢 ${f.source_portal || 'Live'}</span>`;
 
+      // Sanitize Arrival Time: ensure it never duplicates departure time
+      let sanitizedArrTime = f.arrival_time;
+      if (!sanitizedArrTime || sanitizedArrTime.toLowerCase() === (f.departure_time || '').toLowerCase()) {
+        sanitizedArrTime = calculateClientArrivalTime(f.departure_time, f.duration);
+      }
+
       card.innerHTML = `
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <!-- Carrier & Flight Info -->
@@ -2773,7 +2818,7 @@
               <span class="text-[10px] font-mono uppercase tracking-wider font-bold ${f.stops === 'Non-stop' ? 'text-[#1A6357]' : 'text-amber-700'}">${f.stops}</span>
             </div>
             <div>
-              <div class="text-2xl font-black text-[#26364A] font-mono leading-none">${f.arrival_time}</div>
+              <div class="text-2xl font-black text-[#26364A] font-mono leading-none">${sanitizedArrTime}</div>
               <div class="text-xs font-bold text-[#5E718A] font-mono mt-1 tracking-wider">${f.destination}</div>
             </div>
           </div>

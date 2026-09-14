@@ -418,6 +418,14 @@ class RealtimeFlightScraper:
 
         cleaned = [f for f in valid if float(f["total_fare"]) <= upper_threshold]
 
+        # Ensure no flight has identical departure and arrival times
+        for f in cleaned:
+            dep = str(f.get("departure_time", "")).strip()
+            arr = str(f.get("arrival_time", "")).strip()
+            dur = str(f.get("duration", "2h 15m")).strip()
+            if dep and arr and dep.lower() == arr.lower():
+                f["arrival_time"] = self._calculate_arrival_time(dep, dur)
+
         cleaning_meta = {
             "raw_count": len(flights),
             "cleaned_count": len(cleaned),
@@ -427,6 +435,49 @@ class RealtimeFlightScraper:
             "cleaning_rules": ["Non_Null_Validation", "Statutory_Floor_Ceiling", "Cancellation_Check", "IQR_Median_Outlier_Cap"]
         }
         return cleaned, cleaning_meta
+
+    def _calculate_arrival_time(self, dep_time: str, duration: str) -> str:
+        """Calculates arrival time given departure time and flight duration string."""
+        try:
+            dur_h = 0
+            dur_m = 0
+            h_match = re.search(r'(\d+)\s*(?:hrs?|h)', duration, re.IGNORECASE)
+            if h_match:
+                dur_h = int(h_match.group(1))
+            m_match = re.search(r'(\d+)\s*(?:mins?|m)', duration, re.IGNORECASE)
+            if m_match:
+                dur_m = int(m_match.group(1))
+            if dur_h == 0 and dur_m == 0:
+                dur_h = 2
+                dur_m = 15
+
+            is_12h = bool(re.search(r'(?:am|pm)', dep_time, re.IGNORECASE))
+            clean_dep = re.sub(r'\s*(?:am|pm)', '', dep_time, flags=re.IGNORECASE).strip()
+            parts = clean_dep.split(':')
+            dep_hour = int(parts[0])
+            dep_min = int(parts[1])
+
+            if is_12h:
+                if 'pm' in dep_time.lower() and dep_hour < 12:
+                    dep_hour += 12
+                elif 'am' in dep_time.lower() and dep_hour == 12:
+                    dep_hour = 0
+
+            total_mins = dep_hour * 60 + dep_min + dur_h * 60 + dur_m
+            arr_total_mins = total_mins % (24 * 60)
+            arr_hour = arr_total_mins // 60
+            arr_min = arr_total_mins % 60
+
+            if is_12h:
+                suffix = "pm" if arr_hour >= 12 else "am"
+                disp_hour = arr_hour % 12
+                if disp_hour == 0:
+                    disp_hour = 12
+                return f"{disp_hour}:{arr_min:02d} {suffix}"
+            else:
+                return f"{arr_hour:02d}:{arr_min:02d}"
+        except Exception:
+            return "11:45 pm"
 
     def _parse_card_text(self, txt: str, origin: str, dest: str, date: str, bench_price: int = 5500):
         clean_txt = txt.replace('\u202f', ' ').replace('\xa0', ' ').replace('\u20b9', 'Rs.')
@@ -450,20 +501,34 @@ class RealtimeFlightScraper:
         if not carrier_name:
             return None
 
-        # Robust departure and arrival time regex
-        dep_arr_match = re.search(r'(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm))\s*[\-–—\s]+\s*(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)(?:\+\d+)?)', clean_txt)
-        if dep_arr_match:
-            dep_time = dep_arr_match.group(1).strip()
-            arr_time = dep_arr_match.group(2).strip()
-        else:
-            times = re.findall(r'(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)(?:\+\d+)?)', clean_txt)
-            if not times:
-                return None
-            dep_time = times[0]
-            arr_time = times[1] if len(times) >= 2 else "08:15"
-
         dur_match = re.search(r'(\d+\s*(?:hrs?|h)\s*(?:\d+\s*(?:mins?|m))?)', clean_txt)
         duration = dur_match.group(1) if dur_match else "2h 15m"
+
+        # Robust departure and arrival time extraction
+        # Google Flights text format: "<dep_time> <dep_time> on <Date> – <arr_time> <arr_time> on <Date>"
+        dash_match = re.search(r'(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm))\b.*?[-–—].*?\b(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)(?:\+\d+)?)', clean_txt, re.IGNORECASE)
+        if dash_match and dash_match.group(1).strip().lower() != dash_match.group(2).strip().lower():
+            dep_time = dash_match.group(1).strip()
+            arr_time = dash_match.group(2).strip()
+        else:
+            raw_times = re.findall(r'\b(\d{1,2}:\d{2}(?:\s*(?:AM|PM|am|pm))?(?:\+\d+)?)\b', clean_txt, re.IGNORECASE)
+            distinct_times = []
+            for t in raw_times:
+                t_clean = re.sub(r'\s+', ' ', t).strip()
+                if not distinct_times or t_clean.lower() != distinct_times[-1].lower():
+                    distinct_times.append(t_clean)
+
+            if not distinct_times:
+                return None
+            dep_time = distinct_times[0]
+            if len(distinct_times) >= 2 and distinct_times[1].lower() != dep_time.lower():
+                arr_time = distinct_times[1]
+            else:
+                arr_time = self._calculate_arrival_time(dep_time, duration)
+
+        # Fail-safe: departure and arrival times cannot be identical on a domestic sector
+        if not arr_time or arr_time.lower() == dep_time.lower():
+            arr_time = self._calculate_arrival_time(dep_time, duration)
 
         stops = "1 stop"
         if "nonstop" in clean_txt.lower() or "non-stop" in clean_txt.lower():
@@ -555,6 +620,8 @@ class RealtimeFlightScraper:
 
         dur_match = re.search(r'(\d{1,2}h\s*\d{1,2}m|\d{1,2}\s*hrs?\s*\d{1,2}\s*mins?)', clean)
         duration = dur_match.group(1) if dur_match else '2h 15m'
+        if arr_time.lower() == dep_time.lower():
+            arr_time = self._calculate_arrival_time(dep_time, duration)
         stops = 'Non-stop' if 'non-stop' in clean.lower() else ('2 stops' if '2 stop' in clean.lower() else '1 stop')
 
         # Comma-formatted fares (e.g. 6,529) distinguish fares from flight numbers and years
@@ -627,6 +694,8 @@ class RealtimeFlightScraper:
 
         dur_match = re.search(r'(\d{1,2}h\s*\d{1,2}m|\d{1,2}\s*hrs?\s*\d{1,2}\s*mins?)', clean)
         duration = dur_match.group(1) if dur_match else '2h 15m'
+        if arr_time.lower() == dep_time.lower():
+            arr_time = self._calculate_arrival_time(dep_time, duration)
         stops = 'Non-stop' if 'non-stop' in clean.lower() or 'non stop' in clean.lower() else ('2 stops' if '2 stop' in clean.lower() else '1 stop')
 
         comma_fares = re.findall(r'\b(\d{1,2},\d{3})\b', clean)
@@ -698,6 +767,8 @@ class RealtimeFlightScraper:
 
         dur_match = re.search(r'(\d{1,2}h\s*\d{1,2}m|\d{1,2}\s*hrs?\s*\d{1,2}\s*mins?)', clean)
         duration = dur_match.group(1) if dur_match else '2h 15m'
+        if arr_time.lower() == dep_time.lower():
+            arr_time = self._calculate_arrival_time(dep_time, duration)
         stops = 'Non-stop' if 'non-stop' in clean.lower() or 'non stop' in clean.lower() else ('2 stops' if '2 stop' in clean.lower() else '1 stop')
 
         comma_fares = re.findall(r'\b(\d{1,2},\d{3})\b', clean)
@@ -774,6 +845,8 @@ class RealtimeFlightScraper:
 
         dur_match = re.search(r'(\d{1,2}h\s*\d{1,2}m|\d{1,2}\s*hrs?\s*\d{1,2}\s*mins?)', clean)
         duration = dur_match.group(1) if dur_match else "2h 15m"
+        if arr_time.lower() == dep_time.lower():
+            arr_time = self._calculate_arrival_time(dep_time, duration)
         stops = "Non-stop" if "non-stop" in clean.lower() or "non stop" in clean.lower() else "1 stop"
 
         fares = re.findall(r'(?:Rs\.?|\?)\s*([\d,]+)', clean)
@@ -828,6 +901,8 @@ class RealtimeFlightScraper:
 
         dur_match = re.search(r'(\d{1,2}h\s*\d{1,2}m|\d{1,2}\s*hrs?\s*\d{1,2}\s*mins?)', clean)
         duration = dur_match.group(1) if dur_match else "2h 45m"
+        if arr_time.lower() == dep_time.lower():
+            arr_time = self._calculate_arrival_time(dep_time, duration)
         stops = "Non-stop" if "direct" in clean.lower() or "non-stop" in clean.lower() else "1 stop"
 
         fares = re.findall(r'(?:Rs\.?|\?)\s*([\d,]{4,6})', clean)
