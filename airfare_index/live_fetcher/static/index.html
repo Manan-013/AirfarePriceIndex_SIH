@@ -113,6 +113,120 @@
  background: #5B8DEF;
  }
  </style>
+  <script>
+    // =========================================================
+    // GOVERNMENT PORTAL & DUAL-MODE VIEW CONTROLLER
+    // =========================================================
+    let isPortalViewActive = true;
+
+    function setPortalView(showPortal) {
+      isPortalViewActive = showPortal;
+      const portalView = document.getElementById('governmentPortalView');
+      const deptBar = document.getElementById('governmentDepartmentBar');
+      const dashHeader = document.getElementById('dashboardHeader');
+      const liveView = document.getElementById('liveDashboardView');
+      const navBtnPortal = document.getElementById('navBtnPortal');
+      const navBtnDashboard = document.getElementById('navBtnDashboard');
+
+      if (showPortal) {
+        if (portalView) {
+          portalView.classList.remove('hidden');
+          portalView.style.display = 'block';
+        }
+        if (deptBar) {
+          deptBar.classList.remove('hidden');
+          deptBar.style.display = 'block';
+        }
+        if (dashHeader) {
+          dashHeader.classList.add('hidden');
+          dashHeader.style.display = 'none';
+        }
+        if (liveView) {
+          liveView.classList.add('hidden');
+          liveView.style.display = 'none';
+        }
+
+        if (navBtnPortal) {
+          navBtnPortal.className = "px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold transition flex items-center gap-1.5 bg-white text-[#1B365D] shadow-xs cursor-pointer";
+        }
+        if (navBtnDashboard) {
+          navBtnDashboard.className = "px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold text-white/80 hover:text-white transition flex items-center gap-1.5 cursor-pointer";
+        }
+        try { history.replaceState(null, '', '#portal'); } catch(e) {}
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        if (portalView) {
+          portalView.classList.add('hidden');
+          portalView.style.display = 'none';
+        }
+        if (deptBar) {
+          deptBar.classList.add('hidden');
+          deptBar.style.display = 'none';
+        }
+        if (dashHeader) {
+          dashHeader.classList.remove('hidden');
+          dashHeader.style.display = 'block';
+        }
+        if (liveView) {
+          liveView.classList.remove('hidden');
+          liveView.style.display = 'block';
+        }
+
+        if (navBtnPortal) {
+          navBtnPortal.className = "px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold text-white/80 hover:text-white transition flex items-center gap-1.5 cursor-pointer";
+        }
+        if (navBtnDashboard) {
+          navBtnDashboard.className = "px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold transition flex items-center gap-1.5 bg-white text-[#1B365D] shadow-xs cursor-pointer";
+        }
+        try { history.replaceState(null, '', '#console'); } catch(e) {}
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Trigger resize for Chart.js and layout elements
+        setTimeout(() => {
+          window.dispatchEvent(new Event('resize'));
+          if (window.macroChartInstance && typeof window.macroChartInstance.resize === 'function') {
+            window.macroChartInstance.resize();
+          }
+        }, 80);
+      }
+    }
+
+    function togglePortalDashboardView() {
+      setPortalView(!isPortalViewActive);
+    }
+
+    let portalZoomLevel = 100;
+    function adjustPortalFontSize(delta) {
+      if (delta === 0) {
+        portalZoomLevel = 100;
+      } else {
+        portalZoomLevel = Math.max(90, Math.min(125, portalZoomLevel + (delta * 5)));
+      }
+      document.body.style.fontSize = portalZoomLevel === 100 ? '' : (portalZoomLevel + '%');
+    }
+
+    function syncPortalKPIs(quotesCount, indexValue) {
+      const qEl = document.getElementById('portalQuotesHero');
+      const idxEl = document.getElementById('portalIndexHero');
+      if (qEl && quotesCount) qEl.innerText = Number(quotesCount).toLocaleString('en-IN') + '+';
+      if (idxEl && indexValue) idxEl.innerText = Number(indexValue).toFixed(2);
+    }
+
+    // Support URL Hash navigation (#console or #portal)
+    window.addEventListener('hashchange', () => {
+      if (window.location.hash === '#console' || window.location.hash === '#dashboard' || window.location.hash === '#live') {
+        setPortalView(false);
+      } else if (window.location.hash === '#portal' || window.location.hash === '') {
+        setPortalView(true);
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.location.hash === '#console' || window.location.hash === '#dashboard' || window.location.hash === '#live') {
+        setPortalView(false);
+      }
+    });
+  </script>
 </head>
 <body class="min-h-screen pb-16 bg-[#F7FAFC] text-[#26364A]">
 
