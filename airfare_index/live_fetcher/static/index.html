@@ -2694,6 +2694,11 @@
     const mospiData = sliceTicks.map(() => 125.46);
     const atfData = sliceTicks.map(() => 105.11);
 
+    if (typeof Chart === 'undefined') {
+      console.warn('[Chart Warning] Chart.js library is not loaded.');
+      return;
+    }
+
     macroChartInstance = new Chart(ctx, {
       type: 'line',
       data: {
@@ -2867,6 +2872,11 @@
     const scrapedData = filteredTimeline.map(t => t.realtime_scraped_index);
     const mospiData = filteredTimeline.map(t => t.mospi_official_index);
     const atfData = filteredTimeline.map(t => t.atf_fuel_index);
+
+    if (typeof Chart === 'undefined') {
+      console.warn('[Chart Warning] Chart.js library is not loaded.');
+      return;
+    }
 
     macroChartInstance = new Chart(ctx, {
       type: 'line',
@@ -3088,6 +3098,11 @@
     const atfVal = data.atf_fuel_index || 105.11;
     const mospiData = ticks.map(() => mospiVal);
     const atfData = ticks.map(() => atfVal);
+
+    if (typeof Chart === 'undefined') {
+      console.warn('[Chart Warning] Chart.js library is not loaded.');
+      return;
+    }
 
     macroChartInstance = new Chart(ctx, {
       type: 'line',
@@ -5535,6 +5550,9 @@ async function switchStateMode(mode) {
 			navigator.serviceWorker.register('/sw.js', { scope: '/' })
 				.then((reg) => {
 					console.log('[AeroDex PWA] Service Worker registered, scope:', reg.scope);
+					if (typeof reg.update === 'function') {
+						reg.update();
+					}
 				})
 				.catch((err) => {
 					console.warn('[AeroDex PWA] Service Worker registration failed:', err);
@@ -6249,6 +6267,11 @@ async function switchStateMode(mode) {
       const baselineData = trajectory.map(t => t.baseline);
 
       if (shockChart) shockChart.destroy();
+
+      if (typeof Chart === 'undefined') {
+        console.warn('[Chart Warning] Chart.js library is not loaded.');
+        return;
+      }
 
       shockChart = new Chart(ctx, {
         type: 'line',

@@ -4,8 +4,8 @@
  * Version: aerodex-pwa-v1.0.0
  */
 
-const CACHE_NAME = 'aerodex-static-v1';
-const API_CACHE_NAME = 'aerodex-api-v1';
+const CACHE_NAME = 'aerodex-static-v2';
+const API_CACHE_NAME = 'aerodex-api-v2';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -24,7 +24,7 @@ const PRECACHE_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      console.log('[AeroDex PWA] Precaching core application shell');
+      console.log('[AeroDex PWA] Precaching core application shell (v2)');
       for (const asset of PRECACHE_ASSETS) {
         try {
           await cache.add(asset);
@@ -60,6 +60,12 @@ self.addEventListener('fetch', (event) => {
 
   // Ignore non-GET requests
   if (request.method !== 'GET') return;
+
+  // CRITICAL: NEVER intercept cross-origin third-party requests (e.g. Tailwind CDN, Chart.js CDN, Google Fonts).
+  // Intercepting external CDNs causes CORS/opaque response failures and 503 errors on modern phones (e.g. Samsung Galaxy S24).
+  if (url.origin !== self.location.origin) {
+    return;
+  }
 
   // 1. Dynamic API Endpoints: Network-First with Cache Fallback
   if (url.pathname.startsWith('/api/v1/')) {
@@ -123,6 +129,9 @@ self.addEventListener('fetch', (event) => {
           if (request.mode === 'navigate') {
             const cachedIndex = (await caches.match('/')) || (await caches.match('/index.html'));
             if (cachedIndex) return cachedIndex;
+          }
+          if (request.destination === 'image' || request.destination === 'font' || request.destination === 'style' || request.destination === 'script') {
+            return new Response('', { status: 404, statusText: 'Not Found' });
           }
           return new Response('Offline', { status: 503, statusText: 'Offline' });
         });
