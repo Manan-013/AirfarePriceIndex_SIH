@@ -743,21 +743,59 @@ class AirfareIndexEngine:
             if live_fares and isinstance(live_fares, dict):
                 live_fare = live_fares.get(r) or live_fares.get(rev_code)
 
+            # DGCA Q3-2025 actual airline schedule & frequency calibration:
+            # - Duopoly / High-altitude / Island routes: IndiGo (60%) + Air India (40%) -> HHI ~ 5,200
+            # - Major Metro Trunks: IndiGo (56%), Air India (26%), Akasa (11%), SpiceJet (7%) -> HHI ~ 3,980
+            # - Regional / Tier-2 Thin Corridors: IndiGo (62%), Air India (31%), SpiceJet (7%) -> HHI ~ 4,850
+            METRO_TRUNK = {
+                "BOM-DEL", "DEL-BOM", "BLR-DEL", "DEL-BLR", "BLR-BOM", "BOM-BLR",
+                "DEL-CCU", "DEL-HYD", "BOM-MAA", "AMD-DEL", "BOM-GOI", "DEL-PNQ",
+                "MAA-BLR", "BOM-COK"
+            }
+            THIN_CORRIDORS = {
+                "DEL-LKO", "BOM-JAI", "DEL-BBI", "DEL-ATQ", "DEL-IDR", "DEL-COK"
+            }
+            DUOPOLY_CORRIDORS = {"DEL-SXR", "DEL-PAT", "DEL-GAU", "DEL-IXZ", "DEL-IXL"}
+
             synthetic_flights = []
             if live_fare:
                 f_val = float(live_fare)
-                if r in ["DEL-PAT", "DEL-IXZ", "DEL-IXL", "DEL-SXR", "DEL-GAU"]:
+                if r in DUOPOLY_CORRIDORS:
+                    # 6E: 60%, AI: 40% (5 flights: 3x 6E, 2x AI)
+                    is_surge = f_val >= (p0 * 1.30)
                     synthetic_flights = [
                         {"carrier_code": "6E", "total_fare": f_val},
                         {"carrier_code": "6E", "total_fare": f_val * 1.02},
                         {"carrier_code": "6E", "total_fare": f_val * 1.04},
-                        {"carrier_code": "AI", "total_fare": f_val * (1.01 if f_val > p0 * 1.35 else 1.06)},
-                        {"carrier_code": "AI", "total_fare": f_val * (1.03 if f_val > p0 * 1.35 else 1.09)}
+                        {"carrier_code": "AI", "total_fare": f_val * (1.015 if is_surge else 1.08)},
+                        {"carrier_code": "AI", "total_fare": f_val * (1.03 if is_surge else 1.12)}
+                    ]
+                elif r in METRO_TRUNK:
+                    # 6E: 10, AI: 5, QP: 2, SG: 1 (Total 18 flights: 55.6% 6E, 27.8% AI, 11.1% QP, 5.6% SG)
+                    synthetic_flights = [
+                        {"carrier_code": "6E", "total_fare": f_val * (1 + (i % 3) * 0.02)} for i in range(10)
+                    ] + [
+                        {"carrier_code": "AI", "total_fare": f_val * (1.04 + (i % 2) * 0.03)} for i in range(5)
+                    ] + [
+                        {"carrier_code": "QP", "total_fare": f_val * 0.94},
+                        {"carrier_code": "QP", "total_fare": f_val * 0.96},
+                        {"carrier_code": "SG", "total_fare": f_val * 0.92}
+                    ]
+                elif r in THIN_CORRIDORS:
+                    # 6E: 8, AI: 4, SG: 1 (Total 13 flights: 61.5% 6E, 30.8% AI, 7.7% SG)
+                    synthetic_flights = [
+                        {"carrier_code": "6E", "total_fare": f_val * (1 + (i % 3) * 0.025)} for i in range(8)
+                    ] + [
+                        {"carrier_code": "AI", "total_fare": f_val * (1.06 + (i % 2) * 0.03)} for i in range(4)
+                    ] + [
+                        {"carrier_code": "SG", "total_fare": f_val * 0.93}
                     ]
                 else:
                     synthetic_flights = [
-                        {"carrier_code": "6E", "total_fare": f_val},
+                        {"carrier_code": "6E", "total_fare": f_val * 1.0},
+                        {"carrier_code": "6E", "total_fare": f_val * 1.02},
                         {"carrier_code": "AI", "total_fare": f_val * 1.05},
+                        {"carrier_code": "AI", "total_fare": f_val * 1.08},
                         {"carrier_code": "QP", "total_fare": f_val * 0.95},
                         {"carrier_code": "SG", "total_fare": f_val * 0.93}
                     ]
