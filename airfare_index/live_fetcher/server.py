@@ -213,7 +213,7 @@ class AutoUpdateManager:
             sampled_routes = [{"route_code": r, "fare": f} for r, f in self.composite_fares.items()]
             national_context = index_engine.compute_national_index(sampled_routes)
             db_stats = db.get_db_stats()
-            sector_matrix = index_engine.get_sector_heatmap_matrix()
+            sector_matrix = index_engine.get_sector_heatmap_matrix(live_fares=self.latest_fares)
 
             seconds_remaining = max(0, int(round(self.next_scrape_timestamp - time.time())))
             return {
@@ -375,7 +375,7 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            data = index_engine.get_sector_heatmap_matrix()
+            data = index_engine.get_sector_heatmap_matrix(live_fares=auto_manager.latest_fares)
             self.wfile.write(json.dumps(data, indent=2).encode("utf-8"))
             return
 

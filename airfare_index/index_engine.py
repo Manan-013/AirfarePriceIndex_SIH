@@ -268,10 +268,11 @@ class AirfareIndexEngine:
         """Returns top domestic routes sorted by DGCA volume."""
         return self.routes_list[:limit]
 
-    def get_sector_heatmap_matrix(self):
+    def get_sector_heatmap_matrix(self, live_fares=None):
         """
         Generates Sector x Advance Booking Window (T+1 to T+45) Dynamic Pricing Heatmap.
         Directly satisfies MoSPI PS SIH26056 mandate for 'sector-wise heatmaps & lead-time elasticity curves'.
+        Incorporates real-time live scraped quotes when available.
         """
         top_sectors = [
             {"code": "BOM-DEL", "c1": "MUMBAI", "c2": "DELHI", "p0": 4850, "wt": 4.13},
@@ -298,10 +299,22 @@ class AirfareIndexEngine:
         for s in top_sectors:
             p0 = s["p0"]
             window_cells = {}
+            route_code = s["code"]
+            rev_code = "-".join(reversed(route_code.split("-")))
+            live_val = None
+            if live_fares and isinstance(live_fares, dict):
+                live_val = live_fares.get(route_code) or live_fares.get(rev_code)
+
             for w in windows:
                 # SXR and GOI have higher leisure/seasonal surge multipliers
-                extra_surge = 0.15 if s["code"] in ["DEL-SXR", "BOM-GOI"] and w["key"] in ["T+1", "T+7"] else 0.0
-                fare = int(round((p0 * (w["mult"] + extra_surge)), -1))
+                extra_surge = 0.15 if route_code in ["DEL-SXR", "BOM-GOI"] and w["key"] in ["T+1", "T+7"] else 0.0
+                if live_val and w["key"] == "T+1":
+                    fare = int(round(float(live_val), -1))
+                elif live_val and w["key"] == "T+7":
+                    fare = int(round(float(live_val) * 0.88, -1))
+                else:
+                    fare = int(round((p0 * (w["mult"] + extra_surge)), -1))
+
                 idx = round((fare / p0) * 100, 1)
                 surge_pct = round(((fare - p0) / p0) * 100, 1)
 
