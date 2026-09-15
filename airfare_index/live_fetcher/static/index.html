@@ -1906,13 +1906,33 @@
  </table>
  </div>
 
- <!-- Tab 2: State Inflation Container -->
- <div id="statesHeatmapContainer" class="hidden">
- <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3" id="stateHeatmapGrid">
- <!-- Populated via JS -->
- </div>
- </div>
- </section>
+ 	<!-- Tab 2: State Inflation Container -->
+	<div id="statesHeatmapContainer" class="hidden">
+		<!-- Sub-Toggle for State Mode: MoSPI Monthly Benchmark vs Live State Nowcast -->
+		<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
+			<div class="flex items-center gap-2">
+				<span class="text-xs font-semibold text-[#26364A]">State Aggregation Mode:</span>
+				<div class="inline-flex rounded-lg border border-[#D8E2EC] p-0.5 bg-white text-xs font-medium shadow-2xs">
+					<button type="button" id="btnStateModeMospi" onclick="switchStateMode('mospi')" class="px-3 py-1.5 rounded-md bg-[#5B8DEF] text-white font-semibold shadow-2xs transition">MoSPI Official Baseline</button>
+					<button type="button" id="btnStateModeNowcast" onclick="switchStateMode('nowcast')" class="px-3 py-1.5 rounded-md text-[#5E718A] hover:text-[#26364A] transition flex items-center gap-1.5">
+						<span class="relative flex h-2 w-2">
+							<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75"></span>
+							<span class="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]"></span>
+						</span>
+						Live State Nowcast (12s Pulse)
+					</button>
+				</div>
+			</div>
+			<div id="stateModeDesc" class="text-[11px] font-mono text-[#5E718A] flex items-center gap-2">
+				<span class="inline-block w-2 h-2 rounded-full bg-[#5B8DEF]"></span>
+				<span>Statutory MoSPI State CPI Transport Baseline (Item 07.3.3 &bull; July 2026 Monthly Benchmark)</span>
+			</div>
+		</div>
+		<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3" id="stateHeatmapGrid">
+		<!-- Populated via JS -->
+		</div>
+	</div>
+	</section>
  </div>
 
  <!-- ==================== TAB PANEL 3: MACROECONOMIC ALIGNMENT & ATF ==================== -->
@@ -4076,31 +4096,107 @@
  secBody.appendChild(row);
  });
 
- // 2. Fetch State Inflation Grid
- const stRes = await fetch('/api/v1/heatmap/states');
- const stData = await stRes.json();
- const stGrid = document.getElementById('stateHeatmapGrid');
- stGrid.innerHTML = '';
+		// 2. Fetch State Inflation Grid
+		const stRes = await fetch('/api/v1/heatmap/states?mode=mospi');
+		cachedMospiStateData = await stRes.json();
+		renderStateGrid(cachedMospiStateData, currentStateMode);
 
- stData.forEach(st => {
- const card = document.createElement('div');
- card.className = `p-3 rounded-xl border ${st.color_class} flex flex-col justify-between transition hover:scale-[1.02] shadow-xs`;
- const infSign = st.yoy_inflation_pct >= 0 ? '+' : '';
- card.innerHTML = `
- <div class="text-xs font-bold text-[#26364A] truncate" title="${st.state}">${st.state}</div>
- <div class="mt-2 flex items-baseline justify-between">
- <span class="text-sm font-extrabold font-mono text-[#26364A]">${st.cpi_index}</span>
- <span class="text-[11px] font-mono font-bold ${st.yoy_inflation_pct >= 20 ? 'text-[#B82846]' : (st.yoy_inflation_pct >= 10 ? 'text-[#B34B19]' : 'text-[#1A6357]')}">${infSign}${st.yoy_inflation_pct}%</span>
- </div>
- <div class="text-[9px] text-[#5E718A] mt-1 uppercase tracking-wider font-mono">MoSPI CPI 07.3.3</div>
- `;
- stGrid.appendChild(card);
- });
+		// Preload nowcast in background
+		fetch('/api/v1/heatmap/states?mode=nowcast')
+			.then(r => r.json())
+			.then(data => { cachedNowcastStateData = data; })
+			.catch(err => console.warn("Nowcast preload:", err));
 
- } catch (err) {
- console.error("Failed to load heatmaps:", err);
- }
- }
+	} catch (err) {
+		console.error("Failed to load heatmaps:", err);
+	}
+}
+
+let currentStateMode = 'mospi';
+let cachedMospiStateData = null;
+let cachedNowcastStateData = null;
+
+function renderStateGrid(stData, mode) {
+	const stGrid = document.getElementById('stateHeatmapGrid');
+	if (!stGrid || !stData) return;
+	stGrid.innerHTML = '';
+
+	stData.forEach(st => {
+		const safeKey = st.state.replace(/\s+/g, '-');
+		const card = document.createElement('div');
+		card.id = `state-card-${safeKey}`;
+		card.className = `p-3 rounded-xl border ${st.color_class} flex flex-col justify-between transition hover:scale-[1.02] shadow-xs`;
+		const infSign = st.yoy_inflation_pct >= 0 ? '+' : '';
+		
+		let badgeHtml = '';
+		if (mode === 'nowcast') {
+			if (st.is_live) {
+				badgeHtml = `<div class="text-[9px] text-[#047857] mt-1 font-mono font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse"></span>${st.source_label}</div>`;
+			} else {
+				badgeHtml = `<div class="text-[9px] text-[#5E718A] mt-1 uppercase tracking-wider font-mono">${st.source_label}</div>`;
+			}
+		} else {
+			badgeHtml = `<div class="text-[9px] text-[#5E718A] mt-1 uppercase tracking-wider font-mono">MoSPI CPI 07.3.3</div>`;
+		}
+
+		card.innerHTML = `
+			<div class="text-xs font-bold text-[#26364A] truncate" title="${st.state}">${st.state}</div>
+			<div class="mt-2 flex items-baseline justify-between">
+				<span class="text-sm font-extrabold font-mono text-[#26364A]" id="state-idx-${safeKey}">${st.cpi_index}</span>
+				<span class="text-[11px] font-mono font-bold ${st.yoy_inflation_pct >= 20 ? 'text-[#B82846]' : (st.yoy_inflation_pct >= 10 ? 'text-[#B34B19]' : 'text-[#1A6357]')}" id="state-surge-${safeKey}">${infSign}${st.yoy_inflation_pct}%</span>
+			</div>
+			${badgeHtml}
+		`;
+		stGrid.appendChild(card);
+	});
+}
+
+async function switchStateMode(mode) {
+	currentStateMode = mode;
+	const btnMospi = document.getElementById('btnStateModeMospi');
+	const btnNowcast = document.getElementById('btnStateModeNowcast');
+	const desc = document.getElementById('stateModeDesc');
+
+	if (mode === 'nowcast') {
+		if (btnNowcast) {
+			btnNowcast.className = "px-3 py-1.5 rounded-md bg-[#10B981] text-white font-semibold shadow-2xs transition flex items-center gap-1.5";
+		}
+		if (btnMospi) {
+			btnMospi.className = "px-3 py-1.5 rounded-md text-[#5E718A] hover:text-[#26364A] transition";
+		}
+		if (desc) {
+			desc.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span><span>Real-Time State Airfare Nowcast (High-Frequency Airport Feed &bull; 12s Pulse)</span>`;
+		}
+		if (!cachedNowcastStateData) {
+			try {
+				const res = await fetch('/api/v1/heatmap/states?mode=nowcast');
+				cachedNowcastStateData = await res.json();
+			} catch(e) {
+				console.error("Failed to load state nowcast:", e);
+			}
+		}
+		if (cachedNowcastStateData) renderStateGrid(cachedNowcastStateData, 'nowcast');
+	} else {
+		if (btnMospi) {
+			btnMospi.className = "px-3 py-1.5 rounded-md bg-[#5B8DEF] text-white font-semibold shadow-2xs transition";
+		}
+		if (btnNowcast) {
+			btnNowcast.className = "px-3 py-1.5 rounded-md text-[#5E718A] hover:text-[#26364A] transition flex items-center gap-1.5";
+		}
+		if (desc) {
+			desc.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-[#5B8DEF]"></span><span>Statutory MoSPI State CPI Transport Baseline (Item 07.3.3 &bull; July 2026 Monthly Benchmark)</span>`;
+		}
+		if (!cachedMospiStateData) {
+			try {
+				const res = await fetch('/api/v1/heatmap/states?mode=mospi');
+				cachedMospiStateData = await res.json();
+			} catch(e) {
+				console.error("Failed to load mospi state:", e);
+			}
+		}
+		if (cachedMospiStateData) renderStateGrid(cachedMospiStateData, 'mospi');
+	}
+}
 
  async function loadDbStats() {
  try {
@@ -4381,6 +4477,35 @@
 						}
 					});
 				});
+			}
+
+			// 5.b Update State Heatmap if in Nowcast mode
+			if (data.state_nowcast && Array.isArray(data.state_nowcast)) {
+				cachedNowcastStateData = data.state_nowcast;
+				if (currentStateMode === 'nowcast') {
+					data.state_nowcast.forEach(st => {
+						const safeKey = st.state.replace(/\s+/g, '-');
+						const idxEl = document.getElementById(`state-idx-${safeKey}`);
+						const surgeEl = document.getElementById(`state-surge-${safeKey}`);
+						const cardEl = document.getElementById(`state-card-${safeKey}`);
+
+						if (idxEl) {
+							const oldIdx = idxEl.innerText;
+							const newIdx = String(st.cpi_index);
+							if (oldIdx !== newIdx) {
+								idxEl.innerText = newIdx;
+								const sign = st.yoy_inflation_pct >= 0 ? '+' : '';
+								if (surgeEl) {
+									surgeEl.innerText = `${sign}${st.yoy_inflation_pct}%`;
+								}
+								if (cardEl) {
+									cardEl.className = `p-3 rounded-xl border ${st.color_class} flex flex-col justify-between transition hover:scale-[1.02] shadow-xs live-pulse-cell`;
+									setTimeout(() => cardEl.classList.remove('live-pulse-cell'), 1600);
+								}
+							}
+						}
+					});
+				}
 			}
 
 			// 6. Update Macro Alignment Chart (Dynamic Live Waveform or Timeline Endpoint)

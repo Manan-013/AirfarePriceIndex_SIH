@@ -415,6 +415,129 @@ class AirfareIndexEngine:
         state_records.sort(key=lambda x: x["yoy_inflation_pct"], reverse=True)
         return state_records
 
+    def get_state_nowcast_heatmap(self, live_fares=None):
+        """
+        Generates High-Frequency Real-Time State Airfare Nowcast Heatmap.
+        Aggregates live carrier-weighted quote surges across state airports
+        (e.g., DEL -> Delhi, BOM/PNQ -> Maharashtra, BLR -> Karnataka).
+        For states without direct real-time quotes, econometric spatial propagation
+        is applied against statutory baselines.
+        """
+        state_airports = {
+            "NCT of Delhi": ["DEL"],
+            "Maharashtra": ["BOM", "PNQ", "NAG"],
+            "Karnataka": ["BLR", "IXE"],
+            "Tamil Nadu": ["MAA", "CJB", "TRZ", "IXM"],
+            "West Bengal": ["CCU", "IXB"],
+            "Telangana": ["HYD"],
+            "Goa": ["GOI", "GOX"],
+            "Gujarat": ["AMD", "BDQ", "STV", "RAJ"],
+            "Rajasthan": ["JAI", "UDR", "JDH"],
+            "Kerala": ["COK", "TRV", "CCJ", "CNN"],
+            "Uttar Pradesh": ["LKO", "VNS", "AYJ"],
+            "Bihar": ["PAT", "GAY"],
+            "Assam": ["GAU", "DIB"],
+            "Odisha": ["BBI", "JRG"],
+            "Punjab": ["ATQ"],
+            "Jammu And Kashmir": ["SXR", "IXJ"],
+            "Ladakh": ["IXL"],
+            "Uttarakhand": ["DED", "PGH"],
+            "Jharkhand": ["IXR", "DCA"],
+            "Chhattisgarh": ["RPR"],
+            "Madhya Pradesh": ["BHO", "IDR", "GWL"],
+            "Manipur": ["IMF"],
+            "Tripura": ["IXA"],
+            "Meghalaya": ["SHL"],
+            "Nagaland": ["DMU"],
+            "Mizoram": ["AJL"],
+            "Andaman And Nicobar Islands": ["IXZ"],
+            "Himachal Pradesh": ["KUU", "DHM", "SLV"],
+            "Haryana": ["HSS"],
+            "Andhra Pradesh": ["VTZ", "VGA", "TIR"],
+            "Sikkim": ["PYG"],
+            "Arunachal Pradesh": ["HGI", "TEZ"],
+            "Lakshadweep": ["AGX"]
+        }
+
+        fares = live_fares if (live_fares and isinstance(live_fares, dict)) else {}
+        national_surges = []
+        for r, fare in fares.items():
+            base = self.base_fares.get(r) or self.base_fares.get("-".join(r.split("-")[::-1]), 5200.0)
+            if base > 0 and fare > 0:
+                national_surges.append(((fare - base) / base) * 100.0)
+
+        nat_surge = (sum(national_surges) / len(national_surges)) if national_surges else 24.5
+
+        base_cpi_map = {}
+        for r in self.mospi_baseline:
+            if r.get("year") == "2026" and r.get("month") == "July" and r.get("sector") == "Combined":
+                st = r.get("state")
+                try:
+                    base_cpi_map[st] = float(r.get("item") or 120.0)
+                except:
+                    base_cpi_map[st] = 120.0
+
+        records = []
+        for state, airports in state_airports.items():
+            matched_surges = []
+            active_apts = []
+            for r, fare in fares.items():
+                parts = r.split("-")
+                if len(parts) == 2:
+                    orig, dest = parts[0], parts[1]
+                    if orig in airports or dest in airports:
+                        base = self.base_fares.get(r) or self.base_fares.get(f"{dest}-{orig}", 5200.0)
+                        if base > 0 and fare > 0:
+                            s_pct = ((fare - base) / base) * 100.0
+                            matched_surges.append(s_pct)
+                            if orig in airports:
+                                active_apts.append(orig)
+                            if dest in airports:
+                                active_apts.append(dest)
+
+            if matched_surges:
+                is_live = True
+                surge_pct = round(sum(matched_surges) / len(matched_surges), 2)
+                cpi_idx = round(100.0 + surge_pct, 2)
+                unique_apts = sorted(list(set(active_apts)))
+                source_label = f"LIVE • {', '.join(unique_apts)}"
+            else:
+                is_live = False
+                base_idx = base_cpi_map.get(state, 120.0)
+                factor = (base_idx / 122.0)
+                surge_pct = round(nat_surge * factor * 0.94, 2)
+                cpi_idx = round(100.0 + surge_pct, 2)
+                pri_apt = airports[0] if airports else "AIR"
+                source_label = f"NOWCAST • {pri_apt}"
+
+            if cpi_idx >= 140.0:
+                severity = "severe"
+                color_class = "bg-[#FFEBEF] text-[#B82846] border-[#FFA6BA]"
+            elif cpi_idx >= 125.0:
+                severity = "high"
+                color_class = "bg-[#FFF2EB] text-[#B34B19] border-[#FFB899]"
+            elif cpi_idx >= 110.0:
+                severity = "moderate"
+                color_class = "bg-[#FFF9E6] text-[#8F6900] border-[#FFD166] hover:bg-[#FFF3CC]"
+            else:
+                severity = "cool"
+                color_class = "bg-[#E8F7F5] text-[#1E6B60] border-[#8ED1C7] hover:bg-[#D7F2EE]"
+
+            records.append({
+                "state": state,
+                "cpi_index": cpi_idx,
+                "yoy_inflation_pct": surge_pct,
+                "severity": severity,
+                "color_class": color_class,
+                "is_live": is_live,
+                "source_label": source_label,
+                "airports": airports
+            })
+
+        records.sort(key=lambda x: x["cpi_index"], reverse=True)
+        return records
+
+
     def generate_daily_bulletin_csv(self, pulse_data):
         """
         Generates official MoSPI / RBI Daily Airfare Price Index Bulletin CSV.

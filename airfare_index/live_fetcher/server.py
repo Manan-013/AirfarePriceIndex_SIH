@@ -231,7 +231,8 @@ class AutoUpdateManager:
                 "cpi_impact_bps": national_context["headline_cpi_impact_basis_points"],
                 "cpi_contribution_pct": national_context["headline_cpi_contribution_pct"],
                 "latest_fares": self.latest_fares,
-                "sector_matrix": sector_matrix
+                "sector_matrix": sector_matrix,
+                "state_nowcast": index_engine.get_state_nowcast_heatmap(live_fares=self.latest_fares)
             }
 
     def pause_briefly(self, seconds=25):
@@ -379,13 +380,18 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(data, indent=2).encode("utf-8"))
             return
 
-        # API: State Airfare Inflation Heatmap (MoSPI 34 States)
+        # API: State Airfare Inflation Heatmap (MoSPI 34 States / Live Nowcast)
         if parsed.path == "/api/v1/heatmap/states":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            data = index_engine.get_state_inflation_heatmap()
+            query_params = urllib.parse.parse_qs(parsed.query)
+            mode = query_params.get("mode", ["mospi"])[0]
+            if mode == "nowcast":
+                data = index_engine.get_state_nowcast_heatmap(live_fares=auto_manager.latest_fares)
+            else:
+                data = index_engine.get_state_inflation_heatmap()
             self.wfile.write(json.dumps(data, indent=2).encode("utf-8"))
             return
 
