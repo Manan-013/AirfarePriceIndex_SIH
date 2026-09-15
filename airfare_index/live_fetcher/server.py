@@ -232,7 +232,8 @@ class AutoUpdateManager:
                 "cpi_contribution_pct": national_context["headline_cpi_contribution_pct"],
                 "latest_fares": self.latest_fares,
                 "sector_matrix": sector_matrix,
-                "state_nowcast": index_engine.get_state_nowcast_heatmap(live_fares=self.latest_fares)
+                "state_nowcast": index_engine.get_state_nowcast_heatmap(live_fares=self.latest_fares),
+                "collusion_watchlist": index_engine.get_pan_india_collusion_watchlist(live_fares=self.latest_fares)
             }
 
     def pause_briefly(self, seconds=25):
@@ -443,6 +444,24 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(DATA_SOURCES_CATALOG, indent=2).encode("utf-8"))
             return
+
+        # API: Route Monopoly HHI & Anti-Trust Collusion Watchdog (CCI / DGCA)
+        if parsed.path in ["/api/v1/analytics/collusion", "/api/v1/collusion"]:
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            qs = urllib.parse.parse_qs(parsed.query)
+            origin = qs.get("origin", [None])[0]
+            dest = qs.get("destination", [None])[0]
+            if origin and dest:
+                route_code = f"{origin.upper()}-{dest.upper()}"
+                data = index_engine.calculate_route_collusion_watchdog(route_code)
+            else:
+                data = index_engine.get_pan_india_collusion_watchlist(live_fares=auto_manager.latest_fares)
+            self.wfile.write(json.dumps(data, indent=2, ensure_ascii=False).encode("utf-8"))
+            return
+
 
         
         # API: Export MoSPI Daily Sector Airfare Bulletin (CSV)
@@ -659,8 +678,14 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
                     "direct_flights": len(results["flights"]),
                     **sector_index_data
                 }
+                results["collusion_watchdog"] = index_engine.calculate_route_collusion_watchdog(
+                    route_code,
+                    flights=results["flights"],
+                    base_fare_p0=results["summary"].get("base_fare_p0")
+                )
             else:
                 results["summary"] = {"min_fare": 0, "max_fare": 0, "avg_fare": 0, "carrier_count": 0, "direct_flights": 0}
+                results["collusion_watchdog"] = index_engine.calculate_route_collusion_watchdog(route_code)
 
             pulse = auto_manager.get_live_pulse()
             results["macro_context"] = {

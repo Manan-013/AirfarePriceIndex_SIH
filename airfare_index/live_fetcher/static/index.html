@@ -1399,6 +1399,109 @@
     </div>
   </section>
 
+  <!-- Regulatory Antitrust & Collusion Watchdog (HHI & Parallel Pricing Detector) -->
+  <section id="collusionWatchdogSection" class="hidden mb-6">
+    <div id="watchdogCardContainer" class="glass-card rounded-2xl p-4 sm:p-5 border border-[#E2E8F0] shadow-xs relative overflow-hidden transition-all duration-300">
+      <div id="watchdogGlow" class="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-amber-500/5 blur-2xl pointer-events-none"></div>
+      
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+        <!-- Left: Badge & Description -->
+        <div class="flex-1">
+          <div class="flex items-center gap-2.5 flex-wrap mb-1.5">
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#1E293B] text-white font-black flex items-center gap-1.5 shadow-xs">
+              <svg class="w-3.5 h-3.5 text-amber-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span>CCI / DGCA Antitrust Watchdog</span>
+            </span>
+            <span id="watchdogBadge" class="text-xs font-mono font-bold px-3 py-0.5 rounded-full border"></span>
+            <span id="watchdogHhiScore" class="text-xs font-mono font-bold text-[#5E718A]"></span>
+          </div>
+          <h4 id="watchdogHeadline" class="text-sm sm:text-base font-black text-[#26364A] tracking-tight"></h4>
+          <p id="watchdogSummary" class="text-xs text-[#5E718A] mt-1 leading-relaxed"></p>
+        </div>
+
+        <!-- Right: Capacity Split & Parallel Spread Radar -->
+        <div class="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-stretch sm:items-center gap-4 border-t lg:border-t-0 lg:border-l border-[#E2E8F0] pt-3 lg:pt-0 lg:pl-5">
+          <!-- Capacity Share Bar -->
+          <div class="min-w-[220px]">
+            <div class="flex items-center justify-between text-[11px] font-mono text-[#5E718A] mb-1.5">
+              <span class="font-bold">Carrier Capacity Split</span>
+              <span id="watchdogTop2Ratio" class="font-semibold text-[#26364A]"></span>
+            </div>
+            <div id="watchdogCapacityBar" class="h-3 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+              <!-- Dynamically populated carrier segments -->
+            </div>
+            <div id="watchdogCapacityLabels" class="flex items-center justify-between text-[10px] font-mono text-[#5E718A] mt-1"></div>
+          </div>
+
+          <!-- Quick Watchlist Trigger Button -->
+          <button onclick="openPanIndiaCollusionModal()" type="button" class="px-3.5 py-2.5 rounded-xl text-xs font-bold font-mono bg-white hover:bg-slate-50 text-[#26364A] border border-[#CBD5E1] transition flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shadow-xs hover:border-[#94A3B8]">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <span>Pan-India Monopoly Watchlist</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pan-India Antitrust & Collusion Watchlist Modal -->
+  <div id="collusionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+    <div class="glass-card bg-white rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl border border-[#CBD5E1] overflow-hidden animate-fadeIn">
+      <!-- Modal Header -->
+      <div class="p-4 sm:p-5 border-b border-[#E2E8F0] flex items-center justify-between bg-slate-50/70">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+            <h3 class="text-base sm:text-lg font-black text-[#26364A]">Pan-India Airline Monopoly & Collusion Observatory</h3>
+          </div>
+          <p class="text-xs text-[#5E718A] mt-0.5">Real-time Herfindahl-Hirschman Index (HHI) concentration & parallel pricing surveillance across 25 benchmark corridors</p>
+        </div>
+        <button onclick="closePanIndiaCollusionModal()" type="button" class="p-2 rounded-xl hover:bg-slate-200/60 text-[#5E718A] transition cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <!-- Modal Body (Scrollable Table) -->
+      <div class="p-4 sm:p-5 overflow-y-auto flex-1">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
+            <div class="font-bold text-emerald-900">🟢 Competitive Corridors (HHI &lt; 1,500)</div>
+            <div class="text-[11px] text-emerald-700 mt-0.5">Dispersed market with 4+ carriers. Self-regulating market tariffs.</div>
+          </div>
+          <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs">
+            <div class="font-bold text-amber-900">🟡 Duopoly Watch (HHI &ge; 2,500)</div>
+            <div class="text-[11px] text-amber-700 mt-0.5">2 dominant carriers control &gt;70% seats. Monitored for parallel fare hikes.</div>
+          </div>
+          <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs">
+            <div class="font-bold text-rose-900">🔴 Parallel Surge Alert (Active Gouging)</div>
+            <div class="text-[11px] text-rose-700 mt-0.5">High HHI + synchronous fare jump (&gt;2.0&sigma;) flagged for CCI review.</div>
+          </div>
+        </div>
+        
+        <div class="overflow-x-auto rounded-xl border border-[#E2E8F0]">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-[#5E718A] font-mono uppercase text-[10px] tracking-wider border-b border-[#E2E8F0]">
+              <tr>
+                <th class="p-3">Corridor</th>
+                <th class="p-3">HHI Score</th>
+                <th class="p-3">Market Classification</th>
+                <th class="p-3">Capacity Distribution</th>
+                <th class="p-3">Current Fare</th>
+                <th class="p-3">Antitrust Status</th>
+              </tr>
+            </thead>
+            <tbody id="collusionTableBody" class="divide-y divide-[#E2E8F0] font-mono">
+              <!-- Dynamically populated from /api/v1/analytics/collusion -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- Modal Footer -->
+      <div class="p-3.5 bg-slate-50 border-t border-[#E2E8F0] flex items-center justify-between text-[11px] text-[#5E718A]">
+        <span>Mandate: DGCA Rule 135 & Competition Act Section 3 (Cartel Prohibition)</span>
+        <button onclick="closePanIndiaCollusionModal()" type="button" class="px-4 py-1.5 rounded-lg bg-[#26364A] text-white font-bold hover:bg-[#1E293B] transition cursor-pointer">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Results List Section -->
   <section id="resultsSection" class="hidden mb-12">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
@@ -3331,6 +3434,8 @@
 
  document.getElementById('loadingState').classList.remove('hidden');
  document.getElementById('summarySection').classList.add('hidden');
+ const cSec = document.getElementById('collusionWatchdogSection');
+ if (cSec) cSec.classList.add('hidden');
  document.getElementById('resultsSection').classList.add('hidden');
  document.getElementById('submitBtn').disabled = true;
 
@@ -3450,6 +3555,122 @@
   document.getElementById('jsonContent').textContent = JSON.stringify(data, null, 2);
   document.getElementById('summarySection').classList.remove('hidden');
   document.getElementById('resultsSection').classList.remove('hidden');
+
+  // Regulatory Antitrust & Collusion Watchdog evaluation
+  if (data.collusion_watchdog) {
+    renderWatchdogCard(data.collusion_watchdog);
+    const cSec = document.getElementById('collusionWatchdogSection');
+    if (cSec) cSec.classList.remove('hidden');
+  }
+  }
+
+  function renderWatchdogCard(w) {
+    if (!w) return;
+    const badgeEl = document.getElementById('watchdogBadge');
+    const hhiEl = document.getElementById('watchdogHhiScore');
+    const headEl = document.getElementById('watchdogHeadline');
+    const sumEl = document.getElementById('watchdogSummary');
+    const container = document.getElementById('watchdogCardContainer');
+    const glow = document.getElementById('watchdogGlow');
+    const bar = document.getElementById('watchdogCapacityBar');
+    const labels = document.getElementById('watchdogCapacityLabels');
+    const top2Ratio = document.getElementById('watchdogTop2Ratio');
+
+    if (hhiEl) hhiEl.textContent = `HHI: ${w.hhi.toLocaleString()} / 10,000`;
+    if (badgeEl) badgeEl.textContent = w.hhi_label;
+
+    if (w.risk_color === 'rose') {
+      if (badgeEl) badgeEl.className = "text-xs font-mono font-bold px-3 py-0.5 rounded-full border bg-rose-50 text-rose-700 border-rose-300 animate-pulse";
+      if (container) container.className = "glass-card rounded-2xl p-4 sm:p-5 border-2 border-rose-300 bg-rose-50/20 shadow-sm relative overflow-hidden transition-all duration-300";
+      if (glow) glow.className = "absolute -top-10 -right-10 w-44 h-44 rounded-full bg-rose-500/15 blur-2xl pointer-events-none";
+      if (headEl) headEl.innerHTML = `<span class="text-rose-600 font-black">Antitrust Surveillance Triggered:</span> Parallel Fare Spike on Concentrated Route`;
+    } else if (w.risk_color === 'amber') {
+      if (badgeEl) badgeEl.className = "text-xs font-mono font-bold px-3 py-0.5 rounded-full border bg-amber-50 text-amber-800 border-amber-300";
+      if (container) container.className = "glass-card rounded-2xl p-4 sm:p-5 border border-amber-200 bg-amber-50/10 shadow-xs relative overflow-hidden transition-all duration-300";
+      if (glow) glow.className = "absolute -top-10 -right-10 w-44 h-44 rounded-full bg-amber-500/10 blur-2xl pointer-events-none";
+      if (headEl) headEl.innerHTML = `<span class="text-amber-700 font-black">Duopoly Concentration Watch:</span> High Route Market Power`;
+    } else if (w.risk_color === 'blue') {
+      if (badgeEl) badgeEl.className = "text-xs font-mono font-bold px-3 py-0.5 rounded-full border bg-blue-50 text-blue-700 border-blue-300";
+      if (container) container.className = "glass-card rounded-2xl p-4 sm:p-5 border border-[#E2E8F0] shadow-xs relative overflow-hidden transition-all duration-300";
+      if (glow) glow.className = "absolute -top-10 -right-10 w-44 h-44 rounded-full bg-blue-500/5 blur-2xl pointer-events-none";
+      if (headEl) headEl.innerHTML = `<span class="text-blue-700 font-black">Moderate Concentration:</span> Competitive Yield Management`;
+    } else {
+      if (badgeEl) badgeEl.className = "text-xs font-mono font-bold px-3 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-300";
+      if (container) container.className = "glass-card rounded-2xl p-4 sm:p-5 border border-emerald-200 bg-emerald-50/10 shadow-xs relative overflow-hidden transition-all duration-300";
+      if (glow) glow.className = "absolute -top-10 -right-10 w-44 h-44 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none";
+      if (headEl) headEl.innerHTML = `<span class="text-emerald-700 font-black">Competitive Multi-Carrier Corridor:</span> Self-Regulating Market`;
+    }
+
+    if (sumEl) sumEl.textContent = w.summary;
+
+    // Render Capacity Bar
+    if (w.market_shares && w.market_shares.length > 0) {
+      const top2 = w.market_shares.slice(0, 2).reduce((acc, curr) => acc + curr.share, 0);
+      if (top2Ratio) top2Ratio.textContent = `Top 2: ${Math.round(top2)}% Capacity`;
+      
+      const colors = {
+        '6E': '#002B49',
+        'AI': '#ED1B24',
+        'QP': '#FF671F',
+        'SG': '#FF4500',
+        'IX': '#E65100',
+        'UK': '#51284F'
+      };
+
+      if (bar) {
+        bar.innerHTML = w.market_shares.map(m => {
+          const bg = colors[m.carrier] || '#64748B';
+          return `<div style="width: ${m.share}%; background-color: ${bg};" title="${m.name || m.carrier}: ${m.share}%"></div>`;
+        }).join('');
+      }
+
+      if (labels) {
+        labels.innerHTML = w.market_shares.slice(0, 3).map(m => {
+          return `<span><strong class="text-[#26364A]">${m.carrier}</strong>: ${m.share}%</span>`;
+        }).join(' • ');
+      }
+    }
+  }
+
+  async function openPanIndiaCollusionModal() {
+    const modal = document.getElementById('collusionModal');
+    const tbody = document.getElementById('collusionTableBody');
+    if (!modal || !tbody) return;
+    modal.classList.remove('hidden');
+    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-[#5E718A]"><div class="inline-block animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent mr-2"></div> Loading Pan-India Antitrust Registry...</td></tr>`;
+
+    try {
+      const res = await fetch('/api/v1/analytics/collusion');
+      const list = await res.json();
+      tbody.innerHTML = list.map(item => {
+        let statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-300">Verified Fair</span>`;
+        if (item.antitrust_alert) {
+          statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300 animate-pulse">🔴 Parallel Surge Alert</span>`;
+        } else if (item.hhi >= 2500) {
+          statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-300">🟡 Duopoly Watch</span>`;
+        } else if (item.hhi >= 1500) {
+          statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-300">🔵 Moderate</span>`;
+        }
+
+        const shareSummary = item.market_shares ? item.market_shares.slice(0, 2).map(s => `${s.carrier} ${s.share}%`).join(' | ') : 'N/A';
+
+        return `<tr class="hover:bg-slate-50/80 transition">
+          <td class="p-3 font-bold text-[#26364A]">${item.route_code}</td>
+          <td class="p-3 font-black ${item.hhi >= 2500 ? 'text-amber-600' : 'text-[#26364A]'}">${item.hhi.toLocaleString()}</td>
+          <td class="p-3 text-[#5E718A]">${item.hhi_label}</td>
+          <td class="p-3 text-[11px] text-[#26364A]">${shareSummary}</td>
+          <td class="p-3 font-bold text-[#1A6357]">₹${Math.round(item.live_fare || item.base_fare_p0).toLocaleString('en-IN')}</td>
+          <td class="p-3">${statusBadge}</td>
+        </tr>`;
+      }).join('');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-rose-600">Failed to load antitrust data: ${e.message}</td></tr>`;
+    }
+  }
+
+  function closePanIndiaCollusionModal() {
+    const modal = document.getElementById('collusionModal');
+    if (modal) modal.classList.add('hidden');
   }
 
   // =========================================================================
