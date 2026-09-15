@@ -335,6 +335,21 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(data, indent=2).encode("utf-8"))
             return
 
+        # API: Daily Macro Intraday Tick Waveform (e.g. 14 Sept)
+        if parsed.path == "/api/v1/macro/daily":
+            query_params = urllib.parse.parse_qs(parsed.query)
+            req_date = query_params.get("date", [None])[0]
+            req_route = query_params.get("route", ["all"])[0]
+            req_res = query_params.get("resolution", ["ticks"])[0]
+
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            data = db.get_daily_macro_data(date_str=req_date, route=req_route, resolution=req_res)
+            self.wfile.write(json.dumps(data, indent=2).encode("utf-8"))
+            return
+
         # API: Top DGCA Route Volume Weights (786 Routes Basket)
         if parsed.path == "/api/v1/routes/weights":
             self.send_response(200)

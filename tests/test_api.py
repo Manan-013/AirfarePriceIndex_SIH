@@ -191,5 +191,30 @@ class TestAeroDexAPI(unittest.TestCase):
             self.assertEqual(data.get("ip_proxy_pool_configured"), False)
             self.assertIn("nodes_detail", data)
 
+    def test_daily_macro_endpoint(self):
+        """Verify GET /api/v1/macro/daily returns intraday high-frequency ticks and summary metrics for a given date."""
+        url = f"{SERVER_URL}/api/v1/macro/daily?date=2026-09-14&route=all&resolution=ticks"
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=5.0) as resp:
+            self.assertEqual(resp.status, 200)
+            data = json.loads(resp.read().decode("utf-8"))
+            self.assertIn("date", data)
+            self.assertEqual(data["date"], "2026-09-14")
+            self.assertIn("ticks", data)
+            self.assertGreater(len(data["ticks"]), 0)
+            self.assertIn("day_avg_index", data)
+            self.assertIn("mospi_baseline", data)
+            self.assertIn("atf_fuel_index", data)
+            self.assertIn("available_dates", data)
+
+        # Test hourly resolution
+        url_hourly = f"{SERVER_URL}/api/v1/macro/daily?date=2026-09-14&resolution=hourly"
+        req_hourly = urllib.request.Request(url_hourly)
+        with urllib.request.urlopen(req_hourly, timeout=5.0) as resp:
+            self.assertEqual(resp.status, 200)
+            data_h = json.loads(resp.read().decode("utf-8"))
+            self.assertEqual(data_h["resolution"], "hourly")
+            self.assertGreater(len(data_h["ticks"]), 0)
+
 if __name__ == "__main__":
     unittest.main()

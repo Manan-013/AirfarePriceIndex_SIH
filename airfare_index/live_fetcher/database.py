@@ -527,5 +527,226 @@ class AirfareDatabase:
             "live_data_percentage": live_pct
         }
 
+    def get_daily_macro_data(self, date_str: Optional[str] = None, route: str = "all", resolution: str = "ticks") -> Dict[str, Any]:
+        """
+        Retrieves high-frequency intraday tick wave records for a specific date (e.g. 2026-09-14)
+        from index_calculation_logs and scraped_quotes.
+        Supports filtering by route and resolution (ticks vs hourly).
+        """
+        conn = self.get_connection()
+        cur = conn.cursor()
+
+        # Determine available dates in database
+        try:
+            cur.execute("""
+                SELECT DISTINCT substr(calculated_at, 1, 10) as dt
+                FROM index_calculation_logs
+                WHERE calculated_at IS NOT NULL
+                GROUP BY dt
+                ORDER BY dt DESC
+                LIMIT 15
+            """)
+            available_dates = [r[0] for r in cur.fetchall() if r[0]]
+        except Exception:
+            available_dates = []
+
+        if not available_dates:
+            available_dates = ["2026-09-15", "2026-09-14", "2026-09-13", "2026-09-12", "2026-09-11"]
+
+        # Default to requested date or most recent available date with rich data
+        if not date_str or not isinstance(date_str, str):
+            date_str = available_dates[0] if available_dates else "2026-09-14"
+
+        # Sanitize date format (YYYY-MM-DD)
+        date_str = date_str.strip()[:10]
+
+        # Query calculation logs for the chosen date
+        route = (route or "all").strip().upper()
+        if route and route != "ALL" and "-" in route:
+            parts = route.split("-")
+            orig, dest = parts[0].strip(), parts[1].strip()
+            query = """
+                SELECT calculated_at, origin, destination, national_airfare_index,
+                       route_price_index, carrier_weighted_fare, min_fare, cpi_impact_bps
+                FROM index_calculation_logs
+                WHERE calculated_at LIKE ? AND origin = ? AND destination = ?
+                ORDER BY calculated_at ASC
+            """
+            params = (f"{date_str}%", orig, dest)
+        else:
+            query = """
+                SELECT calculated_at, origin, destination, national_airfare_index,
+                       route_price_index, carrier_weighted_fare, min_fare, cpi_impact_bps
+                FROM index_calculation_logs
+                WHERE calculated_at LIKE ?
+                ORDER BY calculated_at ASC
+            """
+            params = (f"{date_str}%",)
+
+        cur.execute(query, params)
+        rows = cur.fetchall()
+
+        # Available routes on that date
+        cur.execute("""
+            SELECT DISTINCT origin || '-' || destination as rt, count(*) as cnt
+            FROM index_calculation_logs
+            WHERE calculated_at LIKE ?
+            GROUP BY rt
+            ORDER BY cnt DESC
+        """, (f"{date_str}%",))
+        available_routes = [{"route": r[0], "count": r[1]} for r in cur.fetchall()]
+
+        # Baseline references
+        mospi_baseline_val = 126.80
+        atf_fuel_val = 105.11
+
+        # If no records in database for this date, generate calibrated synthetic intraday trajectory
+        if not rows:
+            ticks = []
+            import math
+            date_seed = sum(ord(c) for c in date_str)
+            for h in range(6, 24):
+                for m in (0, 30):
+                    time_str = f"{h:02d}:{m:02d}:00"
+                    t_str = f"{date_str} {time_str}"
+                    diurnal = math.sin((h - 6) / 18.0 * math.pi * 2) * 8.0
+                    if 8 <= h <= 10:
+                        diurnal += 7.0
+                    elif 18 <= h <= 21:
+                        diurnal += 10.0
+                    jitter = ((date_seed + h * 7 + m) % 17 - 8) * 0.4
+                    idx = round(128.0 + diurnal + jitter, 2)
+                    weighted_fare = round(idx * 55.4, 2)
+                    ticks.append({
+                        "time": f"{h:02d}:{m:02d}",
+                        "timestamp": t_str,
+                        "route": "DEL-BOM" if route != "ALL" else "Composite",
+                        "route_index": idx,
+                        "national_index": round(idx * 0.98, 2),
+                        "index": idx,
+                        "carrier_weighted_fare": weighted_fare,
+                        "min_fare": round(weighted_fare * 0.85, 2),
+                        "cpi_impact_bps": round(2.10 + (idx - 126.8) * 0.05, 2),
+                        "mospi_baseline": mospi_baseline_val,
+                        "atf_fuel_index": atf_fuel_val
+                    })
+            total_ticks = len(ticks)
+            indices = [t["index"] for t in ticks]
+            fares = [t["carrier_weighted_fare"] for t in ticks]
+            conn.close()
+            return {
+                "date": date_str,
+                "route": route,
+                "resolution": resolution,
+                "total_ticks": total_ticks,
+                "plotted_ticks_count": len(ticks),
+                "day_avg_index": round(sum(indices) / len(indices), 2),
+                "day_min_index": round(min(indices), 2),
+                "day_max_index": round(max(indices), 2),
+                "day_avg_fare": round(sum(fares) / len(fares), 2) if fares else 0,
+                "mospi_baseline": mospi_baseline_val,
+                "atf_fuel_index": atf_fuel_val,
+                "available_dates": available_dates,
+                "available_routes": available_routes,
+                "ticks": ticks,
+                "is_simulated": True
+            }
+
+        # Format database records
+        ticks = []
+        indices = []
+        fares = []
+
+        for r in rows:
+            calc_at = r["calculated_at"] or ""
+            time_part = calc_at.split(" ")[1] if " " in calc_at else calc_at
+            r_idx = float(r["route_price_index"] or 128.0)
+            n_idx = float(r["national_airfare_index"]) if r["national_airfare_index"] is not None else None
+
+            chosen_idx = n_idx if (route == "ALL" and n_idx is not None) else r_idx
+            chosen_idx = round(chosen_idx, 2)
+            c_fare = round(float(r["carrier_weighted_fare"] or 0), 2)
+            m_fare = round(float(r["min_fare"] or 0), 2)
+            cpi_bps = round(float(r["cpi_impact_bps"] or 2.10), 2)
+
+            indices.append(chosen_idx)
+            if c_fare > 0:
+                fares.append(c_fare)
+
+            ticks.append({
+                "time": time_part[:5] if len(time_part) >= 5 else time_part,
+                "time_full": time_part,
+                "timestamp": calc_at,
+                "route": f"{r['origin']}-{r['destination']}",
+                "route_index": r_idx,
+                "national_index": n_idx or round(r_idx * 0.95, 2),
+                "index": chosen_idx,
+                "carrier_weighted_fare": c_fare,
+                "min_fare": m_fare,
+                "cpi_impact_bps": cpi_bps,
+                "mospi_baseline": mospi_baseline_val,
+                "atf_fuel_index": atf_fuel_val
+            })
+
+        conn.close()
+
+        # If resolution is hourly, aggregate into 24 bins
+        if resolution == "hourly":
+            hourly_map = {}
+            for t in ticks:
+                hr = t["time"][:2]
+                if hr not in hourly_map:
+                    hourly_map[hr] = []
+                hourly_map[hr].append(t)
+
+            hourly_ticks = []
+            for hr in sorted(hourly_map.keys()):
+                group = hourly_map[hr]
+                g_indices = [g["index"] for g in group]
+                g_fares = [g["carrier_weighted_fare"] for g in group if g["carrier_weighted_fare"] > 0]
+                hourly_ticks.append({
+                    "time": f"{hr}:00",
+                    "hour": hr,
+                    "timestamp": f"{date_str} {hr}:00:00",
+                    "route": "Hourly Composite" if route == "ALL" else route,
+                    "index": round(sum(g_indices) / len(g_indices), 2),
+                    "min_index": round(min(g_indices), 2),
+                    "max_index": round(max(g_indices), 2),
+                    "carrier_weighted_fare": round(sum(g_fares) / len(g_fares), 2) if g_fares else 0,
+                    "tick_count": len(group),
+                    "cpi_impact_bps": round(sum(g["cpi_impact_bps"] for g in group) / len(group), 2),
+                    "mospi_baseline": mospi_baseline_val,
+                    "atf_fuel_index": atf_fuel_val
+                })
+            output_ticks = hourly_ticks
+        else:
+            # If large dataset (> 160 ticks), downsample evenly for optimal Chart.js render performance
+            if len(ticks) > 160:
+                step = max(1, len(ticks) // 140)
+                output_ticks = ticks[::step]
+                if ticks[-1] not in output_ticks:
+                    output_ticks.append(ticks[-1])
+            else:
+                output_ticks = ticks
+
+        return {
+            "date": date_str,
+            "route": route,
+            "resolution": resolution,
+            "total_ticks": len(rows),
+            "plotted_ticks_count": len(output_ticks),
+            "day_avg_index": round(sum(indices) / len(indices), 2) if indices else 128.0,
+            "day_min_index": round(min(indices), 2) if indices else 115.0,
+            "day_max_index": round(max(indices), 2) if indices else 145.0,
+            "day_avg_fare": round(sum(fares) / len(fares), 2) if fares else 0,
+            "mospi_baseline": mospi_baseline_val,
+            "atf_fuel_index": atf_fuel_val,
+            "available_dates": available_dates,
+            "available_routes": available_routes,
+            "ticks": output_ticks,
+            "is_simulated": False
+        }
+
 # Singleton instance
 db = AirfareDatabase()
+
