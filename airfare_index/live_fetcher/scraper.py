@@ -77,17 +77,42 @@ else:
 PREFER_DB_CACHE = (os.environ.get("PREFER_DB_CACHE") == "1") or (IS_RENDER_OR_CLOUD and not PLAYWRIGHT_IN_REQUEST)
 
 CITY_NAMES = {
+    # Metro Trunks
     "DEL": "Delhi", "BOM": "Mumbai", "BLR": "Bangalore", "HYD": "Hyderabad",
-    "MAA": "Chennai", "CCU": "Kolkata", "AMD": "Ahmedabad", "PNQ": "Pune",
-    "GOI": "Goa", "JAI": "Jaipur", "LKO": "Lucknow", "SXR": "Srinagar",
-    "GAU": "Guwahati", "PAT": "Patna", "IXC": "Chandigarh", "VNS": "Varanasi",
-    "ATQ": "Amritsar", "DED": "Dehradun", "IXJ": "Jammu", "IXL": "Leh",
-    "IDR": "Indore", "BHO": "Bhopal", "NAG": "Nagpur", "STV": "Surat",
-    "BDQ": "Vadodara", "COK": "Kochi", "TRV": "Trivandrum", "CJB": "Coimbatore",
+    "MAA": "Chennai", "CCU": "Kolkata",
+    # Northern Region
+    "JAI": "Jaipur", "LKO": "Lucknow", "IXC": "Chandigarh", "VNS": "Varanasi",
+    "ATQ": "Amritsar", "DED": "Dehradun", "SXR": "Srinagar", "IXJ": "Jammu",
+    "IXL": "Leh", "UDR": "Udaipur", "JDH": "Jodhpur", "GWL": "Gwalior",
+    "KUU": "Kullu", "DHM": "Dharamshala", "SLV": "Shimla", "PGH": "Pantnagar",
+    "HSS": "Hisar", "AYJ": "Ayodhya", "KNU": "Kanpur", "AGR": "Agra",
+    "GOP": "Gorakhpur", "PYG": "Pakyong", "LUH": "Ludhiana", "BKB": "Bikaner",
+    "KTU": "Kota", "JSA": "Jaisalmer",
+    # Western & Central Region
+    "AMD": "Ahmedabad", "PNQ": "Pune", "GOI": "Goa", "IDR": "Indore",
+    "BHO": "Bhopal", "NAG": "Nagpur", "STV": "Surat", "BDQ": "Vadodara",
+    "GOX": "Mopa-Goa", "RAJ": "Rajkot", "BHJ": "Bhuj", "JGA": "Jamnagar",
+    "PBD": "Porbandar", "DIU": "Diu", "JLR": "Jabalpur", "KLH": "Kolhapur",
+    "SAG": "Shirdi", "NDC": "Nanded", "AKD": "Akola", "ISK": "Nashik",
+    "IXY": "Kandla",
+    # Southern Region
+    "COK": "Kochi", "TRV": "Trivandrum", "CJB": "Coimbatore",
     "CCJ": "Kozhikode", "IXE": "Mangalore", "VTZ": "Vizag", "IXM": "Madurai",
-    "BBI": "Bhubaneswar", "IXR": "Ranchi", "RPR": "Raipur", "IXB": "Bagdogra",
-    "IXZ": "Port-Blair", "IXA": "Agartala", "IMF": "Imphal"
+    "TRZ": "Tiruchirappalli", "CNN": "Kannur", "VGA": "Vijayawada",
+    "TIR": "Tirupati", "HBX": "Hubli", "BEK": "Belgaum", "MYQ": "Mysore",
+    "RJA": "Rajahmundry", "KDU": "Kadapa",
+    "TCR": "Tuticorin", "SXV": "Salem", "PNY": "Puducherry",
+    # Eastern & North-Eastern Region
+    "GAU": "Guwahati", "PAT": "Patna", "BBI": "Bhubaneswar", "IXR": "Ranchi",
+    "RPR": "Raipur", "IXB": "Bagdogra", "IXZ": "Port-Blair", "IXA": "Agartala",
+    "IMF": "Imphal", "DIB": "Dibrugarh", "GAY": "Gaya", "JRG": "Jharsuguda",
+    "DCA": "Deoghar", "DMU": "Dimapur", "AJL": "Aizawl", "SHL": "Shillong",
+    "TEZ": "Tezpur", "JRH": "Jorhat", "IXS": "Silchar", "IXW": "Jamshedpur",
+    "HGI": "Itanagar", "RDP": "Durgapur", "MZU": "Muzaffarpur", "DBD": "Dhanbad",
+    # Island / Special Territories
+    "AGX": "Agatti",
 }
+
 
 AIRPORT_NAMES = {
     # 1. Metros (Cat-I Trunk)
@@ -107,6 +132,23 @@ AIRPORT_NAMES = {
     "SXR": "Sheikh ul-Alam International Airport, Srinagar",
     "IXJ": "Jammu Airport, Jammu",
     "IXL": "Kushok Bakula Rimpochee Airport, Leh",
+    "UDR": "Maharana Pratap Airport, Udaipur",
+    "JDH": "Jodhpur Airport, Jodhpur",
+    "GWL": "Rajmata Vijaya Raje Scindia Airport, Gwalior",
+    "KUU": "Kullu-Manali Airport, Kullu",
+    "DHM": "Gaggal Airport, Dharamshala",
+    "SLV": "Shimla Airport, Shimla",
+    "PGH": "Pantnagar Airport, Pantnagar",
+    "HSS": "Hisar Airport, Hisar",
+    "AYJ": "Maharishi Valmiki International Airport, Ayodhya",
+    "KNU": "Kanpur Airport, Kanpur",
+    "AGR": "Agra Airport, Agra",
+    "GOP": "Gorakhpur Airport, Gorakhpur",
+    "PYG": "Pakyong Airport, Sikkim",
+    "LUH": "Sahnewal Airport, Ludhiana",
+    "BKB": "Nal Airport, Bikaner",
+    "KTU": "Kota Airport, Kota",
+    "JSA": "Jaisalmer Airport, Jaisalmer",
     # 3. Western & Central Region
     "AMD": "Sardar Vallabhbhai Patel International Airport, Ahmedabad",
     "PNQ": "Pune Airport, Pune",
@@ -116,6 +158,19 @@ AIRPORT_NAMES = {
     "NAG": "Dr. Babasaheb Ambedkar International Airport, Nagpur",
     "STV": "Surat International Airport, Surat",
     "BDQ": "Vadodara Airport, Vadodara",
+    "GOX": "Manohar International Airport, Mopa (North Goa)",
+    "RAJ": "Rajkot International Airport, Rajkot",
+    "BHJ": "Bhuj Airport, Bhuj",
+    "JGA": "Jamnagar Airport, Jamnagar",
+    "PBD": "Porbandar Airport, Porbandar",
+    "DIU": "Diu Airport, Diu",
+    "JLR": "Jabalpur Airport, Jabalpur",
+    "KLH": "Kolhapur Airport, Kolhapur",
+    "SAG": "Shirdi Airport, Shirdi",
+    "NDC": "Shri Guru Gobind Singh Ji Airport, Nanded",
+    "AKD": "Akola Airport, Akola",
+    "ISK": "Nashik Airport, Nashik",
+    "IXY": "Kandla Airport, Kandla",
     # 4. Southern Region
     "COK": "Cochin International Airport, Kochi",
     "TRV": "Thiruvananthapuram International Airport, Trivandrum",
@@ -124,6 +179,18 @@ AIRPORT_NAMES = {
     "IXE": "Mangaluru International Airport, Mangalore",
     "VTZ": "Visakhapatnam International Airport, Vizag",
     "IXM": "Madurai Airport, Madurai",
+    "TRZ": "Tiruchirappalli International Airport, Tiruchirappalli",
+    "CNN": "Kannur International Airport, Kannur",
+    "VGA": "Vijayawada Airport, Vijayawada",
+    "TIR": "Tirupati Airport, Tirupati",
+    "HBX": "Hubli Airport, Hubli",
+    "BEK": "Belgaum Airport, Belgaum",
+    "MYQ": "Mysore Airport, Mysore",
+    "RJA": "Rajahmundry Airport, Rajahmundry",
+    "KDU": "Kadapa Airport, Kadapa",
+    "TCR": "Tuticorin Airport, Tuticorin",
+    "SXV": "Salem Airport, Salem",
+    "PNY": "Puducherry Airport, Puducherry",
     # 5. Eastern & North-Eastern Region
     "GAU": "Lokpriya Gopinath Bordoloi International Airport, Guwahati",
     "PAT": "Jay Prakash Narayan Airport, Patna",
@@ -134,6 +201,23 @@ AIRPORT_NAMES = {
     "IXZ": "Veer Savarkar International Airport, Port Blair",
     "IXA": "Maharaja Bir Bikram Airport, Agartala",
     "IMF": "Bir Tikendrajit International Airport, Imphal",
+    "DIB": "Dibrugarh Airport, Dibrugarh",
+    "GAY": "Gaya Airport, Gaya",
+    "JRG": "Veer Surendra Sai Airport, Jharsuguda",
+    "DCA": "Deoghar Airport, Deoghar",
+    "DMU": "Dimapur Airport, Dimapur",
+    "AJL": "Lengpui Airport, Aizawl",
+    "SHL": "Shillong Airport, Shillong",
+    "TEZ": "Tezpur Airport, Tezpur",
+    "JRH": "Jorhat Airport, Jorhat",
+    "IXS": "Silchar Airport, Silchar",
+    "IXW": "Sonari Airport, Jamshedpur",
+    "HGI": "Donyi Polo Airport, Itanagar",
+    "RDP": "Kazi Nazrul Islam Airport, Durgapur",
+    "MZU": "Muzaffarpur Airport, Muzaffarpur",
+    "DBD": "Dhanbad Airport, Dhanbad",
+    # 6. Island / Special Territories
+    "AGX": "Agatti Aerodrome, Agatti",
 }
 
 AIRLINES_INFO = {
