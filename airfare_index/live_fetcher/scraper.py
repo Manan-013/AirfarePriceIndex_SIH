@@ -1227,11 +1227,12 @@ class RealtimeFlightScraper:
             for attempt in range(max_attempts):
                 headers = proxy_manager.get_random_headers({
                     'Accept-Language': 'en-IN,en;q=0.9,hi;q=0.8',
-                    'Cookie': 'CONSENT=PENDING+999; SOCS=CAISHAgBEhJnd3NfMjAyNDA4MDgtMF9SQzIaAmVuIAEaBgiA_L20Bg'
+                    'Cookie': 'CONSENT=YES+cb.20230531-04-p0.en-GB+FX+999; SOCS=CAISHAgBEhJnd3NfMjAyNDA4MDgtMF9SQzIaAmVuIAEaBgiA_L20Bg; 1P_JAR=2024-09-26-11'
                 }) if proxy_manager else {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
                     'Accept-Language': 'en-IN,en;q=0.9,hi;q=0.8',
-                    'Cookie': 'CONSENT=PENDING+999; SOCS=CAISHAgBEhJnd3NfMjAyNDA4MDgtMF9SQzIaAmVuIAEaBgiA_L20Bg'
+                    'Cookie': 'CONSENT=YES+cb.20230531-04-p0.en-GB+FX+999; SOCS=CAISHAgBEhJnd3NfMjAyNDA4MDgtMF9SQzIaAmVuIAEaBgiA_L20Bg; 1P_JAR=2024-09-26-11'
                 }
 
                 proxy_url = proxy_manager.get_next_proxy() if proxy_manager else None
