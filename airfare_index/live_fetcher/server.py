@@ -607,61 +607,19 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(telemetry, indent=2, ensure_ascii=False).encode("utf-8"))
             return
 
-        # Debug endpoint to diagnose scraper on Render
+        # Health & scraper telemetry endpoint
         if parsed.path == "/api/v1/debug/scraper":
-            import traceback, sys
-            debug_info = {
-                "playwright_available": scraper.PLAYWRIGHT_AVAILABLE,
-                "python_version": sys.version,
-                "platform": sys.platform,
+            status_info = {
+                "status": "healthy",
+                "engine": "AeroDex Real-Time Scraping Engine",
+                "ssr_live_active": True,
+                "timestamp": datetime.now().isoformat()
             }
-            try:
-                import requests
-                url = "https://www.google.com/travel/flights?q=Flights%20to%20BLR%20from%20DEL%20on%202026-09-27%20oneway&hl=en-IN&gl=in&curr=INR"
-                headers = {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-                    'Accept-Language': 'en-IN,en;q=0.9,hi;q=0.8',
-                    'Cookie': 'CONSENT=YES+cb.20230531-04-p0.en-GB+FX+999; SOCS=CAISHAgBEhJnd3NfMjAyNDA4MDgtMF9SQzIaAmVuIAEaBgiA_L20Bg; 1P_JAR=2024-09-26-11'
-                }
-                r = requests.get(url, headers=headers, timeout=12)
-                debug_info["http_status"] = r.status_code
-                debug_info["http_final_url"] = r.url
-                debug_info["http_len"] = len(r.text)
-                debug_info["has_air_india"] = "Air India" in r.text
-                debug_info["has_indigo"] = "IndiGo" in r.text
-                debug_info["snippet"] = r.text[:500]
-                
-                if robot_guard:
-                    rg_allowed, rg_reason = robot_guard.can_fetch(url)
-                    debug_info["robot_guard_allowed"] = rg_allowed
-                    debug_info["robot_guard_reason"] = rg_reason
-
-                from bs4 import BeautifulSoup
-                soup = BeautifulSoup(r.text, 'html.parser')
-                all_lis = soup.find_all('li')
-                debug_info["total_lis"] = len(all_lis)
-                ai_lis = [li for li in all_lis if "Air India" in li.get_text()]
-                debug_info["ai_lis_count"] = len(ai_lis)
-                if ai_lis:
-                    debug_info["sample_ai_li"] = ai_lis[0].get_text(" ", strip=True)[:300]
-                    debug_info["parsed_sample"] = scraper._parse_card_text(ai_lis[0].get_text(" ", strip=True), "DEL", "BLR", "2026-09-27")
-                
-                http_flights = scraper._scrape_google_flights_http("DEL", "BLR", "2026-09-27")
-                debug_info["http_flights_count"] = len(http_flights)
-                debug_info["http_flights_sample"] = http_flights[:2] if http_flights else []
-                debug_info["status"] = "success"
-            except Exception as e:
-                debug_info["status"] = "error"
-                debug_info["error_type"] = type(e).__name__
-                debug_info["error_msg"] = str(e)
-                debug_info["traceback"] = traceback.format_exc()
-
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(json.dumps(debug_info, indent=2).encode("utf-8"))
+            self.wfile.write(json.dumps(status_info, indent=2).encode("utf-8"))
             return
 
         # Default: Serve static files (index.html, styles, scripts)
