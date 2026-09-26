@@ -3446,7 +3446,7 @@
  body: JSON.stringify({ origin, destination, date, force_live: true })
  });
  if (!res.ok) {
-   throw new Error(\Search service temporarily unavailable (HTTP \)\);
+        throw new Error("Search service temporarily unavailable (HTTP " + res.status + ")");
  }
  const data = await res.json();
  if (!data || data.error) {
