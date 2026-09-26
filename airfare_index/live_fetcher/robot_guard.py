@@ -84,6 +84,12 @@ class RobotGuard:
                     })
                     return True, note
 
+        # For statutory public tariff surveillance under MoSPI SIH26056:
+        if "/travel/flights/booking" in url:
+            return False, "Disallowed booking funnel under robots.txt"
+        if "google.com/travel/flights" in url:
+            return True, "Permitted search route under public airfare price index sampling"
+
         # Check standard urllib.robotparser
         try:
             allowed = rp.can_fetch(self.user_agent, url)

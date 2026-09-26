@@ -1234,6 +1234,7 @@ class RealtimeFlightScraper:
                     'Accept-Language': 'en-IN,en;q=0.9,hi;q=0.8',
                     'Cookie': 'CONSENT=YES+cb.20230531-04-p0.en-GB+FX+999; SOCS=CAISHAgBEhJnd3NfMjAyNDA4MDgtMF9SQzIaAmVuIAEaBgiA_L20Bg; 1P_JAR=2024-09-26-11'
                 }
+                headers['Accept-Encoding'] = 'gzip, deflate'
 
                 proxy_url = proxy_manager.get_next_proxy() if proxy_manager else None
                 proxies = {"http": proxy_url, "https": proxy_url} if proxy_url else None
@@ -1267,7 +1268,7 @@ class RealtimeFlightScraper:
             # Google Flights structures its results into lists: Top flights (Best) followed by Other departing flights
             lists = soup.find_all(['ul', 'ol'])
             for l in lists:
-                items = l.find_all('li', recursive=False)
+                items = l.find_all('li')
                 flight_lis = [item for item in items if any(c in item.get_text() for c in ['IndiGo', 'Air India', 'Akasa', 'SpiceJet', 'Vistara', 'AIX', '₹', 'Rs', 'INR', '$'])]
                 if not flight_lis:
                     continue
@@ -1280,9 +1281,35 @@ class RealtimeFlightScraper:
                     txt = li.get_text(" ", strip=True)
                     flight_data = self._parse_card_text(txt, origin, dest, date)
                     if flight_data:
+                        if flight_data.get("departure_time") == flight_data.get("arrival_time"):
+                            continue
                         key = (flight_data["carrier_name"], flight_data["departure_time"], flight_data["total_fare"])
                         if key not in seen:
                             seen.add(key)
+                            flight_data["is_top_flight"] = is_top_section
+                            flight_data["category"] = "Top Pick (Best)" if is_top_section else "Standard Schedule"
+                            if is_top_section:
+                                top_count += 1
+                            flights.append(flight_data)
+
+            # Direct extraction fallback: ensures all genuine flight cards are collected even if DOM wrapping varies
+            if not flights:
+                candidate_lis = soup.find_all('li')
+                if not candidate_lis:
+                    candidate_lis = soup.find_all(['div'], attrs={'role': 'listitem'})
+
+                for li in candidate_lis:
+                    txt = li.get_text(" ", strip=True)
+                    if not (('hr' in txt or 'min' in txt) and any(c in txt for c in ['IndiGo', 'Air India', 'Akasa', 'SpiceJet', 'Vistara', 'AIX']) and any(c in txt for c in ['₹', 'Rs', 'INR', '$'])):
+                        continue
+                    flight_data = self._parse_card_text(txt, origin, dest, date)
+                    if flight_data:
+                        if flight_data.get("departure_time") == flight_data.get("arrival_time"):
+                            continue
+                        key = (flight_data["carrier_name"], flight_data["departure_time"], flight_data["total_fare"])
+                        if key not in seen:
+                            seen.add(key)
+                            is_top_section = (top_count < 4)
                             flight_data["is_top_flight"] = is_top_section
                             flight_data["category"] = "Top Pick (Best)" if is_top_section else "Standard Schedule"
                             if is_top_section:
