@@ -1213,7 +1213,7 @@ class RealtimeFlightScraper:
             import requests
             from bs4 import BeautifulSoup
 
-            url = f"https://www.google.com/travel/flights?q=Flights%20to%20{dest}%20from%20{origin}%20on%20{date}%20oneway&hl=en-IN&gl=in"
+            url = f"https://www.google.com/travel/flights?q=Flights%20to%20{dest}%20from%20{origin}%20on%20{date}%20oneway&hl=en-IN&gl=in&curr=INR"
             if robot_guard:
                 allowed, reason = robot_guard.can_fetch(url)
                 if not allowed:
@@ -1226,11 +1226,11 @@ class RealtimeFlightScraper:
             max_attempts = 2
             for attempt in range(max_attempts):
                 headers = proxy_manager.get_random_headers({
-                    'Accept-Language': 'en-IN,en;q=0.9',
+                    'Accept-Language': 'en-IN,en;q=0.9,hi;q=0.8',
                     'Cookie': 'CONSENT=PENDING+999; SOCS=CAISHAgBEhJnd3NfMjAyNDA4MDgtMF9SQzIaAmVuIAEaBgiA_L20Bg'
                 }) if proxy_manager else {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-                    'Accept-Language': 'en-IN,en;q=0.9',
+                    'Accept-Language': 'en-IN,en;q=0.9,hi;q=0.8',
                     'Cookie': 'CONSENT=PENDING+999; SOCS=CAISHAgBEhJnd3NfMjAyNDA4MDgtMF9SQzIaAmVuIAEaBgiA_L20Bg'
                 }
 
@@ -1267,7 +1267,7 @@ class RealtimeFlightScraper:
             lists = soup.find_all(['ul', 'ol'])
             for l in lists:
                 items = l.find_all('li', recursive=False)
-                flight_lis = [item for item in items if '₹' in item.get_text() or 'Rs' in item.get_text()]
+                flight_lis = [item for item in items if any(c in item.get_text() for c in ['IndiGo', 'Air India', 'Akasa', 'SpiceJet', 'Vistara', 'AIX', '₹', 'Rs', 'INR', '$'])]
                 if not flight_lis:
                     continue
 
@@ -1853,8 +1853,9 @@ class RealtimeFlightScraper:
                             if "Google Flights" in sp: sources_seen.add("Google Flights")
 
                     formatted_flights, clean_meta = self.clean_and_filter_quotes(formatted_flights, origin, destination)
-                    if len(formatted_flights) >= 5:
-                        formatted_flights.sort(key=lambda x: x["total_fare"])
+                    carrier_count = len(set(f.get("carrier_code") for f in formatted_flights))
+                    if len(formatted_flights) >= 8 and carrier_count >= 2:
+                        formatted_flights.sort(key=lambda x: (0 if x.get("stops") == "Non-stop" else 1, x["total_fare"]))
                         min_fare = min(f["total_fare"] for f in formatted_flights)
                         for idx, f in enumerate(formatted_flights):
                             f["is_cheapest"] = (f["total_fare"] == min_fare)
