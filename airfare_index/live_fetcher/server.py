@@ -616,11 +616,26 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
                 "platform": sys.platform,
             }
             try:
-                import asyncio
-                flights = asyncio.run(scraper._scrape_google_flights_async("DEL", "BOM", "2026-09-14"))
+                import requests
+                url = "https://www.google.com/travel/flights?q=Flights%20to%20BLR%20from%20DEL%20on%202026-09-27%20oneway&hl=en-IN&gl=in&curr=INR"
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-IN,en;q=0.9,hi;q=0.8',
+                    'Cookie': 'CONSENT=YES+cb.20230531-04-p0.en-GB+FX+999; SOCS=CAISHAgBEhJnd3NfMjAyNDA4MDgtMF9SQzIaAmVuIAEaBgiA_L20Bg; 1P_JAR=2024-09-26-11'
+                }
+                r = requests.get(url, headers=headers, timeout=12)
+                debug_info["http_status"] = r.status_code
+                debug_info["http_final_url"] = r.url
+                debug_info["http_len"] = len(r.text)
+                debug_info["has_air_india"] = "Air India" in r.text
+                debug_info["has_indigo"] = "IndiGo" in r.text
+                debug_info["snippet"] = r.text[:500]
+                
+                http_flights = scraper._scrape_google_flights_http("DEL", "BLR", "2026-09-27")
+                debug_info["http_flights_count"] = len(http_flights)
+                debug_info["http_flights_sample"] = http_flights[:2] if http_flights else []
                 debug_info["status"] = "success"
-                debug_info["flights_found"] = len(flights)
-                debug_info["sample"] = flights[:2] if flights else []
             except Exception as e:
                 debug_info["status"] = "error"
                 debug_info["error_type"] = type(e).__name__
