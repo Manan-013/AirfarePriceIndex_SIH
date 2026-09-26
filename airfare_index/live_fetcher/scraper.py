@@ -431,6 +431,9 @@ class RealtimeFlightScraper:
 
         links = self._generate_deeplinks(origin, dest, date, carrier_code)
 
+        dep_time = re.sub(r'\+\d+', '', str(row.get("departure_time") or "06:00")).strip()
+        arr_time = re.sub(r'\+\d+', '', str(row.get("arrival_time") or "08:15")).strip()
+
         return {
             "carrier_code": carrier_code,
             "carrier_name": carrier_name,
@@ -438,8 +441,8 @@ class RealtimeFlightScraper:
             "flight_number": row.get("flight_number") or f"{carrier_code}-101",
             "origin": origin,
             "destination": dest,
-            "departure_time": row.get("departure_time") or "06:00",
-            "arrival_time": row.get("arrival_time") or "08:15",
+            "departure_time": dep_time,
+            "arrival_time": arr_time,
             "duration": row.get("duration") or "2h 15m",
             "stops": row.get("stops") or "Non-stop",
             "total_fare": total_fare,
@@ -502,11 +505,13 @@ class RealtimeFlightScraper:
 
         cleaned = [f for f in valid if float(f["total_fare"]) <= upper_threshold]
 
-        # Ensure no flight has identical departure and arrival times
+        # Ensure no flight has identical departure and arrival times and sanitize +1 artifacts
         for f in cleaned:
-            dep = str(f.get("departure_time", "")).strip()
-            arr = str(f.get("arrival_time", "")).strip()
+            dep = re.sub(r'\+\d+', '', str(f.get("departure_time", ""))).strip()
+            arr = re.sub(r'\+\d+', '', str(f.get("arrival_time", ""))).strip()
             dur = str(f.get("duration", "2h 15m")).strip()
+            f["departure_time"] = dep
+            f["arrival_time"] = arr
             if dep and arr and dep.lower() == arr.lower():
                 f["arrival_time"] = self._calculate_arrival_time(dep, dur)
 
@@ -590,15 +595,15 @@ class RealtimeFlightScraper:
 
         # Robust departure and arrival time extraction
         # Google Flights text format: "<dep_time> <dep_time> on <Date> – <arr_time> <arr_time> on <Date>"
-        dash_match = re.search(r'(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm))\b.*?[-–—].*?\b(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)(?:\+\d+)?)', clean_txt, re.IGNORECASE)
+        dash_match = re.search(r'(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)\b.*?[-–—].*?\b(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)', clean_txt, re.IGNORECASE)
         if dash_match and dash_match.group(1).strip().lower() != dash_match.group(2).strip().lower():
-            dep_time = dash_match.group(1).strip()
-            arr_time = dash_match.group(2).strip()
+            dep_time = re.sub(r'\+\d+', '', dash_match.group(1)).strip()
+            arr_time = re.sub(r'\+\d+', '', dash_match.group(2)).strip()
         else:
-            raw_times = re.findall(r'\b(\d{1,2}:\d{2}(?:\s*(?:AM|PM|am|pm))?(?:\+\d+)?)\b', clean_txt, re.IGNORECASE)
+            raw_times = re.findall(r'\b(\d{1,2}:\d{2}(?:\s*(?:AM|PM|am|pm))?)\b', clean_txt, re.IGNORECASE)
             distinct_times = []
             for t in raw_times:
-                t_clean = re.sub(r'\s+', ' ', t).strip()
+                t_clean = re.sub(r'\+\d+', '', re.sub(r'\s+', ' ', t)).strip()
                 if not distinct_times or t_clean.lower() != distinct_times[-1].lower():
                     distinct_times.append(t_clean)
 

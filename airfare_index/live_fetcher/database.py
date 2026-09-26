@@ -389,7 +389,7 @@ class AirfareDatabase:
                    advance_window, source_portal, scraped_at
             FROM scraped_quotes 
             WHERE origin = ? AND destination = ?
-            ORDER BY id DESC LIMIT ?
+            ORDER BY CASE WHEN stops = 'Non-stop' THEN 0 ELSE 1 END, total_fare ASC, id DESC LIMIT ?
         """, (orig, dest, limit))
         rows = [dict(r) for r in cur.fetchall()]
 
@@ -402,7 +402,7 @@ class AirfareDatabase:
                        advance_window, source_portal, scraped_at
                 FROM scraped_quotes 
                 WHERE origin = ? AND destination = ?
-                ORDER BY id DESC LIMIT ?
+                ORDER BY CASE WHEN stops = 'Non-stop' THEN 0 ELSE 1 END, total_fare ASC, id DESC LIMIT ?
             """, (orig, dest, dest, orig, limit))
             reciprocal = [dict(r) for r in cur.fetchall()]
             if reciprocal:
