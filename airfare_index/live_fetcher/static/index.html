@@ -3445,7 +3445,13 @@
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify({ origin, destination, date, force_live: true })
  });
+ if (!res.ok) {
+   throw new Error(\Search service temporarily unavailable (HTTP \)\);
+ }
  const data = await res.json();
+ if (!data || data.error) {
+   throw new Error(data?.error || 'Unable to retrieve live fare quotes for this sector.');
+ }
  currentPayload = data;
  renderResults(data);
  } catch (err) {
@@ -3457,71 +3463,109 @@
  });
 
  function renderResults(data) {
- // Summary Metrics
- document.getElementById('lowestFare').innerText = '₹' + data.summary.min_fare.toLocaleString('en-IN');
- document.getElementById('carrierWeightedFare').innerText = '₹' + (data.summary.carrier_weighted_fare || data.summary.avg_fare).toLocaleString('en-IN');
- document.getElementById('flightCount').innerText = data.summary.direct_flights;
- document.getElementById('advanceWindow').innerText = data.window;
-  document.getElementById('routeBadge').innerText = `${data.origin} → ${data.destination}`;
-  
-  const sourceEl = document.getElementById('sourceBadge');
-  const noticeBanner = document.getElementById('fallbackNoticeBanner');
-  const isLive = data.is_live === true || (data.data_authenticity && data.data_authenticity.toLowerCase().includes('live'));
+    if (!data) return;
+    const summary = data.summary || {
+      min_fare: 0,
+      max_fare: 0,
+      avg_fare: 0,
+      carrier_weighted_fare: 0,
+      direct_flights: 0,
+      route_index: 100.0,
+      price_change_pct: 0.0,
+      base_fare_p0: 0
+    };
 
-  if (isLive) {
-    sourceEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1"></span> ${data.data_authenticity || 'Live Web Scraped'}`;
-    sourceEl.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 font-mono font-bold shadow-2xs";
-    if (noticeBanner) noticeBanner.classList.add('hidden');
-  } else {
-    sourceEl.innerHTML = `<svg class="w-3.5 h-3.5 inline-block text-amber-500 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>Simulated / Benchmark Estimate (Fallback)`;
-    sourceEl.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-300 font-mono font-bold shadow-2xs";
-    if (noticeBanner) noticeBanner.classList.remove('hidden');
-  }
+    // Summary Metrics
+    const minFare = summary.min_fare ?? 0;
+    const weightedFare = summary.carrier_weighted_fare || summary.avg_fare || minFare || 0;
+    const lowestFareEl = document.getElementById('lowestFare');
+    if (lowestFareEl) lowestFareEl.innerText = '₹' + Number(minFare).toLocaleString('en-IN');
+    
+    const carrierWeightedFareEl = document.getElementById('carrierWeightedFare');
+    if (carrierWeightedFareEl) carrierWeightedFareEl.innerText = '₹' + Number(weightedFare).toLocaleString('en-IN');
+    
+    const flightCountEl = document.getElementById('flightCount');
+    if (flightCountEl) flightCountEl.innerText = summary.direct_flights !== undefined ? summary.direct_flights : (data.flights ? data.flights.length : 0);
+    
+    const advanceWindowEl = document.getElementById('advanceWindow');
+    if (advanceWindowEl) advanceWindowEl.innerText = data.window || 'T+1';
+    
+    const routeBadgeEl = document.getElementById('routeBadge');
+    if (routeBadgeEl) routeBadgeEl.innerText = `${data.origin || ''} → ${data.destination || ''}`;
+    
+    const sourceEl = document.getElementById('sourceBadge');
+    const noticeBanner = document.getElementById('fallbackNoticeBanner');
+    const isLive = data.is_live === true || (data.data_authenticity && data.data_authenticity.toLowerCase().includes('live'));
 
-  document.getElementById('scrapeTimestamp').innerText = `Extracted at: ${new Date(data.timestamp).toLocaleTimeString()}`;
+    if (sourceEl) {
+      if (isLive) {
+        sourceEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1"></span> ${data.data_authenticity || 'Live Web Scraped'}`;
+        sourceEl.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 font-mono font-bold shadow-2xs";
+        if (noticeBanner) noticeBanner.classList.add('hidden');
+      } else {
+        sourceEl.innerHTML = `<svg class="w-3.5 h-3.5 inline-block text-amber-500 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>Simulated / Benchmark Estimate (Fallback)`;
+        sourceEl.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-300 font-mono font-bold shadow-2xs";
+        if (noticeBanner) noticeBanner.classList.remove('hidden');
+      }
+    }
 
- const liveBadge = document.getElementById('tabBadge-live');
- if (liveBadge && data.flights) {
- liveBadge.innerText = `${data.flights.length} Flights`;
- }
+    const scrapeTsEl = document.getElementById('scrapeTimestamp');
+    if (scrapeTsEl) {
+      const ts = data.timestamp ? new Date(data.timestamp) : new Date();
+      scrapeTsEl.innerText = `Extracted at: ${isNaN(ts.getTime()) ? new Date().toLocaleTimeString() : ts.toLocaleTimeString()}`;
+    }
 
- // Refresh live SQLite database record counts
- loadDbStats();
+    const liveBadge = document.getElementById('tabBadge-live');
+    if (liveBadge && data.flights) {
+      liveBadge.innerText = `${data.flights.length} Flights`;
+    }
 
- if (data.summary.route_index) {
- document.getElementById('sectorIndex').innerText = data.summary.route_index;
- const chg = data.summary.price_change_pct;
- document.getElementById('sectorChangePct').innerHTML = `${chg >= 0 ? '▲ +' : '▼ '}${chg}% vs Base (₹${data.summary.base_fare_p0})`;
- document.getElementById('sectorChangePct').className = `text-[11px] font-mono mt-1 font-semibold ${chg >= 0 ? 'text-[#1A6357]' : 'text-[#B82846]'}`;
- }
+    // Refresh live SQLite database record counts
+    if (typeof loadDbStats === 'function') {
+      loadDbStats();
+    }
 
- // Update Top Macro Banner (strictly using all-India national basket)
- if (data.macro_context) {
- const natIdx = data.macro_context.national_airfare_index || data.macro_context.national_index;
- const cpiBps = data.macro_context.headline_cpi_impact_basis_points !== undefined ? data.macro_context.headline_cpi_impact_basis_points : data.macro_context.cpi_impact_bps;
- const cpiPct = data.macro_context.headline_cpi_contribution_pct !== undefined ? data.macro_context.headline_cpi_contribution_pct : data.macro_context.cpi_contribution_pct;
- 
- if (natIdx && (data.macro_context.routes_evaluated > 1 || !data.summary.route_index || natIdx !== data.summary.route_index)) {
- document.getElementById('nationalIndexVal').innerText = Number(natIdx).toFixed(2);
- const sqEl = document.getElementById('sidebarQuickIndexVal');
- if (sqEl) sqEl.innerText = Number(natIdx).toFixed(2);
- const natChangeEl = document.getElementById('nationalIndexChange');
- if (natChangeEl) {
- const pctDiff = Number(natIdx) - 100.0;
- const arrow = pctDiff >= 0 ? '▲' : '▼';
- const sign = pctDiff >= 0 ? '+' : '';
- natChangeEl.innerHTML = `<span>${arrow} ${sign}${pctDiff.toFixed(2)}%</span> vs. Base 2024`;
- }
- }
- if (cpiBps !== undefined) {
- document.getElementById('cpiImpactVal').innerText = `${cpiBps >= 0 ? '+' : ''}${cpiBps} bps`;
- }
- if (cpiPct !== undefined) {
- document.getElementById('cpiImpactText').innerText = `${cpiPct >= 0 ? '+' : ''}${cpiPct}% contribution to CPI`;
- }
- }
+    if (summary.route_index !== undefined) {
+      const sectorIdxEl = document.getElementById('sectorIndex');
+      if (sectorIdxEl) sectorIdxEl.innerText = summary.route_index;
+      const chg = summary.price_change_pct ?? 0;
+      const sectorChgEl = document.getElementById('sectorChangePct');
+      if (sectorChgEl) {
+        sectorChgEl.innerHTML = `${chg >= 0 ? '▲ +' : '▼ '}${chg}% vs Base (₹${summary.base_fare_p0 || 0})`;
+        sectorChgEl.className = `text-[11px] font-mono mt-1 font-semibold ${chg >= 0 ? 'text-[#1A6357]' : 'text-[#B82846]'}`;
+      }
+    }
 
-  // Store data globally for dynamic filtering
+    // Update Top Macro Banner (strictly using all-India national basket)
+    if (data.macro_context) {
+      const natIdx = data.macro_context.national_airfare_index || data.macro_context.national_index;
+      const cpiBps = data.macro_context.headline_cpi_impact_basis_points !== undefined ? data.macro_context.headline_cpi_impact_basis_points : data.macro_context.cpi_impact_bps;
+      const cpiPct = data.macro_context.headline_cpi_contribution_pct !== undefined ? data.macro_context.headline_cpi_contribution_pct : data.macro_context.cpi_contribution_pct;
+      
+      if (natIdx && (data.macro_context.routes_evaluated > 1 || !summary.route_index || natIdx !== summary.route_index)) {
+        const natValEl = document.getElementById('nationalIndexVal');
+        if (natValEl) natValEl.innerText = Number(natIdx).toFixed(2);
+        const sqEl = document.getElementById('sidebarQuickIndexVal');
+        if (sqEl) sqEl.innerText = Number(natIdx).toFixed(2);
+        const natChangeEl = document.getElementById('nationalIndexChange');
+        if (natChangeEl) {
+          const pctDiff = Number(natIdx) - 100.0;
+          const arrow = pctDiff >= 0 ? '▲' : '▼';
+          const sign = pctDiff >= 0 ? '+' : '';
+          natChangeEl.innerHTML = `<span>${arrow} ${sign}${pctDiff.toFixed(2)}%</span> vs. Base 2024`;
+        }
+      }
+      if (cpiBps !== undefined) {
+        const cpiValEl = document.getElementById('cpiImpactVal');
+        if (cpiValEl) cpiValEl.innerText = `${cpiBps >= 0 ? '+' : ''}${cpiBps} bps`;
+      }
+      if (cpiPct !== undefined) {
+        const cpiTextEl = document.getElementById('cpiImpactText');
+        if (cpiTextEl) cpiTextEl.innerText = `${cpiPct >= 0 ? '+' : ''}${cpiPct}% contribution to CPI`;
+      }
+    }
+
+    // Store data globally for dynamic filtering
   currentFlightsData = data.flights || [];
   currentSearchPayload = data;
 
