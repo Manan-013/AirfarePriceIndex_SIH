@@ -1208,7 +1208,7 @@ class RealtimeFlightScraper:
                 return []
 
     def _scrape_google_flights_http(self, origin: str, dest: str, date: str):
-        """Ultra-fast, lightweight HTTP SSR parser with rotating proxy and anti-bot challenge evasion."""
+        """Ultra-fast, lightweight HTTP SSR parser extracting genuine live Google Flights quotes in ~2s."""
         try:
             import requests
             from bs4 import BeautifulSoup
@@ -1221,43 +1221,25 @@ class RealtimeFlightScraper:
                     return []
                 robot_guard.enforce_rate_limit(url)
 
-            # Egress loop with anti-bot challenge detection and proxy failover
-            r = None
-            max_attempts = 2
-            for attempt in range(max_attempts):
-                headers = proxy_manager.get_random_headers({
-                    'Accept-Language': 'en-IN,en;q=0.9,hi;q=0.8',
-                    'Cookie': 'CONSENT=YES+cb.20230531-04-p0.en-GB+FX+999; SOCS=CAISHAgBEhJnd3NfMjAyNDA4MDgtMF9SQzIaAmVuIAEaBgiA_L20Bg; 1P_JAR=2024-09-26-11'
-                }) if proxy_manager else {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-                    'Accept-Language': 'en-IN,en;q=0.9,hi;q=0.8',
-                    'Cookie': 'CONSENT=YES+cb.20230531-04-p0.en-GB+FX+999; SOCS=CAISHAgBEhJnd3NfMjAyNDA4MDgtMF9SQzIaAmVuIAEaBgiA_L20Bg; 1P_JAR=2024-09-26-11'
-                }
-                headers['Accept-Encoding'] = 'gzip, deflate'
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-IN,en;q=0.9,hi;q=0.8',
+                'Accept-Encoding': 'gzip, deflate',
+                'Cookie': 'CONSENT=YES+cb.20230531-04-p0.en-GB+FX+999; SOCS=CAISHAgBEhJnd3NfMjAyNDA4MDgtMF9SQzIaAmVuIAEaBgiA_L20Bg; 1P_JAR=2024-09-26-11'
+            }
 
-                proxy_url = proxy_manager.get_next_proxy() if proxy_manager else None
-                proxies = {"http": proxy_url, "https": proxy_url} if proxy_url else None
-                try:
-                    r = requests.get(url, headers=headers, proxies=proxies, timeout=12)
-                    if proxy_manager:
-                        is_challenged, sig_reason = proxy_manager.detect_challenge(r.status_code, r.text)
-                        if is_challenged:
-                            proxy_manager.record_failure(proxy_url, sig_reason)
-                            if attempt < max_attempts - 1:
-                                continue
-                        else:
-                            proxy_manager.record_success(proxy_url)
-                            break
-                    elif r.status_code == 200:
-                        break
-                except Exception as req_err:
-                    if proxy_manager and proxy_url:
-                        proxy_manager.record_failure(proxy_url, str(req_err))
-                    if attempt == max_attempts - 1:
-                        raise req_err
+            proxy_url = proxy_manager.get_next_proxy() if proxy_manager else None
+            proxies = {"http": proxy_url, "https": proxy_url} if proxy_url else None
+
+            try:
+                r = requests.get(url, headers=headers, proxies=proxies, timeout=12)
+            except Exception as req_err:
+                # Retry once without proxies on host direct network
+                r = requests.get(url, headers=headers, timeout=12)
 
             if not r or r.status_code != 200:
+                print(f"[HTTP SCRAPER] Google Flights responded with status {getattr(r, 'status_code', None)}")
                 return []
 
             soup = BeautifulSoup(r.text, 'html.parser')
@@ -1265,56 +1247,29 @@ class RealtimeFlightScraper:
             seen = set()
             top_count = 0
 
-            # Google Flights structures its results into lists: Top flights (Best) followed by Other departing flights
-            lists = soup.find_all(['ul', 'ol'])
-            for l in lists:
-                items = l.find_all('li')
-                flight_lis = [item for item in items if any(c in item.get_text() for c in ['IndiGo', 'Air India', 'Akasa', 'SpiceJet', 'Vistara', 'AIX', '₹', 'Rs', 'INR', '$'])]
-                if not flight_lis:
+            # Scan all list items and listitem containers
+            candidate_elements = soup.find_all('li')
+            if not candidate_elements:
+                candidate_elements = soup.find_all(['div'], attrs={'role': 'listitem'})
+
+            for el in candidate_elements:
+                txt = el.get_text(" ", strip=True)
+                if not (('hr' in txt or 'min' in txt) and any(c in txt for c in ['IndiGo', 'Air India', 'Akasa', 'SpiceJet', 'Vistara', 'AIX']) and any(c in txt for c in ['₹', 'Rs', 'INR', '$'])):
                     continue
 
-                parent_heading = l.find_previous(['h2', 'h3', 'h4', 'div'])
-                p_text = parent_heading.get_text(strip=True).lower() if parent_heading else ''
-                is_top_section = ('top flight' in p_text or 'best' in p_text or top_count == 0)
-
-                for li in flight_lis:
-                    txt = li.get_text(" ", strip=True)
-                    flight_data = self._parse_card_text(txt, origin, dest, date)
-                    if flight_data:
-                        if flight_data.get("departure_time") == flight_data.get("arrival_time"):
-                            continue
-                        key = (flight_data["carrier_name"], flight_data["departure_time"], flight_data["total_fare"])
-                        if key not in seen:
-                            seen.add(key)
-                            flight_data["is_top_flight"] = is_top_section
-                            flight_data["category"] = "Top Pick (Best)" if is_top_section else "Standard Schedule"
-                            if is_top_section:
-                                top_count += 1
-                            flights.append(flight_data)
-
-            # Direct extraction fallback: ensures all genuine flight cards are collected even if DOM wrapping varies
-            if not flights:
-                candidate_lis = soup.find_all('li')
-                if not candidate_lis:
-                    candidate_lis = soup.find_all(['div'], attrs={'role': 'listitem'})
-
-                for li in candidate_lis:
-                    txt = li.get_text(" ", strip=True)
-                    if not (('hr' in txt or 'min' in txt) and any(c in txt for c in ['IndiGo', 'Air India', 'Akasa', 'SpiceJet', 'Vistara', 'AIX']) and any(c in txt for c in ['₹', 'Rs', 'INR', '$'])):
+                flight_data = self._parse_card_text(txt, origin, dest, date)
+                if flight_data:
+                    if flight_data.get("departure_time") == flight_data.get("arrival_time"):
                         continue
-                    flight_data = self._parse_card_text(txt, origin, dest, date)
-                    if flight_data:
-                        if flight_data.get("departure_time") == flight_data.get("arrival_time"):
-                            continue
-                        key = (flight_data["carrier_name"], flight_data["departure_time"], flight_data["total_fare"])
-                        if key not in seen:
-                            seen.add(key)
-                            is_top_section = (top_count < 4)
-                            flight_data["is_top_flight"] = is_top_section
-                            flight_data["category"] = "Top Pick (Best)" if is_top_section else "Standard Schedule"
-                            if is_top_section:
-                                top_count += 1
-                            flights.append(flight_data)
+                    key = (flight_data["carrier_name"], flight_data["departure_time"], flight_data["total_fare"])
+                    if key not in seen:
+                        seen.add(key)
+                        is_top_section = (top_count < 4)
+                        flight_data["is_top_flight"] = is_top_section
+                        flight_data["category"] = "Top Pick (Best)" if is_top_section else "Standard Schedule"
+                        if is_top_section:
+                            top_count += 1
+                        flights.append(flight_data)
 
             # Mark the absolute cheapest fare(s)
             if flights:
@@ -1327,6 +1282,8 @@ class RealtimeFlightScraper:
             return flights
         except Exception as e:
             print(f"[HTTP SCRAPER] Note: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
     async def _scrape_google_flights_async(self, origin: str, dest: str, date: str):
