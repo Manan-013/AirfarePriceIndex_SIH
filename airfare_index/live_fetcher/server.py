@@ -632,6 +632,21 @@ class FlightAPIHandler(http.server.SimpleHTTPRequestHandler):
                 debug_info["has_indigo"] = "IndiGo" in r.text
                 debug_info["snippet"] = r.text[:500]
                 
+                if robot_guard:
+                    rg_allowed, rg_reason = robot_guard.can_fetch(url)
+                    debug_info["robot_guard_allowed"] = rg_allowed
+                    debug_info["robot_guard_reason"] = rg_reason
+
+                from bs4 import BeautifulSoup
+                soup = BeautifulSoup(r.text, 'html.parser')
+                all_lis = soup.find_all('li')
+                debug_info["total_lis"] = len(all_lis)
+                ai_lis = [li for li in all_lis if "Air India" in li.get_text()]
+                debug_info["ai_lis_count"] = len(ai_lis)
+                if ai_lis:
+                    debug_info["sample_ai_li"] = ai_lis[0].get_text(" ", strip=True)[:300]
+                    debug_info["parsed_sample"] = scraper._parse_card_text(ai_lis[0].get_text(" ", strip=True), "DEL", "BLR", "2026-09-27")
+                
                 http_flights = scraper._scrape_google_flights_http("DEL", "BLR", "2026-09-27")
                 debug_info["http_flights_count"] = len(http_flights)
                 debug_info["http_flights_sample"] = http_flights[:2] if http_flights else []
